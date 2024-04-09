@@ -22,7 +22,8 @@ class ProyectosController extends AbstractController
             'proyectos' => $proyectosRepository->findAll(),
         ]);
     }
-#[Route('/new', name: 'app_proyectos_new', methods: ['GET', 'POST'])]
+  
+    #[Route('/new', name: 'app_proyectos_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $proyecto = new Proyectos();
@@ -46,8 +47,6 @@ class ProyectosController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-    
-    
     
 
     #[Route('/{id}', name: 'app_proyectos_show', methods: ['GET'])]
