@@ -4,8 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <!-- Incluir estilos de DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+    <link href="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
@@ -14,6 +13,7 @@
     <table class="table" id="tareasTabla">
         <thead>
             <tr>
+                <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Finalizada</th>
@@ -25,6 +25,7 @@
         <tbody>
         {% for tarea in tareas %}
             <tr>
+                <td></td>
                 <td>{{ tarea.id }}</td>
                 <td>{{ tarea.nombre }}</td>
                 <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
@@ -48,12 +49,49 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.datatables.net/v/dt/dt-2.0.2/datatables.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#tareasTabla').DataTable({  
-            });
+           var table = $('#tareasTabla').DataTable({  
+                select: {
+                style: 'multi'
+            },
+            columnDefs: [{
+                orderable: false,
+                className: 'select-checkbox',
+                targets: 0,
+                checkboxes: {
+                    selectRow: true
+                }
+            }],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child'
+            },
+            order: [[1, 'asc']] // Ordena la tabla por la segunda columna
+        });
+
+        $('#seleccionarTodo').on('click', function() {
+            var isChecked = $(this).prop('checked');
+            table.rows().select(isChecked); // Seleccionar/deseleccionar todas las filas
+        });
+
+        $('#tareasTabla tbody').on('click', 'tr', function() {
+        $(this).toggleClass('selected');
+        var selectedRows = table.rows('.selected').data().toArray();
+        var selectedIds = selectedRows.map(function(row) {
+            return row[0]; // Asume que el primer elemento es el ID del usuario
+        });
+        console.log(selectedIds); // Muestra los IDs de las filas seleccionadas en la consola
+        });
+
+        // Manejador de evento para actualizar la casilla "Seleccionar Todo" cuando se seleccionan/deseleccionan filas individualmente
+        $('#tareasTabla').on('select deselect', function() {
+            var allRowsSelected = table.rows().count() === table.rows('.selected').count();
+            $('#seleccionarTodo').prop('checked', allRowsSelected);
+        });
+        
         });
     </script>
 {% endblock %}

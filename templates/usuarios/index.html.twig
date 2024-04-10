@@ -4,15 +4,16 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.2/css/dataTables.dataTables.min.css">
+    <link href="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
     <h1>Usuarios</h1>
-
+    
     <table class="table" id="usuariosTabla">
         <thead>
             <tr>
+                <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Email</th>
                 <th>Roles</th>
@@ -24,14 +25,15 @@
         <tbody>
         {% for usuario in usuarios %}
             <tr>
+                <td></td>
                 <td>{{ usuario.id }}</td>
                 <td>{{ usuario.email }}</td>
                 <td>{{ usuario.roles ? usuario.roles|json_encode : '' }}</td>
                 <td>{{ usuario.password }}</td>
                 <td>{{ usuario.isVerified ? 'Yes' : 'No' }}</td>
                 <td>
-                    <a href="{{ path('app_usuarios_show', {'id': usuario.id}) }}" class="btn btn-info ">Detalles</a>
-                    <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning ">Editar</a>
+                    <a href="{{ path('app_usuarios_show', {'id': usuario.id}) }}" class="btn btn-info">Detalles</a>
+                    <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar</a>
                 </td>
             </tr>
         {% else %}
@@ -41,18 +43,55 @@
         {% endfor %}
         </tbody>
     </table>
-    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary ">Crear Nuevo</a>
-    
+    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https:////cdn.datatables.net/2.0.2/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#usuariosTabla').DataTable({  
-            });
+           var table = $('#usuariosTabla').DataTable({  
+                select: {
+                style: 'multi'
+            },
+            columnDefs: [{
+                orderable: false,
+                className: 'select-checkbox',
+                targets: 0,
+                checkboxes: {
+                    selectRow: true
+                }
+            }],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child'
+            },
+            order: [[1, 'asc']] // Ordena la tabla por la segunda columna
+        });
+
+        $('#seleccionarTodo').on('click', function() {
+            var isChecked = $(this).prop('checked');
+            table.rows().select(isChecked); // Seleccionar/deseleccionar todas las filas
+        });
+
+        $('#usuariosTabla tbody').on('click', 'tr', function() {
+        $(this).toggleClass('selected');
+        var selectedRows = table.rows('.selected').data().toArray();
+        var selectedIds = selectedRows.map(function(row) {
+            return row[0]; // Asume que el primer elemento es el ID del usuario
+        });
+        console.log(selectedIds); // Muestra los IDs de las filas seleccionadas en la consola
+        });
+
+        // Manejador de evento para actualizar la casilla "Seleccionar Todo" cuando se seleccionan/deseleccionan filas individualmente
+        $('#usuariosTabla').on('select deselect', function() {
+            var allRowsSelected = table.rows().count() === table.rows('.selected').count();
+            $('#seleccionarTodo').prop('checked', allRowsSelected);
+        });
+        
         });
     </script>
 {% endblock %}
