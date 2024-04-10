@@ -2,36 +2,58 @@
 
 {% block title %}Proyectos index{% endblock %}
 
-{% block body %}
-    <h1>Proyectos index</h1>
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+{% endblock %}
 
-    <table class="table">
+{% block body %}
+    <h1>Proyectos</h1>
+
+    <table class="table" id="proyectosTabla">
         <thead>
             <tr>
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Estado</th>
-                <th>actions</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-        {% for proyecto in proyectos %}
+            {% for proyecto in proyectos %}
             <tr>
                 <td>{{ proyecto.id }}</td>
                 <td>{{ proyecto.nombre }}</td>
                 <td>{{ proyecto.estado }}</td>
                 <td>
-                    <a href="{{ path('app_proyectos_show', {'id': proyecto.id}) }}">show</a>
-                    <a href="{{ path('app_proyectos_edit', {'id': proyecto.id}) }}">edit</a>
+                    <a href="{{ path('app_proyectos_show', {'id': proyecto.id}) }}" class="btn btn-info ">Detalles</a>
+                    <a href="{{ path('app_proyectos_edit', {'id': proyecto.id}) }}" class="btn btn-warning ">Editar</a>
                 </td>
             </tr>
-        {% else %}
+            {% else %}
             <tr>
                 <td colspan="4">no records found</td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
 
-    <a href="{{ path('app_proyectos_new') }}">Create new</a>
+    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary ">Crear Nuevo</a>
 {% endblock %}
+
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-2.0.2/datatables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#proyectosTabla').DataTable({  
+            });
+        });
+    </script>
+{% endblock %}
+
+
+

@@ -3,9 +3,9 @@
 {% block title %}New Tareas{% endblock %}
 
 {% block body %}
-    <h1>Create new Tareas</h1>
+    <h1>Crear nueva tarea</h1>
 
     {{ include('tareas/_form.html.twig') }}
 
-    <a href="{{ path('app_tareas_index') }}">back to list</a>
+    <a href="{{ path('app_tareas_index') }}" class="btn btn-secondary">Back</a>
 {% endblock %}
