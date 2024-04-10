@@ -16,13 +16,22 @@ use Symfony\Component\Routing\Attribute\Route;
 class ProyectosController extends AbstractController
 {
     #[Route('/', name: 'app_proyectos_index', methods: ['GET'])]
-    public function index(ProyectosRepository $proyectosRepository): Response
+    public function index(ProyectosRepository $proyectosRepository, EntityManagerInterface $entityManager): Response
     {
+        $proyectos = $entityManager->getRepository(Proyectos::class)->findAll();
+        
+        // Verifica si hay proyectos, si no, crea un array vacío
+        if (empty($proyectos)) {
+            $proyectos = [];
+        }
+
         return $this->render('proyectos/index.html.twig', [
-            'proyectos' => $proyectosRepository->findAll(),
+            'pageName' => 'Proyectos',
+            'proyectos' => $proyectos,
         ]);
     }
 
+    #[Route('/new', name: 'app_proyectos_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $proyecto = new Proyectos();
@@ -46,9 +55,6 @@ class ProyectosController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-    
-    
-    
 
     #[Route('/{id}', name: 'app_proyectos_show', methods: ['GET'])]
     public function show(Proyectos $proyecto): Response

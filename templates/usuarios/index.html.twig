@@ -2,10 +2,15 @@
 
 {% block title %}Usuarios index{% endblock %}
 
-{% block body %}
-    <h1>Usuarios index</h1>
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+{% endblock %}
 
-    <table class="table">
+{% block body %}
+    <h1>Usuarios</h1>
+
+    <table class="table" id="usuariosTabla">
         <thead>
             <tr>
                 <th>Id</th>
@@ -25,8 +30,8 @@
                 <td>{{ usuario.password }}</td>
                 <td>{{ usuario.isVerified ? 'Yes' : 'No' }}</td>
                 <td>
-                    <a href="{{ path('app_usuarios_show', {'id': usuario.id}) }}">show</a>
-                    <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}">edit</a>
+                    <a href="{{ path('app_usuarios_show', {'id': usuario.id}) }}" class="btn btn-info ">Detalles</a>
+                    <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning ">Editar</a>
                 </td>
             </tr>
         {% else %}
@@ -36,6 +41,18 @@
         {% endfor %}
         </tbody>
     </table>
+    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary ">Crear Nuevo</a>
+    
+{% endblock %}
 
-    <a href="{{ path('app_usuarios_new') }}">Create new</a>
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-2.0.2/datatables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#usuariosTabla').DataTable({  
+            });
+        });
+    </script>
 {% endblock %}
