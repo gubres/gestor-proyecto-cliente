@@ -1,8 +1,33 @@
 <!-- botones_base.html.twig -->
 
-<button type="button" class="btn btn-success">Guardar</button>
-<button type="button" class="btn btn-danger">Eliminar</button>
-<button type="button" class="btn btn-warning">Editar</button>
-<button type="button" class="btn btn-info">Detalles</button>
-<button type="button" class="btn btn-primary">Crear Nuevo</button>
-<button type="button" class="btn btn-secondary">Back</button>
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Agrega aquí cualquier hoja de estilos adicional necesaria para tus botones -->
+    <style>
+        .btn-group .btn {
+            display: inline-block;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+    {# Define botones personalizados #}
+    <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+        <button type="button" class="btn btn-success d-inline">Guardar</button>
+        <button type="button" class="btn btn-danger d-inline">Eliminar</button>
+        <button type="button" class="btn btn-warning d-inline">Editar</button>
+        <button type="button" class="btn btn-info d-inline">Detalles</button>
+        <button type="button" class="btn btn-primary d-inline">Crear Nuevo</button>
+    </div>
+    <button type="button" onclick="window.history.back();" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Agrega aquí cualquier script adicional necesario para tus botones -->
+{% endblock %}

@@ -47,28 +47,36 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script>
         $(document).ready(function() {
            var table = $('#proyectosTabla').DataTable({  
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                        titleAttr: 'Exportar a Excel',
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
+                        titleAttr: 'Exportar a PDF',
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Imprimir',
+                        titleAttr: 'Imprimir',
+                    }
+                ],
                 select: {
-                style: 'multi'
-            },
-            columnDefs: [{
-                orderable: false,
-                className: 'select-checkbox',
-                targets: 0,
-                checkboxes: {
-                    selectRow: true
-                }
-            }],
-            select: {
-                style: 'multi',
-                selector: 'td:first-child'
-            },
-            order: [[1, 'asc']] // Ordena la tabla por la segunda columna
-        });
+                    style: 'multi',
+                    selector: 'td:first-child'
+                },
+                order: [[1, 'asc']] // Ordena la tabla por la segunda columna
+            });
 
         $('#seleccionarTodo').on('click', function() {
             var isChecked = $(this).prop('checked');
