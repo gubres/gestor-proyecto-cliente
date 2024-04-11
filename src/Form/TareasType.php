@@ -25,7 +25,7 @@ class TareasType extends AbstractType
                 'class' => Proyectos::class,
                 'choice_label' => 'id',
             ])
-            ->add('usuarios', EntityType::class, [
+            ->add('usuario', EntityType::class, [
                 'class' => Usuarios::class,
                 'choice_label' => 'id',
                 'multiple' => true,

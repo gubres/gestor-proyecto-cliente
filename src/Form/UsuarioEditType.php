@@ -8,7 +8,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use App\Entity\Usuarios;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
-
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 
 class UsuarioEditType extends AbstractType
 {
@@ -18,6 +18,12 @@ class UsuarioEditType extends AbstractType
             ->add('nombre', TextType::class, ['required' => false])
             ->add('apellidos', TextType::class, ['required' => false])
             ->add('email', EmailType::class, ['required' => false])
+            ->add('newPassword', PasswordType::class, [
+                'mapped' => false,
+                'required' => false, //  opcional 
+                'label' => 'Nueva contraseña (opcional)',
+                'attr' => ['autocomplete' => 'new-password'],
+            ])
             ;
     }
 
