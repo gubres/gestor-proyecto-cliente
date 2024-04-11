@@ -69,13 +69,49 @@ class UsuariosController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_usuarios_delete', methods: ['POST'])]
-    public function delete(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, EntityManagerInterface $entityManager, UsuariosRepository $usuariosRepository): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$usuario->getId(), $request->getPayload()->get('_token'))) {
+        $id = $request->attributes->get('id');
+        $usuario = $usuariosRepository->find($id);
+
+        if (!$usuario) {
+            throw $this->createNotFoundException('Usuario no encontrado');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$usuario->getId(), $request->request->get('_token'))) {
             $entityManager->remove($usuario);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_usuarios_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_usuarios_index');
+    }
+
+        #[Route('/eliminarusuarios', name: 'eliminar_usuarios', methods: ['POST'])]
+        public function eliminarUsuarios(Request $request, EntityManagerInterface $entityManager, UsuariosRepository $usuariosRepository)
+    {
+        $usuariosSeleccionados = $request->request->get('usuarios_seleccionados');
+
+        // Ir uno a uno sobre los IDs de los usuarios y eliminarlos uno por uno
+        foreach ($usuariosSeleccionados as $usuarioId) {
+            // Encontrar el usuario por su ID
+            $usuario = $usuariosRepository->find($usuarioId);
+
+            // Verificar si el usuario existe
+            if (!$usuario) {
+                // Si el usuario no existe, lanzar una excepción o manejar el error de alguna manera
+                throw $this->createNotFoundException('Usuario no encontrado');
+            }
+
+            // Verificar el token CSRF
+            if ($this->isCsrfTokenValid('delete'.$usuario->getId(), $request->request->get('_token'))) {
+                // Eliminar el usuario
+                $entityManager->remove($usuario);
+                $entityManager->flush();
+            }
+        }
+
+        // Redirigir de vuelta a la página de índice de usuarios después de eliminar
+        return $this->redirectToRoute('app_usuarios_index');
     }
 }
+
