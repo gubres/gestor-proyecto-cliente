@@ -38,6 +38,18 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
         $this->getEntityManager()->flush();
     }
 
+        // Método para encontrar todos los correos electrónicos de los usuarios
+        public function findAllEmails(): array
+        {dump("findAllEmails method called");
+
+            $qb = $this->createQueryBuilder('u')
+                ->select('u.email');
+                dump("findAllEmails method called");
+            
+            return $qb->getQuery()->getResult();
+        }
+    }
+
     //    /**
     //     * @return Usuarios[] Returns an array of Usuarios objects
     //     */
@@ -62,4 +74,4 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
     //            ->getOneOrNullResult()
     //        ;
     //    }
-}
+

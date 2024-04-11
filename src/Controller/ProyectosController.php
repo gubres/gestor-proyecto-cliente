@@ -4,8 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Proyectos;
 use App\Entity\UsuariosProyectos;
+use App\Entity\Usuarios;
 use App\Form\ProyectosType;
+use DateTime;
 use App\Repository\ProyectosRepository;
+use App\Repository\UsuariosRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +18,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/proyectos')]
 class ProyectosController extends AbstractController
 {
+    private $entityManager;
+    private $usuariosRepository;
+
+    public function __construct(EntityManagerInterface $entityManager, UsuariosRepository $userRepository)
+    {
+        $this->entityManager = $entityManager;
+        $this->usuariosRepository = $userRepository;
+    }
+    
     #[Route('/', name: 'app_proyectos_index', methods: ['GET'])]
     public function index(ProyectosRepository $proyectosRepository): Response
     {
@@ -22,27 +34,31 @@ class ProyectosController extends AbstractController
             'proyectos' => $proyectosRepository->findAll(),
         ]);
     }
+   
 
+    #[Route('/new', name: 'app_proyectos_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
+    {        
         $proyecto = new Proyectos();
         $form = $this->createForm(ProyectosType::class, $proyecto);
         $form->handleRequest($request);
-    
+        
         if ($form->isSubmitted() && $form->isValid()) {
-            // Agregar usuarios seleccionados a la relación usuariosProyectos
-            foreach ($form->get('usuarios')->getData() as $usuario) {
-                $usuariosProyectos = new UsuariosProyectos($usuario, $proyecto);
-                $usuario->addUsuariosProyecto($usuariosProyectos); // Usar addUsuariosProyecto()
-                $entityManager->persist($usuariosProyectos);
-            }
-    
-            $entityManager->persist($proyecto);
-            $entityManager->flush();
-    
-            return $this->redirectToRoute('app_usuarios_index', [], Response::HTTP_SEE_OTHER);
+             // Asignar los usuarios seleccionados al proyecto
+             $usuariosSeleccionados = $form->get('usuarios')->getData();
+             foreach ($usuariosSeleccionados as $usuario) {
+                 $usuarioProyecto = new UsuariosProyectos($usuario,$proyecto);
+                 $proyecto->addUsuariosProyectos($usuarioProyecto);
+             }
+             // Guardar el proyecto
+             $entityManager->persist($proyecto);
+             $entityManager->flush();
+            
+            return $this->redirectToRoute('app_proyectos_index');
         }
+            
         return $this->render('proyectos/new.html.twig', [
+            'pageName' => 'Nuevo Proyecto',
             'form' => $form->createView(),
         ]);
     }

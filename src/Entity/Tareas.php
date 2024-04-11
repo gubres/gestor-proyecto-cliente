@@ -36,11 +36,11 @@ class Tareas
      * @var Collection<int, Usuarios>
      */
     #[ORM\ManyToMany(targetEntity: Usuarios::class, inversedBy: 'tareas')]
-    private Collection $usuario;
+    private Collection $usuarios;
 
     public function __construct()
     {
-        $this->usuario = new ArrayCollection();
+        $this->usuarios = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -113,13 +113,13 @@ class Tareas
      */
     public function getUsuario(): Collection
     {
-        return $this->usuario;
+        return $this->usuarios;
     }
 
     public function addUsuario(Usuarios $usuario): static
     {
-        if (!$this->usuario->contains($usuario)) {
-            $this->usuario->add($usuario);
+        if (!$this->usuarios->contains($usuario)) {
+            $this->usuarios->add($usuario);
         }
 
         return $this;
@@ -127,7 +127,7 @@ class Tareas
 
     public function removeUsuario(Usuarios $usuario): static
     {
-        $this->usuario->removeElement($usuario);
+        $this->usuarios->removeElement($usuario);
 
         return $this;
     }

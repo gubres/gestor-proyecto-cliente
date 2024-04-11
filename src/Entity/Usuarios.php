@@ -36,15 +36,15 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     /**
-     * @var Collection<int, Proyectos>
+     * @var Collection<int, UsuariosProyectos>
      */
-    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuario')]
+    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuarios')]
     private Collection $usuariosProyectos;
 
     /**
      * @var Collection<int, Tareas>
      */
-    #[ORM\ManyToMany(targetEntity: Tareas::class, mappedBy: 'usuario')]
+    #[ORM\ManyToMany(targetEntity: Tareas::class, mappedBy: 'usuarios')]
     private Collection $tareas;
 
     #[ORM\Column(type: 'boolean')]
@@ -132,14 +132,14 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Proyectos>
+     * @return Collection<int, UsuariosProyectos>
      */
     public function getUsuariosProyectos(): Collection
     {
         return $this->usuariosProyectos;
     }
 
-    public function addUsuariosProyecto(UsuariosProyectos $usuariosProyecto): self
+    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyecto): self
     {
         if (!$this->usuariosProyectos->contains($usuariosProyecto)) {
             $this->usuariosProyectos[] = $usuariosProyecto;
@@ -148,11 +148,11 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-    
 
-    public function removeUsuariosProyecto(UsuariosProyectos $usuariosProyecto): self
+    public function removeUsuariosProyectos(UsuariosProyectos $usuariosProyecto): self
     {
         if ($this->usuariosProyectos->removeElement($usuariosProyecto)) {
+            // set the owning side to null (unless already changed)
             if ($usuariosProyecto->getUsuario() === $this) {
                 $usuariosProyecto->setUsuario(null);
             }
@@ -199,4 +199,10 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function __toString()
+    {
+        return $this->getEmail();
+    }
+
 }

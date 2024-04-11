@@ -27,11 +27,11 @@ class Proyectos
     #[ORM\OneToMany(targetEntity: Tareas::class, mappedBy: 'proyecto', orphanRemoval: true)]
     private Collection $tareas;
 
-    #[ORM\OneToOne(inversedBy: 'proyectos', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(targetEntity: Clientes::class, inversedBy: 'proyectos')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Clientes $cliente = null;
 
-    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'proyectos')]
+    #[ORM\OneToMany(mappedBy: 'proyectos', targetEntity: UsuariosProyectos::class, cascade: ['persist'])]
     private Collection $usuariosProyectos;
 
     public function __construct()
@@ -119,19 +119,17 @@ class Proyectos
         return $this->usuariosProyectos;
     }
 
-    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyectos): static
+    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyecto)
     {
-        if (!$this->usuariosProyectos->contains($usuariosProyectos)) {
-            $this->usuariosProyectos[] = $usuariosProyectos;
-            $usuariosProyectos->setProyecto($this);
+        if (!$this->usuariosProyectos->contains($usuariosProyecto)) {
+            $this->usuariosProyectos[] = $usuariosProyecto;
+            $usuariosProyecto->setProyecto($this);
         }
-
-        return $this;
     }
 
-    public function removeUsuariosProyectos(UsuariosProyectos $usuariosProyectos): static
+    public function removeUsuarios(UsuariosProyectos $usuarios): static
     {
-        $this->usuariosProyectos->removeElement($usuariosProyectos);
+        $this->usuariosProyectos->removeElement($usuarios);
 
         return $this;
     }
