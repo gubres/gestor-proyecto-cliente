@@ -23,9 +23,9 @@
             </tr>
         </thead>
         <tbody>
-        {% for usuario in usuarios %}
+            {% for usuario in usuarios %}
             <tr>
-                <td></td>
+                <td><input type="checkbox" class="seleccionarUsuario" name="usuarios_seleccionados[]" value="{{ usuario.id }}"></td>
                 <td>{{ usuario.id }}</td>
                 <td>{{ usuario.email }}</td>
                 <td>{{ usuario.roles ? usuario.roles|json_encode : '' }}</td>
@@ -36,26 +36,33 @@
                     <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar</a>
                 </td>
             </tr>
-        {% else %}
+            {% else %}
             <tr>
                 <td colspan="6">no records found</td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
-    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
+    <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+        <form id="eliminarUsuariosForm" method="post" action="{{ path('eliminar_usuarios') }}" style="display: inline-block;">
+            <button id="eliminarSeleccionButton" type="submit" class="btn btn-danger d-none">Eliminar selección</button>
+        </form>
+    </div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+
     <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
     <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <!--Aquí inicializamos siempre la tabla con Javascript para que se haga lo que se pide con Datatable-->
     <script>
         $(document).ready(function() {
-            var table = $('#usuariosTabla').DataTable({
+            const table = $('#usuariosTabla').DataTable({  
                 dom: 'Bfrtip',
                 buttons: [
                     {
@@ -75,31 +82,57 @@
                     }
                 ],
                 select: {
-                    style: 'multi',
-                    selector: 'td:first-child'
+                    style: 'multi'
                 },
                 order: [[1, 'asc']] // Ordena la tabla por la segunda columna
             });
 
+            // Función para actualizar la visibilidad del botón de eliminar selección
+            function updateDeleteButtonVisibility() {
+                var deleteButton = $('#eliminarSeleccionButton');
+                var checkedCount = $('.seleccionarUsuario:checked').length;
+                if (checkedCount > 0) {
+                    deleteButton.removeClass('d-none'); // Mostrar el botón si hay alguna selección
+                } else {
+                    deleteButton.addClass('d-none'); // Ocultar el botón si no hay ninguna selección
+                }
+            }
+
             $('#seleccionarTodo').on('click', function() {
                 var isChecked = $(this).prop('checked');
-                table.rows().select(isChecked); // Seleccionar/deseleccionar todas las filas
+                $('.seleccionarUsuario').prop('checked', isChecked);
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
             });
 
-            $('#usuariosTabla tbody').on('click', 'tr', function() {
+            $('.seleccionarUsuario').on('click', function() {
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+            });
+            // Agregar evento click a las filas de la tabla
+            $('#usuariosTabla tbody').on('click', 'tr', function () {
                 $(this).toggleClass('selected');
-                var selectedRows = table.rows('.selected').data().toArray();
-                var selectedIds = selectedRows.map(function(row) {
-                    return row[0]; // Asume que el primer elemento es el ID del usuario
-                });
-                console.log(selectedIds); // Muestra los IDs de las filas seleccionadas en la consola
             });
 
-            // Manejador de evento para actualizar la casilla "Seleccionar Todo" cuando se seleccionan/deseleccionan filas individualmente
-            $('#usuariosTabla').on('select deselect', function() {
-                var allRowsSelected = table.rows().count() === table.rows('.selected').count();
-                $('#seleccionarTodo').prop('checked', allRowsSelected);
+            // Agregar evento click al botón para eliminar filas seleccionadas
+            $('#eliminarSeleccionButton').on('click', function () {
+                table.rows('.selected').remove().draw(false);
             });
+
+           $('#eliminarSeleccionButton').submit(function() {
+            var usuariosSeleccionados = [];
+            $('.seleccionarUsuario:checked').each(function() {
+                usuariosSeleccionados.push($(this).val());
+            });
+
+            console.log('IDs de usuarios seleccionados:', usuariosSeleccionados);
+
+            if (usuariosSeleccionados.length === 0) {
+                alert('Por favor, selecciona al menos un usuario para eliminar.');
+                return false; // Detener el envío del formulario
+            }
+
+            // Agregar los IDs de los usuarios seleccionados como datos del formulario
+            $('#eliminarUsuariosForm').append('<input type="hidden" name="usuarios_seleccionados" value="' + usuariosSeleccionados.join(',') + '">');
+        });
         });
     </script>
 {% endblock %}

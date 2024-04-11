@@ -7,3 +7,8 @@ controllers:
 inicio:
     path: /
     controller: App\Controller\InicioController::index
+
+eliminar_usuarios:
+    path: /usuarios/eliminarusuarios
+    controller: App\Controller\UsuariosController::eliminarUsuarios
+    methods: ['POST']
