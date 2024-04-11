@@ -7,7 +7,8 @@
 
     {{ include('tareas/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_tareas_index') }}" class="btn btn-secondary">Back</a>
+       <a href="javascript:history.go(-1);" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Volver </a>
 
     {{ include('tareas/_delete_form.html.twig') }}
 {% endblock %}

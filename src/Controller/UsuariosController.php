@@ -115,6 +115,7 @@ class UsuariosController extends AbstractController
 
 
     #[Route('/usuarios/{id}/edit', name: 'app_usuarios_edit', methods: ['GET', 'POST'])]
+
     public function edit(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $form = $this->createForm(UsuarioEditType::class, $usuario);
@@ -135,6 +136,7 @@ class UsuariosController extends AbstractController
             $this->addFlash('success', 'El usuario ha sido actualizado con éxito.');
     
             return $this->redirectToRoute('app_usuarios_index');
+
         }
     
         return $this->render('usuarios/edit.html.twig', [
