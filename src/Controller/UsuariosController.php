@@ -21,9 +21,6 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 
-
-
-
 #[Route('/usuarios')]
 class UsuariosController extends AbstractController
 {
@@ -63,15 +60,22 @@ class UsuariosController extends AbstractController
 
             $user->setConfirmationToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
 
-
+            // Codifica y establece la contraseña
             $user->setPassword($passwordHasher->hashPassword($user, $form->get('plainPassword')->getData()));
 
-            $entityManager->persist($user);
-            $entityManager->flush(); 
+            // Actualiza la propiedad isActive
+            $user->setIsActive(true); // Por defecto, el usuario estará activo al registrarse
 
-           $confirmationUrl = $this->generateUrl('app_verify_email', [
-            'token' => $user->getConfirmationToken()
-        ], UrlGeneratorInterface::ABSOLUTE_URL);
+            // Persiste la entidad
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            // Llama al método para actualizar los roles basados en la activación del usuario
+            $user->updateRolesBasedOnActivation();
+
+            $confirmationUrl = $this->generateUrl('app_verify_email', [
+                'token' => $user->getConfirmationToken()
+            ], UrlGeneratorInterface::ABSOLUTE_URL);
 
             // Mover el envío de correo después de la persistencia y flush para asegurar que el usuario está completamente guardado
             $email = (new TemplatedEmail())
@@ -82,12 +86,9 @@ class UsuariosController extends AbstractController
                 ->context([
                     'userId' => $user->getId(),
                     'confirmationUrl' => $confirmationUrl,
-                    
                 ]);
 
             $mailer->send($email);
-
-            
 
             return $this->redirectToRoute('app_login');
         }
@@ -121,34 +122,42 @@ class UsuariosController extends AbstractController
         return $this->redirectToRoute('app_usuarios_new');
     }
 
-    
-
 
     #[Route('/usuarios/{id}/edit', name: 'app_usuarios_edit', methods: ['GET', 'POST'])]
-
     public function edit(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $form = $this->createForm(UsuarioEditType::class, $usuario);
         $form->handleRequest($request);
-    
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Comprueba si se modifica la contraseña
-            $newPassword = $form->get('newPassword')->getData(); 
-            if ($newPassword !== null && $newPassword !== '') {
-                // Actualiza la contraseña solo si se ha modificado
-                $usuario->setPassword($passwordHasher->hashPassword($usuario, $newPassword));
-            }
-    
-            
-            $entityManager->flush();
-    
-            
-            $this->addFlash('success', 'El usuario ha sido actualizado con éxito.');
-    
-            return $this->redirectToRoute('app_usuarios_index');
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Comprueba si se modifica la contraseña y actualiza si es necesario
+
+            // Actualiza la propiedad isActive
+            $usuario->setIsActive($form->get('isActive')->getData());
+
+            // Actualiza los roles según el estado de isActive
+            if (!$usuario->getIsActive()) {
+                // Si el usuario está desactivado, elimina el role ROLE_USER
+                $roles = $usuario->getRoles();
+                $key = array_search('ROLE_USER', $roles);
+                if ($key !== false) {
+                    unset($roles[$key]);
+                }
+                $usuario->setRoles($roles);
+            }
+            // Aquí llamamos al método para actualizar los roles basados en la activación
+            $usuario->updateRolesBasedOnActivation();
+            
+            // Persiste la entidad actualizada
+            $entityManager->persist($usuario);
+            $entityManager->flush();
+
+            // Envía mensaje de éxito y redirige
+            $this->addFlash('success', 'El usuario ha sido actualizado con éxito.');
+            return $this->redirectToRoute('app_usuarios_index');
         }
-    
+
+        // Renderiza el formulario si no se ha enviado o si hay errores
         return $this->render('usuarios/edit.html.twig', [
             'usuario' => $usuario,
             'form' => $form->createView(),
@@ -208,3 +217,4 @@ class UsuariosController extends AbstractController
     
 
 }
+
