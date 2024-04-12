@@ -183,29 +183,6 @@ class UsuariosController extends AbstractController
         return $this->redirectToRoute('app_usuarios_index');
     }
 
-    #[Route('/eliminarusuarios', name: 'eliminar_registros', methods: ['POST'])]
-    public function eliminarUsuarios(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager)
-    {
-        $id = $request->request->get('id'); 
-        $usuario = $this->usuariosRepository->find($id);
-
-        if ($usuario) { 
-            $entityManager->remove($usuario);
-            $entityManager->flush();
-        }
-
-        // Devuelve una respuesta HTTP 200 indicando éxito
-        return new Response('Registros eliminados correctamente', Response::HTTP_OK);
-        
-
-        // En caso de error, devuelve una respuesta HTTP 400
-        return new Response('No se proporcionó un ID válido.', Response::HTTP_BAD_REQUEST);
-    
-        return $this->redirectToRoute('app_usuarios_index');
-    
-
-    }
-
 
     #[Route('/{id}', name: 'app_usuarios_show', methods: ['GET'])]
     public function show(Usuarios $usuario): Response
