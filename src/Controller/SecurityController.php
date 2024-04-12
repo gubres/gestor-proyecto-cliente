@@ -11,6 +11,11 @@ class SecurityController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        // Redireccionar al usuario a la página de inicio si ya está autenticado
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_inicio');
+        }
+
         // obtener error de login si lo hubiese
         $error = $authenticationUtils->getLastAuthenticationError();
         // último nombre de usuario ingresado 
@@ -20,4 +25,12 @@ class SecurityController extends AbstractController
     }
 
     
+    #[Route('/logout', name: 'app_logout')]
+    public function logout()
+    {
+       
+        throw new \Exception();
+    }
+    
+
 }
