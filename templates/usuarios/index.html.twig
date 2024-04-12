@@ -44,12 +44,24 @@
         </tbody>
     </table>
 
-    <div style="margin-bottom: 10px;">
-        <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
-        <form id="eliminarUsuariosForm" method="post" action="{{ path('eliminar_usuarios') }}" style="display: inline-block;">
-            <button id="eliminarSeleccionButton" type="submit" class="btn btn-danger d-none">Eliminar selección</button>
-        </form>
-    </div>
+ <div style="margin-bottom: 10px;">
+    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
+    <!-- Nuevo formulario para eliminar registros -->
+    <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
+        <!-- Campos ocultos para los IDs de los registros -->
+        <input type="hidden" name="id" id="idToDelete" value="">
+
+        
+        <!-- Botón para eliminar registros -->
+        <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+    </form>
+</div>
+
+<!-- Divs para mostrar mensajes de éxito y error -->
+<div id="successMessage" class="alert alert-success d-none" role="alert"></div>
+<div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
 
 {% endblock %}
 
@@ -87,52 +99,73 @@
                 order: [[1, 'asc']] // Ordena la tabla por la segunda columna
             });
 
-            // Función para actualizar la visibilidad del botón de eliminar selección
-            function updateDeleteButtonVisibility() {
-                var deleteButton = $('#eliminarSeleccionButton');
-                var checkedCount = $('.seleccionarUsuario:checked').length;
-                if (checkedCount > 0) {
-                    deleteButton.removeClass('d-none'); // Mostrar el botón si hay alguna selección
-                } else {
-                    deleteButton.addClass('d-none'); // Ocultar el botón si no hay ninguna selección
-                }
+           // Función para actualizar la visibilidad del botón de eliminar selección
+        function updateDeleteButtonVisibility() {
+            var deleteButton = $('#eliminarSeleccionButton');
+            var checkedCount = $('.seleccionarUsuario:checked').length;
+            if (checkedCount > 0) {
+               deleteButton.show(); // Mostrar el botón si hay alguna selección
+            } else {
+                deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
             }
+        }
+        $('#seleccionarTodo').on('click', function() {
+            var isChecked = $(this).prop('checked');
+            $('.seleccionarUsuario').prop('checked', isChecked);
+            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+        });
 
-            $('#seleccionarTodo').on('click', function() {
-                var isChecked = $(this).prop('checked');
-                $('.seleccionarUsuario').prop('checked', isChecked);
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-            });
+        $('.seleccionarUsuario').on('click', function() {
+            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+        });
+        
+        // Agregar evento click al botón para eliminar filas seleccionadas
+        $('#eliminarSeleccionButton').on('click', function () {
+            table.rows('.selected').remove().draw(false);
+        });
 
-            $('.seleccionarUsuario').on('click', function() {
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-            });
-            // Agregar evento click a las filas de la tabla
-            $('#usuariosTabla tbody').on('click', 'tr', function () {
-                $(this).toggleClass('selected');
-            });
+         // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
+           $('#formEliminarRegistros').submit(function (event) {
+               event.preventDefault(); // Evita el envío del formulario por defecto
 
-            // Agregar evento click al botón para eliminar filas seleccionadas
-            $('#eliminarSeleccionButton').on('click', function () {
-                table.rows('.selected').remove().draw(false);
-            });
+               // Obtener los IDs seleccionados
+               var idsSeleccionados = obtenerIDsSeleccionados();
 
-           $('#eliminarSeleccionButton').submit(function() {
-            var usuariosSeleccionados = [];
+               // Asignar los IDs al campo oculto 'idToDelete'
+               $('#idToDelete').val(idsSeleccionados);
+
+               // Realizar la solicitud AJAX
+               $.ajax({
+                   type: 'POST',
+                   url: $(this).attr('action'),
+                   data: $(this).serialize(),
+                   success: function(response) {
+                       if (response.trim() === 'Registros eliminados correctamente') {
+                           $('#successMessage').removeClass('d-none').text(response);
+                           
+                           // Después de mostrar el mensaje de éxito, redirige a la página de índice de usuarios
+                            window.location.href = "{{ path('app_usuarios_index') }}";
+                       } else {
+                           $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los registros.');
+                       }
+                   },
+                   error: function() {
+                       $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los registros.');
+                   }
+               });
+           });
+
+
+        // Definir la función obtenerIDsSeleccionados
+        function obtenerIDsSeleccionados() {
+            var ids = [];
             $('.seleccionarUsuario:checked').each(function() {
-                usuariosSeleccionados.push($(this).val());
+                ids.push($(this).val());
             });
+            return ids;
+        }
 
-            console.log('IDs de usuarios seleccionados:', usuariosSeleccionados);
+    });
 
-            if (usuariosSeleccionados.length === 0) {
-                alert('Por favor, selecciona al menos un usuario para eliminar.');
-                return false; // Detener el envío del formulario
-            }
-
-            // Agregar los IDs de los usuarios seleccionados como datos del formulario
-            $('#eliminarUsuariosForm').append('<input type="hidden" name="usuarios_seleccionados" value="' + usuariosSeleccionados.join(',') + '">');
-        });
-        });
-    </script>
+</script>
 {% endblock %}

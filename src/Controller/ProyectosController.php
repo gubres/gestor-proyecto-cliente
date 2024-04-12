@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/proyectos')]
 class ProyectosController extends AbstractController
 {
+
+    private $proyectosRepository;
     private $entityManager;
     private $usuariosRepository;
 
@@ -23,6 +25,8 @@ class ProyectosController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->usuariosRepository = $userRepository;
+        $this->proyectosRepository = $proyectosRepository;
+      
     }
     
     #[Route('/', name: 'app_proyectos_index', methods: ['GET'])]
@@ -130,11 +134,41 @@ class ProyectosController extends AbstractController
     #[Route('/{id}', name: 'app_proyectos_delete', methods: ['POST'])]
     public function delete(Request $request, Proyectos $proyecto, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$proyecto->getId(), $request->getPayload()->get('_token'))) {
+        $id = $request->attributes->get('id');
+        $proyecto = $this->proyectosRepository->find($id);
+
+        if (!$proyecto) {
+            throw $this->createNotFoundException('Proyecto no encontrado');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$proyecto->getId(), $request->request->get('_token'))) {
             $entityManager->remove($proyecto);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_proyectos_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_proyectos_index');
+    }
+
+    #[Route('/eliminarproyectos', name: 'eliminar_registros', methods: ['POST'])]
+    public function eliminarProyectos(Request $request, Proyectos $proyecto, EntityManagerInterface $entityManager)
+    {
+        $id = $request->request->get('id'); 
+        $proyecto = $this->proyectosRepository->find($id);
+
+        if ($proyecto) { // Corregir aquí
+            $entityManager->remove($proyecto);
+            $entityManager->flush();
+        }
+
+        // Devuelve una respuesta HTTP 200 indicando éxito
+        return new Response('Proyectos eliminados correctamente', Response::HTTP_OK);
+        
+
+        // En caso de error, devuelve una respuesta HTTP 400
+        return new Response('No se proporcionó un ID de proyecto válido.', Response::HTTP_BAD_REQUEST);
+    
+        return $this->redirectToRoute('app_proyectos_index');
+    
+
     }
 }

@@ -23,7 +23,7 @@
         <tbody>
             {% for proyecto in proyectos %}
             <tr>
-                <td></td>
+                <td><input type="checkbox" class="seleccionarProyecto" name="proyectos_seleccionados[]" value="{{ proyecto.id }}"></td>
                 <td>{{ proyecto.id }}</td>
                 <td>{{ proyecto.nombre }}</td>
                 <td>{{ proyecto.estado }}</td>
@@ -40,7 +40,24 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary ">Crear Nuevo</a>
+  <div style="margin-bottom: 10px;">
+    <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
+    <!-- Nuevo formulario para eliminar registros -->
+    <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
+        <!-- Campos ocultos para los IDs de los registros -->
+        <input type="hidden" name="id" id="idToDelete" value="">
+
+        
+        <!-- Botón para eliminar registros -->
+        <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+    </form>
+</div>
+
+<!-- Divs para mostrar mensajes de éxito y error -->
+<div id="successMessage" class="alert alert-success d-none" role="alert"></div>
+<div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
 {% endblock %}
 
 
@@ -78,27 +95,73 @@
                 order: [[1, 'asc']] // Ordena la tabla por la segunda columna
             });
 
+       // Función para actualizar la visibilidad del botón de eliminar selección
+        function updateDeleteButtonVisibility() {
+            var deleteButton = $('#eliminarSeleccionButton');
+            var checkedCount = $('.seleccionarProyecto:checked').length;
+            if (checkedCount > 0) {
+               deleteButton.show(); // Mostrar el botón si hay alguna selección
+            } else {
+                deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+            }
+        }
         $('#seleccionarTodo').on('click', function() {
             var isChecked = $(this).prop('checked');
-            table.rows().select(isChecked); // Seleccionar/deseleccionar todas las filas
+            $('.seleccionarProyecto').prop('checked', isChecked);
+            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
         });
 
-        $('#proyectosTabla tbody').on('click', 'tr', function() {
-        $(this).toggleClass('selected');
-        var selectedRows = table.rows('.selected').data().toArray();
-        var selectedIds = selectedRows.map(function(row) {
-            return row[0]; // Asume que el primer elemento es el ID del usuario
-        });
-        console.log(selectedIds); // Muestra los IDs de las filas seleccionadas en la consola
-        });
-
-        // Manejador de evento para actualizar la casilla "Seleccionar Todo" cuando se seleccionan/deseleccionan filas individualmente
-        $('#proyectosTabla').on('select deselect', function() {
-            var allRowsSelected = table.rows().count() === table.rows('.selected').count();
-            $('#seleccionarTodo').prop('checked', allRowsSelected);
+        $('.seleccionarProyecto').on('click', function() {
+            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
         });
         
+        // Agregar evento click al botón para eliminar filas seleccionadas
+        $('#eliminarSeleccionButton').on('click', function () {
+            table.rows('.selected').remove().draw(false);
         });
+
+         // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
+           $('#formEliminarRegistros').submit(function (event) {
+               event.preventDefault(); // Evita el envío del formulario por defecto
+
+               // Obtener los IDs seleccionados
+               var idsSeleccionados = obtenerIDsSeleccionados();
+
+               // Asignar los IDs al campo oculto 'idToDelete'
+               $('#idToDelete').val(idsSeleccionados);
+
+               // Realizar la solicitud AJAX
+               $.ajax({
+                   type: 'POST',
+                   url: $(this).attr('action'),
+                   data: $(this).serialize(),
+                   success: function(response) {
+                       if (response.trim() === 'Proyectos eliminados correctamente') {
+                           $('#successMessage').removeClass('d-none').text(response);
+                           
+                           // Después de mostrar el mensaje de éxito, redirige a la página de índice de proyectos
+                            window.location.href = "{{ path('app_proyectos_index') }}";
+                       } else {
+                           $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
+                       }
+                   },
+                   error: function() {
+                       $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
+                   }
+               });
+           });
+
+
+        // Definir la función obtenerIDsSeleccionados
+        function obtenerIDsSeleccionados() {
+            var ids = [];
+            $('.seleccionarProyecto:checked').each(function() {
+                ids.push($(this).val());
+            });
+            return ids;
+        }
+
+    });
     </script>
 {% endblock %}
 
