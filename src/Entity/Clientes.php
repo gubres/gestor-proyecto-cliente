@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ClientesRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Entity\Proyectos;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientesRepository::class)]

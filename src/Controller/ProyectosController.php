@@ -21,7 +21,7 @@ class ProyectosController extends AbstractController
     private $entityManager;
     private $usuariosRepository;
 
-    public function __construct(EntityManagerInterface $entityManager, UsuariosRepository $userRepository)
+    public function __construct(EntityManagerInterface $entityManager, UsuariosRepository $userRepository, ProyectosRepository $proyectosRepository)
     {
         $this->entityManager = $entityManager;
         $this->usuariosRepository = $userRepository;
