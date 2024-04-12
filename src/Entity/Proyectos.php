@@ -31,7 +31,7 @@ class Proyectos
     #[ORM\JoinColumn(nullable: false)]
     private ?Clientes $cliente = null;
 
-    #[ORM\OneToMany(mappedBy: 'proyectos', targetEntity: UsuariosProyectos::class, cascade: ['persist'])]
+    #[ORM\OneToMany(mappedBy: 'proyecto', targetEntity: UsuariosProyectos::class, cascade: ['persist', 'remove'])]
     private Collection $usuariosProyectos;
 
     public function __construct()
@@ -127,7 +127,7 @@ class Proyectos
         }
     }
 
-    public function removeUsuarios(UsuariosProyectos $usuarios): static
+    public function removeUsuariosProyectos(UsuariosProyectos $usuarios): static
     {
         $this->usuariosProyectos->removeElement($usuarios);
 

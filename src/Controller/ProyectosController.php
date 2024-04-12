@@ -4,9 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Proyectos;
 use App\Entity\UsuariosProyectos;
-use App\Entity\Usuarios;
 use App\Form\ProyectosType;
-use DateTime;
 use App\Repository\ProyectosRepository;
 use App\Repository\UsuariosRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -79,13 +77,45 @@ class ProyectosController extends AbstractController
     {
         $form = $this->createForm(ProyectosType::class, $proyecto);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
+            // Obtener los usuarios seleccionados del formulario
+            $usuariosSeleccionados = $form->get('usuarios')->getData();
+    
+            // Actualizar la relación usuariosProyectos
+            foreach ($proyecto->getUsuariosProyectos() as $usuarioProyecto) {
+                $usuario = $usuarioProyecto->getUsuario();
+                // Verificar si el usuario está seleccionado
+                if (!$usuariosSeleccionados->contains($usuario)) {
+                    // Establecer el estado a False y la fecha de baja
+                    $usuarioProyecto->setEstado(false);
+                    $usuarioProyecto->setFechaBaja(new \DateTime());
+                } else {
+                    // El usuario está seleccionado, actualizar el estado y eliminar la fecha de baja
+                    $usuarioProyecto->setEstado(true);
+                    $usuarioProyecto->setFechaBaja(null);
+                }
+            }
+    
+            // Agregar nuevos usuarios seleccionados que no están en la relación
+            foreach ($usuariosSeleccionados as $usuario) {
+                $usuarioProyectoExistente = $proyecto->getUsuariosProyectos()->filter(function($usuarioProyecto) use ($usuario) {
+                    return $usuarioProyecto->getUsuario() === $usuario;
+                })->first();
+                if (!$usuarioProyectoExistente) {
+                    // Agregar nuevo usuario
+                    $usuarioProyecto = new UsuariosProyectos($usuario, $proyecto);
+                    $entityManager->persist($usuarioProyecto);
+                    $proyecto->addUsuariosProyectos($usuarioProyecto);
+                }
+            }
+    
+            // Persistir el proyecto actualizado
             $entityManager->flush();
-
+    
             return $this->redirectToRoute('app_proyectos_index', [], Response::HTTP_SEE_OTHER);
         }
-
+    
         return $this->render('proyectos/edit.html.twig', [
             'proyecto' => $proyecto,
             'form' => $form,
