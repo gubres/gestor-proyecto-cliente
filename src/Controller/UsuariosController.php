@@ -15,6 +15,7 @@ use App\Form\UsuarioEditType;
 use App\Form\RegistrationFormType;
 use Symfony\Component\Form\FormError;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -26,6 +27,15 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 #[Route('/usuarios')]
 class UsuariosController extends AbstractController
 {
+
+    private $usuariosRepository;
+
+    public function __construct(UsuariosRepository $usuariosRepository)
+    {
+        $this->usuariosRepository = $usuariosRepository;
+    }
+
+
     #[Route('/', name: 'app_usuarios_index', methods: ['GET'])]
     public function index(UsuariosRepository $usuariosRepository): Response
     {
@@ -150,7 +160,7 @@ class UsuariosController extends AbstractController
 
     {
         $id = $request->attributes->get('id');
-        $usuario = $usuariosRepository->find($id);
+        $usuario = $this->usuariosRepository->find($id);
 
         if (!$usuario) {
             throw $this->createNotFoundException('Usuario no encontrado');
@@ -164,32 +174,27 @@ class UsuariosController extends AbstractController
         return $this->redirectToRoute('app_usuarios_index');
     }
 
-        #[Route('/eliminarusuarios', name: 'eliminar_usuarios', methods: ['POST'])]
-        public function eliminarUsuarios(Request $request, EntityManagerInterface $entityManager, UsuariosRepository $usuariosRepository)
+    #[Route('/eliminarusuarios', name: 'eliminar_registros', methods: ['POST'])]
+    public function eliminarUsuarios(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager)
     {
-        $usuariosSeleccionados = $request->request->get('usuarios_seleccionados');
+        $id = $request->request->get('id'); 
+        $usuario = $this->usuariosRepository->find($id);
 
-        // Ir uno a uno sobre los IDs de los usuarios y eliminarlos uno por uno
-        foreach ($usuariosSeleccionados as $usuarioId) {
-            // Encontrar el usuario por su ID
-            $usuario = $usuariosRepository->find($usuarioId);
-
-            // Verificar si el usuario existe
-            if (!$usuario) {
-                // Si el usuario no existe, lanzar una excepción o manejar el error de alguna manera
-                throw $this->createNotFoundException('Usuario no encontrado');
-            }
-
-            // Verificar el token CSRF
-            if ($this->isCsrfTokenValid('delete'.$usuario->getId(), $request->request->get('_token'))) {
-                // Eliminar el usuario
-                $entityManager->remove($usuario);
-                $entityManager->flush();
-            }
+        if ($usuario) { 
+            $entityManager->remove($usuario);
+            $entityManager->flush();
         }
 
-        // Redirigir de vuelta a la página de índice de usuarios después de eliminar
+        // Devuelve una respuesta HTTP 200 indicando éxito
+        return new Response('Registros eliminados correctamente', Response::HTTP_OK);
+        
+
+        // En caso de error, devuelve una respuesta HTTP 400
+        return new Response('No se proporcionó un ID válido.', Response::HTTP_BAD_REQUEST);
+    
         return $this->redirectToRoute('app_usuarios_index');
+    
+
     }
 
 

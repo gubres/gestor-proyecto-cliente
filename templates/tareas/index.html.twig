@@ -4,7 +4,8 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.css" rel="stylesheet">
+    <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
+    <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
@@ -25,7 +26,7 @@
         <tbody>
         {% for tarea in tareas %}
             <tr>
-                <td></td>
+                <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionados[]" value="{{ tarea.id }}"></td>
                 <td>{{ tarea.id }}</td>
                 <td>{{ tarea.nombre }}</td>
                 <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
@@ -44,11 +45,29 @@
         </tbody>
     </table>
 
-  <a href="{{ path('app_tareas_new') }}" class="btn btn-primary ">Crear Nuevo</a>
+  <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_tareas_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
+        <!-- Nuevo formulario para eliminar tareas -->
+        <form action="/eliminar-tareas" method="post" id="formEliminarTareas" style="display: inline-block;">
+            <!-- Campos ocultos para los IDs de los tareas -->
+            <input type="hidden" name="id" id="idToDelete" value="">
+
+            
+            <!-- Botón para eliminar tareas -->
+            <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+        </form>
+    </div>
+
+    <!-- Divs para mostrar mensajes de éxito y error -->
+    <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
+    <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+     <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
     <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
@@ -81,26 +100,73 @@
             });
 
 
+        // Función para actualizar la visibilidad del botón de eliminar selección
+        function updateDeleteButtonVisibility() {
+            var deleteButton = $('#eliminarSeleccionButton');
+            var checkedCount = $('.seleccionarTarea:checked').length;
+            if (checkedCount > 0) {
+               deleteButton.show(); // Mostrar el botón si hay alguna selección
+            } else {
+                deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+            }
+        }
         $('#seleccionarTodo').on('click', function() {
             var isChecked = $(this).prop('checked');
-            table.rows().select(isChecked); // Seleccionar/deseleccionar todas las filas
+            $('.seleccionarTarea').prop('checked', isChecked);
+            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
         });
 
-        $('#tareasTabla tbody').on('click', 'tr', function() {
-        $(this).toggleClass('selected');
-        var selectedRows = table.rows('.selected').data().toArray();
-        var selectedIds = selectedRows.map(function(row) {
-            return row[0]; // Asume que el primer elemento es el ID del usuario
-        });
-        console.log(selectedIds); // Muestra los IDs de las filas seleccionadas en la consola
-        });
-
-        // Manejador de evento para actualizar la casilla "Seleccionar Todo" cuando se seleccionan/deseleccionan filas individualmente
-        $('#tareasTabla').on('select deselect', function() {
-            var allRowsSelected = table.rows().count() === table.rows('.selected').count();
-            $('#seleccionarTodo').prop('checked', allRowsSelected);
+        $('.seleccionarTarea').on('click', function() {
+            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
         });
         
+        // Agregar evento click al botón para eliminar filas seleccionadas
+        $('#eliminarSeleccionButton').on('click', function () {
+            table.rows('.selected').remove().draw(false);
         });
+
+         // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
+           $('#formEliminarTareas').submit(function (event) {
+               event.preventDefault(); // Evita el envío del formulario por defecto
+
+               // Obtener los IDs seleccionados
+               var idsSeleccionados = obtenerIDsSeleccionados();
+
+               // Asignar los IDs al campo oculto 'idToDelete'
+               $('#idToDelete').val(idsSeleccionados);
+
+               // Realizar la solicitud AJAX
+               $.ajax({
+                   type: 'POST',
+                   url: $(this).attr('action'),
+                   data: $(this).serialize(),
+                   success: function(response) {
+                       if (response.trim() === 'Tareas eliminadas correctamente') {
+                           $('#successMessage').removeClass('d-none').text(response);
+                           
+                           // Después de mostrar el mensaje de éxito, redirige a la página de índice de tareas
+                            window.location.href = "{{ path('app_tareas_index') }}";
+                       } else {
+                           $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar las tareas.');
+                       }
+                   },
+                   error: function() {
+                       $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar las tareas.');
+                   }
+               });
+           });
+
+
+        // Definir la función obtenerIDsSeleccionados
+        function obtenerIDsSeleccionados() {
+            var ids = [];
+            $('.seleccionarTarea:checked').each(function() {
+                ids.push($(this).val());
+            });
+            return ids;
+        }
+
+    });
+
     </script>
 {% endblock %}

@@ -8,7 +8,16 @@ inicio:
     path: /
     controller: App\Controller\InicioController::index
 
-eliminar_usuarios:
-    path: /usuarios/eliminarusuarios
+eliminar_registros:
+    path: /eliminar-registros
     controller: App\Controller\UsuariosController::eliminarUsuarios
-    methods: ['POST']
+    methods: [POST]
+
+eliminar_clientes:
+    path: /eliminar-clientes
+    controller: App\Controller\ClientesController::eliminarClientes
+    methods: [POST]
+
+app_login:
+    path: /login
+    controller: App\Controller\SecurityController::login

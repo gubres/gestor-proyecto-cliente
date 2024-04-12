@@ -14,6 +14,16 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/tareas')]
 class TareasController extends AbstractController
 {
+
+    private $tareasRepository;
+
+    public function __construct(TareasRepository $tareasRepository)
+    {
+        $this->tareasRepository = $tareasRepository;
+    }
+
+
+
     #[Route('/', name: 'app_tareas_index', methods: ['GET'])]
     public function index(TareasRepository $tareasRepository): Response
     {
@@ -71,11 +81,39 @@ class TareasController extends AbstractController
     #[Route('/{id}', name: 'app_tareas_delete', methods: ['POST'])]
     public function delete(Request $request, Tareas $tarea, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$tarea->getId(), $request->getPayload()->get('_token'))) {
+        $id = $request->attributes->get('id');
+        $tarea = $this->tareasRepository->find($id);
+
+        if (!$tarea) {
+            throw $this->createNotFoundException('Tarea no encontrado');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$tarea->getId(), $request->request->get('_token'))) {
             $entityManager->remove($tarea);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_tareas_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_tareas_index');
     }
+
+    #[Route('/eliminartareas', name: 'eliminar_tareas', methods: ['POST'])]
+    public function eliminarTareas(Request $request, Tareas $tarea, EntityManagerInterface $entityManager)
+    {
+         $id = $request->request->get('id'); 
+        $tarea = $this->tareasRepository->find($id);
+
+        if ($tarea) { 
+            try {
+                $entityManager->remove($tarea);
+                $entityManager->flush();
+                // Devuelve una respuesta HTTP 200 indicando éxito
+                return new Response('Tareas eliminadas correctamente', Response::HTTP_OK);
+            } catch (\Exception $e) {
+                // En caso de error, devuelve una respuesta HTTP 500
+                return new Response('Ha ocurrido un error al eliminar las tareas.', Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+
 }
