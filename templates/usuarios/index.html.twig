@@ -16,6 +16,7 @@
                 <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Email</th>
+                <th>Estado</th>
                 <th>Roles</th>
                 <th>Password</th>
                 <th>IsVerified</th>
@@ -28,8 +29,18 @@
                 <td><input type="checkbox" class="seleccionarUsuario" name="usuarios_seleccionados[]" value="{{ usuario.id }}"></td>
                 <td>{{ usuario.id }}</td>
                 <td>{{ usuario.email }}</td>
-                <td>{{ usuario.roles ? usuario.roles|json_encode : '' }}</td>
-                <td>{{ usuario.password }}</td>
+                 {% if usuario.isActive %}
+                        {% if 'ROLE_USER' in usuario.roles %}
+                            ROLE_USER
+                        {% else %}
+                            {{ usuario.roles ? usuario.roles|json_encode : '' }}
+                        {% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ usuario.isActive ? 'Activo' : 'Inactivo' }}</td>
+                <td><td>{{ usuario.password }}</td>
                 <td>{{ usuario.isVerified ? 'Yes' : 'No' }}</td>
                 <td>
                     <a href="{{ path('app_usuarios_show', {'id': usuario.id}) }}" class="btn btn-info">Detalles</a>
