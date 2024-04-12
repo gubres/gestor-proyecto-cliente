@@ -3,11 +3,13 @@
 {% block title %}Edit Usuarios{% endblock %}
 
 {% block body %}
-    <h1>Edit Usuarios</h1>
+    <h1>Editar Usuarios</h1>
 
     {{ include('usuarios/_form.html.twig', {'button_label': 'Update'}) }}
+    
+    <a href="javascript:history.go(-1);" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Volver </a>
 
-    <a href="{{ path('app_usuarios_index') }}">back to list</a>
 
     {{ include('usuarios/_delete_form.html.twig') }}
 {% endblock %}

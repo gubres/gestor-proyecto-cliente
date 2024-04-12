@@ -35,6 +35,24 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+
+    // incluidas nuevas propiedades nombre y apellidos
+    #[ORM\Column(type: 'string', length: 50)]
+    private ?string $nombre = null;
+
+    #[ORM\Column(type: 'string', length: 100)]
+    private ?string $apellidos = null;
+
+
+    // token de confirmación
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $confirmationToken = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
+
+    
+
     /**
      * @var Collection<int, UsuariosProyectos>
      */
@@ -47,8 +65,8 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Tareas::class, mappedBy: 'usuarios')]
     private Collection $tareas;
 
-    #[ORM\Column(type: 'boolean')]
-    private $isVerified = false;
+ /*   #[ORM\Column(type: 'boolean')]
+    private $isVerified = false; */
 
     public function __construct()
     {
@@ -131,6 +149,55 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
+
+    public function getNombre(): ?string
+    {
+        return $this->nombre;
+    }
+
+    public function setNombre(string $nombre): self
+    {
+        $this->nombre = $nombre;
+        return $this;
+    }
+
+    public function getApellidos(): ?string
+    {
+        return $this->apellidos;
+    }
+
+    public function setApellidos(string $apellidos): self
+    {
+        $this->apellidos = $apellidos;
+        return $this;
+    }
+
+    // Getter y setter para confirmationToken
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+
+    public function setConfirmationToken(?string $confirmationToken): self
+    {
+        $this->confirmationToken = $confirmationToken;
+        return $this;
+    }
+
+    // Getter y setter para isVerified
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+
+
     /**
      * @return Collection<int, UsuariosProyectos>
      */
@@ -204,5 +271,4 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->getEmail();
     }
-
 }

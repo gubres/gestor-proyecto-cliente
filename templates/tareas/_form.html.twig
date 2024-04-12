@@ -1,4 +1,5 @@
 {{ form_start(form) }}
+    {{ form_row(form.id) }} {# Agregar un campo oculto para el ID del usuario #}
     {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <button class="btn btn-success">{{ button_label|default('Guardar') }}</button>
 {{ form_end(form) }}

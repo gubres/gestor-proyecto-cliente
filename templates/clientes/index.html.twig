@@ -2,12 +2,18 @@
 
 {% block title %}Clientes index{% endblock %}
 
-{% block body %}
-    <h1>Clientes index</h1>
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.css" rel="stylesheet">
+{% endblock %}
 
-    <table class="table">
+{% block body %}
+    <h1>Clientes</h1>
+
+    <table class="table" id="clientesTabla">
         <thead>
             <tr>
+                <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Telefono</th>
@@ -18,13 +24,14 @@
         <tbody>
         {% for cliente in clientes %}
             <tr>
+                <td></td>
                 <td>{{ cliente.id }}</td>
                 <td>{{ cliente.nombre }}</td>
                 <td>{{ cliente.telefono }}</td>
                 <td>{{ cliente.email }}</td>
                 <td>
-                    <a href="{{ path('app_clientes_show', {'id': cliente.id}) }}">show</a>
-                    <a href="{{ path('app_clientes_edit', {'id': cliente.id}) }}">edit</a>
+                    <a href="{{ path('app_clientes_show', {'id': cliente.id}) }}" class="btn btn-info ">Detalles</a>
+                    <a href="{{ path('app_clientes_edit', {'id': cliente.id}) }}" class="btn btn-warning ">Editar</a>
                 </td>
             </tr>
         {% else %}
@@ -35,5 +42,65 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_clientes_new') }}">Create new</a>
+     <a href="{{ path('app_clientes_new') }}" class="btn btn-primary ">Crear Nuevo</a>
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script>
+        
+        $(document).ready(function() {
+           var table = $('#clientesTabla').DataTable({  
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                        titleAttr: 'Exportar a Excel',
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
+                        titleAttr: 'Exportar a PDF',
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Imprimir',
+                        titleAttr: 'Imprimir',
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child'
+                },
+                order: [[1, 'asc']] // Ordena la tabla por la segunda columna
+            });
+
+        $('#seleccionarTodo').on('click', function() {
+            var isChecked = $(this).prop('checked');
+            table.rows().select(isChecked); // Seleccionar/deseleccionar todas las filas
+        });
+
+        $('#clientesTabla tbody').on('click', 'tr', function() {
+        $(this).toggleClass('selected');
+        var selectedRows = table.rows('.selected').data().toArray();
+        var selectedIds = selectedRows.map(function(row) {
+            return row[0]; // Asume que el primer elemento es el ID del usuario
+        });
+        console.log(selectedIds); // Muestra los IDs de las filas seleccionadas en la consola
+        });
+
+        // Manejador de evento para actualizar la casilla "Seleccionar Todo" cuando se seleccionan/deseleccionan filas individualmente
+        $('#clientesTabla').on('select deselect', function() {
+            var allRowsSelected = table.rows().count() === table.rows('.selected').count();
+            $('#seleccionarTodo').prop('checked', allRowsSelected);
+        });
+        
+    
+        });
+    </script>
+{% endblock %}
+

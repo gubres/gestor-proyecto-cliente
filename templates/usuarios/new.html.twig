@@ -3,9 +3,9 @@
 {% block title %}New Usuarios{% endblock %}
 
 {% block body %}
-    <h1>Create new Usuarios</h1>
+    <h1>Crear nuevo usuario</h1>
 
     {{ include('usuarios/_form.html.twig') }}
 
-    <a href="{{ path('app_usuarios_index') }}">back to list</a>
+    <a href="{{ path('app_usuarios_index') }}" class="btn btn-secondary">Back</a>
 {% endblock %}
