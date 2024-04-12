@@ -20,7 +20,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  * @method Usuarios[]    findAll()
  * @method Usuarios[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgraderInterface, UserProviderInterface
+class UsuariosRepository extends ServiceEntityRepository 
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -40,7 +40,7 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
    
-     
+    }
         // Método para encontrar todos los correos electrónicos de los usuarios
         public function findAllEmails(): array
         {dump("findAllEmails method called");
@@ -51,7 +51,7 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
             
             return $qb->getQuery()->getResult();
         }
-    }
+    
 
     //    /**
     //     * @return Usuarios[] Returns an array of Usuarios objects
