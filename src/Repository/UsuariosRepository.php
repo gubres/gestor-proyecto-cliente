@@ -39,7 +39,44 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
+   
+     
+        // Método para encontrar todos los correos electrónicos de los usuarios
+        public function findAllEmails(): array
+        {dump("findAllEmails method called");
+
+            $qb = $this->createQueryBuilder('u')
+                ->select('u.email');
+                dump("findAllEmails method called");
+            
+            return $qb->getQuery()->getResult();
+        }
     }
+
+    //    /**
+    //     * @return Usuarios[] Returns an array of Usuarios objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('u')
+    //            ->andWhere('u.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('u.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?Usuarios
+    //    {
+    //        return $this->createQueryBuilder('u')
+    //            ->andWhere('u.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
@@ -52,4 +89,5 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
         return $user;
     }
 }
+
 
