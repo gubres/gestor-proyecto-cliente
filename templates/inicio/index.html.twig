@@ -14,13 +14,65 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Agrega la imagen aquí -->
-    <img src="{{ asset('images/estamos-trabajando.jpg') }}" alt="Estamos trabajando" class="centered-image">
+     <h1>Carga de Trabajo por Usuario</h1>
+    <div id="container" style="width: 600px; height: 400px; margin: 0 auto;"></div>
 
-    <!-- Tu contenido HTML aquí -->
-
-{% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-{% endblock %}
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chart = Highcharts.chart('container', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Carga de Tareas por Usuario'
+                },
+                xAxis: {
+                    categories: {{ labels|raw }},
+                    title: {
+                        text: 'Usuarios'
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Cantidad de Tareas'
+                    },
+                    labels: {
+                        overflow: 'justify'
+                    }
+                },
+                tooltip: {
+                    valueSuffix: ' tareas'
+                },
+                plotOptions: {
+                    bar: {
+                        dataLabels: {
+                            enabled: true
+                        }
+                    }
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -40,
+                    y: 100,
+                    floating: true,
+                    borderWidth: 1,
+                    backgroundColor:
+                        Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
+                    shadow: true
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Tareas',
+                    data: {{ data|raw }}
+                }]
+            });
+        });
+    </script>
 {% endblock %}
 
