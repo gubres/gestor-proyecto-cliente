@@ -20,12 +20,16 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  * @method Usuarios[]    findAll()
  * @method Usuarios[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UsuariosRepository extends ServiceEntityRepository 
+
+class UsuariosRepository extends ServiceEntityRepository
+
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Usuarios::class);
     }
+
+    
 
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
@@ -41,6 +45,7 @@ class UsuariosRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
    
     }
+
         // Método para encontrar todos los correos electrónicos de los usuarios
         public function findAllEmails(): array
         {dump("findAllEmails method called");

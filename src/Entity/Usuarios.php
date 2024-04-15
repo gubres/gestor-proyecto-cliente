@@ -84,7 +84,7 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, UsuariosProyectos>
      */
-    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuarios')]
+    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuario', cascade: ['remove'])]
     private Collection $usuariosProyectos;
 
     /**
@@ -283,7 +283,6 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
 
     public function __toString()
     {

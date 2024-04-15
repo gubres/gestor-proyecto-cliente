@@ -29,7 +29,7 @@ class Proyectos
     private Collection $tareas;
 
     #[ORM\ManyToOne(targetEntity: Clientes::class, inversedBy: 'proyectos')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Clientes $cliente = null;
 
     #[ORM\OneToMany(mappedBy: 'proyecto', targetEntity: UsuariosProyectos::class, cascade: ['persist', 'remove'])]

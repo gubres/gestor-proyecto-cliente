@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+
 #[Route('/proyectos')]
 class ProyectosController extends AbstractController
 {
@@ -81,6 +82,7 @@ class ProyectosController extends AbstractController
         ]);
     }
 
+
     #[Route('/{id}/edit', name: 'app_proyectos_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Proyectos $proyecto, EntityManagerInterface $entityManager): Response
     {
@@ -91,35 +93,58 @@ class ProyectosController extends AbstractController
             // Obtener los usuarios seleccionados del formulario
             $usuariosSeleccionados = $form->get('usuarios')->getData();
     
-            // Actualizar la relación usuariosProyectos
-            foreach ($proyecto->getUsuariosProyectos() as $usuarioProyecto) {
-                $usuario = $usuarioProyecto->getUsuario();
-                // Verificar si el usuario está seleccionado
-                if (!$usuariosSeleccionados->contains($usuario)) {
-                    // Establecer el estado a False y la fecha de baja
+            // Obtener las relaciones actuales del proyecto
+            $usuariosProyectosActuales = $proyecto->getUsuariosProyectos()->toArray();
+    
+            // Iterar sobre los usuarios seleccionados
+            foreach ($usuariosSeleccionados as $usuarioSeleccionado) {
+                // Flag para indicar si se debe crear una nueva relación para este usuario
+                $crearNuevaRelacion = true;
+    
+                // Iterar sobre las relaciones actuales del proyecto asociadas a este usuario
+                foreach ($usuariosProyectosActuales as $usuarioProyecto) {
+                    if ($usuarioProyecto->getUsuario() === $usuarioSeleccionado) {
+                        // Si la relación existente tiene estado 1, no se crea una nueva relación
+                        if ($usuarioProyecto->getEstado()) {
+                            $crearNuevaRelacion = false;
+                        }
+                        // Salir del bucle interno una vez que se encuentra una relación para este usuario
+                        break;
+                    }
+                }
+    
+                // Si se debe crear una nueva relación para este usuario
+                if ($crearNuevaRelacion) {
+                    // Iterar sobre las relaciones actuales del proyecto asociadas a este usuario
+                    foreach ($usuariosProyectosActuales as $usuarioProyecto) {
+                        // Si la relación existente tiene estado 1, no se crea una nueva relación
+                        if ($usuarioProyecto->getUsuario() === $usuarioSeleccionado && $usuarioProyecto->getEstado()) {
+                            $crearNuevaRelacion = false;
+                            break;
+                        }
+                    }
+    
+                    // Si todavía se debe crear una nueva relación, se crea y se persiste
+                    if ($crearNuevaRelacion) {
+                        $nuevaRelacionUsuarioProyecto = new UsuariosProyectos($usuarioSeleccionado, $proyecto);
+                        $nuevaRelacionUsuarioProyecto->setEstado(true);
+                        $nuevaRelacionUsuarioProyecto->setFechaAlta(new \DateTime());
+                        $proyecto->addUsuariosProyectos($nuevaRelacionUsuarioProyecto);
+                        $entityManager->persist($nuevaRelacionUsuarioProyecto);
+                    }
+                }
+            }
+    
+            // Desactivar las relaciones que no están presentes en los usuarios seleccionados
+            foreach ($usuariosProyectosActuales as $usuarioProyecto) {
+                if (!in_array($usuarioProyecto->getUsuario(), $usuariosSeleccionados->toArray(), true)) {
                     $usuarioProyecto->setEstado(false);
                     $usuarioProyecto->setFechaBaja(new \DateTime());
-                } else {
-                    // El usuario está seleccionado, actualizar el estado y eliminar la fecha de baja
-                    $usuarioProyecto->setEstado(true);
-                    $usuarioProyecto->setFechaBaja(null);
-                }
-            }
-    
-            // Agregar nuevos usuarios seleccionados que no están en la relación
-            foreach ($usuariosSeleccionados as $usuario) {
-                $usuarioProyectoExistente = $proyecto->getUsuariosProyectos()->filter(function($usuarioProyecto) use ($usuario) {
-                    return $usuarioProyecto->getUsuario() === $usuario;
-                })->first();
-                if (!$usuarioProyectoExistente) {
-                    // Agregar nuevo usuario
-                    $usuarioProyecto = new UsuariosProyectos($usuario, $proyecto);
                     $entityManager->persist($usuarioProyecto);
-                    $proyecto->addUsuariosProyectos($usuarioProyecto);
                 }
             }
     
-            // Persistir el proyecto actualizado
+            // Hacer flush para guardar los cambios en la base de datos
             $entityManager->flush();
     
             return $this->redirectToRoute('app_proyectos_index', [], Response::HTTP_SEE_OTHER);
@@ -130,6 +155,7 @@ class ProyectosController extends AbstractController
             'form' => $form,
         ]);
     }
+    
 
     #[Route('/{id}', name: 'app_proyectos_delete', methods: ['POST'])]
     public function delete(Request $request, Proyectos $proyecto, EntityManagerInterface $entityManager): Response

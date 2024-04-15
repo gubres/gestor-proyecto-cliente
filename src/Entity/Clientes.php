@@ -28,7 +28,7 @@ class Clientes
     /**
      * @var Collection<int, Proyectos>
      */
-    #[ORM\OneToMany(targetEntity: Proyectos::class, mappedBy: 'cliente')]
+    #[ORM\OneToMany(targetEntity: Proyectos::class, mappedBy: 'cliente', fetch: 'EAGER')]
     private Collection $proyectos;
 
     public function getId(): ?int

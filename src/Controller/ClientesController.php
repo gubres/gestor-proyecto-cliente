@@ -85,37 +85,29 @@ class ClientesController extends AbstractController
     {
         $id = $request->attributes->get('id');
         $cliente = $this->clientesRepository->find($id);
-
+    
         if (!$cliente) {
             throw $this->createNotFoundException('Cliente no encontrado');
         }
-
+    
         if ($this->isCsrfTokenValid('delete'.$cliente->getId(), $request->request->get('_token'))) {
+            // Obtener los proyectos asociados al cliente
+            $proyectos = $cliente->getProyectos();
+            
+            // Cambiar el estado de los proyectos asociados a "Inactivo"
+            foreach ($proyectos as $proyecto) {
+                $proyecto->setEstado('Inactivo');
+                $entityManager->persist($proyecto);
+            }
+    
+            // Eliminar el cliente
             $entityManager->remove($cliente);
             $entityManager->flush();
         }
-
+    
         return $this->redirectToRoute('app_clientes_index');
     }
 
-    #[Route('/eliminarclientes', name: 'eliminar_clientes', methods: ['POST'])]
-    public function eliminarClientes(Request $request, Clientes $cliente, EntityManagerInterface $entityManager)
-    {
-         $id = $request->request->get('id'); 
-        $cliente = $this->clientesRepository->find($id);
-
-        if ($cliente) { 
-            try {
-                $entityManager->remove($cliente);
-                $entityManager->flush();
-                // Devuelve una respuesta HTTP 200 indicando éxito
-                return new Response('Clientes eliminados correctamente', Response::HTTP_OK);
-            } catch (\Exception $e) {
-                // En caso de error, devuelve una respuesta HTTP 500
-                return new Response('Ha ocurrido un error al eliminar los clientes.', Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
-        }
-    }
 
     public function obtenerDatosClientes(): array
     {
