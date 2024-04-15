@@ -51,7 +51,35 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isActive;
     
+
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+
+         // Actualizar los roles basados en la activación
+        $this->updateRolesBasedOnActivation();
+
+
+        return $this;
+    }
+
+    public function updateRolesBasedOnActivation(): void
+    {
+        if (!$this->isActive) {
+            $this->roles = []; // Si el usuario está desactivado, elimina todos los roles
+        } else {
+            $this->roles = ['ROLE_USER']; // Si el usuario está activado, asigna el rol 'ROLE_USER'
+        }
+    }
 
     /**
      * @var Collection<int, UsuariosProyectos>
@@ -72,6 +100,7 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->usuariosProyectos = new ArrayCollection();
         $this->tareas = new ArrayCollection();
+        $this->isActive = true;
     }
 
     public function getId(): ?int

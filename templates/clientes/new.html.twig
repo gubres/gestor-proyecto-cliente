@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Clientes{% endblock %}
+{% block title %}Nuevo Cliente{% endblock %}
 
 {% block body %}
     <h1>Crear nuevo cliente</h1>
 
-    {{ include('clientes/_form.html.twig') }}
+    {{ include('clientes/_form.html.twig', {'modal_button': false}) }}
 
     <a href="{{ path('app_clientes_index') }}" class="btn btn-secondary">Back</a>
 {% endblock %}

@@ -6,6 +6,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use App\Entity\Usuarios;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -24,6 +25,16 @@ class UsuarioEditType extends AbstractType
                 'label' => 'Nueva contraseña (opcional)',
                 'attr' => ['autocomplete' => 'new-password'],
             ])
+            ->add('isActive', ChoiceType::class, [
+                'label' => 'Estado',
+                'choices' => [
+                    'Activo' => true,
+                    'Desactivado' => false,
+                ],
+                'expanded' => true,
+                'multiple' => false,
+                'required' => true,
+            ]);
             ;
     }
 

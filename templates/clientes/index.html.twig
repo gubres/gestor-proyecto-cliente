@@ -48,14 +48,13 @@
         </tbody>
     </table>
 
-     <div style="margin-bottom: 10px;">
+    <div style="margin-bottom: 10px;">
         <a href="{{ path('app_clientes_new') }}" class="btn btn-primary">Crear Nuevo</a>
 
         <!-- Nuevo formulario para eliminar clientes -->
         <form action="/eliminar-clientes" method="post" id="formEliminarClientes" style="display: inline-block;">
             <!-- Campos ocultos para los IDs de los clientes -->
             <input type="hidden" name="id" id="idToDelete" value="">
-
             
             <!-- Botón para eliminar clientes -->
             <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
@@ -70,14 +69,13 @@
 
 {% block javascripts %}
     {{ parent() }}
-     <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
+    <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
     <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script>
-        
         $(document).ready(function() {
-           var table = $('#clientesTabla').DataTable({  
+            var table = $('#clientesTabla').DataTable({  
                 dom: 'Bfrtip',
                 buttons: [
                     {
@@ -103,74 +101,108 @@
                 order: [[1, 'asc']] // Ordena la tabla por la segunda columna
             });
 
-        // Función para actualizar la visibilidad del botón de eliminar selección
-        function updateDeleteButtonVisibility() {
-            var deleteButton = $('#eliminarSeleccionButton');
-            var checkedCount = $('.seleccionarCliente:checked').length;
-            if (checkedCount > 0) {
-               deleteButton.show(); // Mostrar el botón si hay alguna selección
-            } else {
-                deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+            // Función para actualizar la visibilidad del botón de eliminar selección
+            function updateDeleteButtonVisibility() {
+                var deleteButton = $('#eliminarSeleccionButton');
+                var checkedCount = $('.seleccionarCliente:checked').length;
+                if (checkedCount > 0) {
+                    deleteButton.show(); // Mostrar el botón si hay alguna selección
+                } else {
+                    deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+                }
             }
-        }
-        $('#seleccionarTodo').on('click', function() {
-            var isChecked = $(this).prop('checked');
-            $('.seleccionarCliente').prop('checked', isChecked);
-            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-        });
 
-        $('.seleccionarCliente').on('click', function() {
-            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-        });
-        
-        // Agregar evento click al botón para eliminar filas seleccionadas
-        $('#eliminarSeleccionButton').on('click', function () {
-            table.rows('.selected').remove().draw(false);
-        });
-
-         // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
-           $('#formEliminarClientes').submit(function (event) {
-               event.preventDefault(); // Evita el envío del formulario por defecto
-
-               // Obtener los IDs seleccionados
-               var idsSeleccionados = obtenerIDsSeleccionados();
-
-               // Asignar los IDs al campo oculto 'idToDelete'
-               $('#idToDelete').val(idsSeleccionados);
-
-               // Realizar la solicitud AJAX
-               $.ajax({
-                   type: 'POST',
-                   url: $(this).attr('action'),
-                   data: $(this).serialize(),
-                   success: function(response) {
-                       if (response.trim() === 'Clientes eliminados correctamente') {
-                           $('#successMessage').removeClass('d-none').text(response);
-                           
-                           // Después de mostrar el mensaje de éxito, redirige a la página de índice de clientes
-                            window.location.href = "{{ path('app_clientes_index') }}";
-                       } else {
-                           $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los clientes.');
-                       }
-                   },
-                   error: function() {
-                       $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los clientes.');
-                   }
-               });
-           });
-
-
-        // Definir la función obtenerIDsSeleccionados
-        function obtenerIDsSeleccionados() {
-            var ids = [];
-            $('.seleccionarCliente:checked').each(function() {
-                ids.push($(this).val());
+            $('#seleccionarTodo').on('click', function() {
+                var isChecked = $(this).prop('checked');
+                $('.seleccionarCliente').prop('checked', isChecked);
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
             });
-            return ids;
-        }
 
-    });
+            $('.seleccionarCliente').on('click', function() {
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+            });
 
+            // Agregar evento click al botón para eliminar filas seleccionadas
+            $('#eliminarSeleccionButton').on('click', function () {
+                table.rows('.selected').remove().draw(false);
+            });
+
+            // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
+            $('#formEliminarClientes').submit(function (event) {
+                event.preventDefault(); // Evita el envío del formulario por defecto
+
+                // Obtener los IDs seleccionados
+                var idsSeleccionados = obtenerIDsSeleccionados();
+
+                // Asignar los IDs al campo oculto 'idToDelete'
+                $('#idToDelete').val(idsSeleccionados);
+
+                // Realizar la solicitud AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.trim() === 'Clientes eliminados correctamente') {
+                            $('#successMessage').removeClass('d-none').text(response);
+                           
+                            // Después de mostrar el mensaje de éxito, redirige a la página de índice de clientes
+                            window.location.href = "{{ path('app_clientes_index') }}";
+                        } else {
+                            $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los clientes.');
+                        }
+                    },
+                    error: function() {
+                        $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los clientes.');
+                    }
+                });
+            });
+
+            // Definir la función obtenerIDsSeleccionados
+            function obtenerIDsSeleccionados() {
+                var ids = [];
+                $('.seleccionarCliente:checked').each(function() {
+                    ids.push($(this).val());
+                });
+                return ids;
+            }
+
+            // Inicialización de Highcharts
+            console.log("Datos de clientes:", {{ clientesTabla | json_encode }}); // Agregamos esta línea para verificar los datos de clientes
+            Highcharts.chart('chartContainer', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Clientes'
+                },
+                xAxis: {
+                    type: 'category',
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '13px',
+                            fontFamily: 'Verdana, sans-serif'
+                        }
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Total'
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                tooltip: {
+                    pointFormat: 'Total: <b>{point.y}</b>'
+                },
+                series: [{
+                    name: 'Clientes',
+                    data: {{ clientesTabla | json_encode }}
+                }]
+            });
+        });
     </script>
 {% endblock %}
-

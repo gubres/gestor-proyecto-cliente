@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ProyectosRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Entity\UsuariosProyectos;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProyectosRepository::class)]
@@ -119,17 +120,24 @@ class Proyectos
         return $this->usuariosProyectos;
     }
 
-    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyecto)
+    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyecto): static
     {
         if (!$this->usuariosProyectos->contains($usuariosProyecto)) {
-            $this->usuariosProyectos[] = $usuariosProyecto;
+            $this->usuariosProyectos->add($usuariosProyecto);
             $usuariosProyecto->setProyecto($this);
         }
+
+        return $this;
     }
 
-    public function removeUsuariosProyectos(UsuariosProyectos $usuarios): static
+    public function removeUsuariosProyectos(UsuariosProyectos $usuariosProyecto): static
     {
-        $this->usuariosProyectos->removeElement($usuarios);
+        if ($this->usuariosProyectos->removeElement($usuariosProyecto)) {
+            // set the owning side to null (unless already changed)
+            if ($usuariosProyecto->getProyecto() === $this) {
+                $usuariosProyecto->setProyecto(null);
+            }
+        }
 
         return $this;
     }
