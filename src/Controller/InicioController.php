@@ -4,15 +4,13 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use App\Controller\ClientesController;
-use App\Repository\ClientesRepository;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
+use App\Repository\ClientesRepository;
 use App\Repository\UsuariosRepository;
 
 class InicioController extends AbstractController
 {
-
     private ClientesRepository $clientesRepository;
 
     public function __construct(ClientesRepository $clientesRepository)
@@ -21,8 +19,7 @@ class InicioController extends AbstractController
     }
 
     #[Route('/inicio', name: 'app_inicio')]
-
-    public function index(UsuariosRepository $usuariosRepository): Response
+    public function index(UsuariosRepository $usuariosRepository, Request $request): Response
     {
         $usuarios = $usuariosRepository->findAll();
         $labels = [];
@@ -33,20 +30,12 @@ class InicioController extends AbstractController
             $data[] = count($usuario->getTareas());
         }
 
-        return $this->render('inicio/index.html.twig', [
-            'labels' => json_encode($labels),
-            'data' => json_encode($data),
-            'controller_name' => 'InicioController',
-
-     public function index(ClientesRepository $clientesRepository, Request $request): Response
-    {
         // Obtener todos los clientes desde el repositorio
-        $clientes = $clientesRepository->findAll();
+        $clientes = $this->clientesRepository->findAll();
         // Obtener el total de clientes
         $totalClientes = $this->clientesRepository->count([]);
 
-
-        // Preparar los datos para el gráfico
+        // Preparar los datos para el gráfico de clientes
         $datosClientes = [];
         foreach ($clientes as $cliente) {
             // Contar la cantidad de proyectos asociados a cada cliente
@@ -60,9 +49,11 @@ class InicioController extends AbstractController
         }
 
         return $this->render('inicio/index.html.twig', [
+            'labels' => json_encode($labels),
+            'data' => json_encode($data),
             'clientes' => $datosClientes,
             'totalClientes' => $totalClientes,
-
         ]);
     }
 }
+

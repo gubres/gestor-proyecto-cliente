@@ -4,7 +4,7 @@
 
 {% block body %}
 
-     <h1>Carga de Trabajo por Usuario</h1>
+    <h1>Carga de Trabajo por Usuario</h1>
     <div id="container" style="width: 600px; height: 400px; margin: 0 auto;"></div>
 
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -36,7 +36,7 @@
                     valueSuffix: ' tareas'
                 },
                 plotOptions: {
-                    bar: {
+                    column: {
                         dataLabels: {
                             enabled: true
                         }
@@ -60,10 +60,13 @@
                 series: [{
                     name: 'Tareas',
                     data: {{ data|raw }}
+                }]
+            });
+        });
+    </script>
 
-
-<h1>Inicio</h1>
-  <div id="chartContainer" style="width: 100%; height: 400px;"></div>
+    <h1>Clientes y Proyectos</h1>
+    <div id="chartContainer" style="width: 100%; height: 400px;"></div>
     <div style="text-align: center;">
         <p><strong>Total de clientes:</strong> {{ totalClientes }}</p>
     </div>
