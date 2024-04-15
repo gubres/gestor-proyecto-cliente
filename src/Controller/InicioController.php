@@ -8,6 +8,7 @@ use App\Controller\ClientesController;
 use App\Repository\ClientesRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\UsuariosRepository;
 
 class InicioController extends AbstractController
 {
@@ -20,6 +21,23 @@ class InicioController extends AbstractController
     }
 
     #[Route('/inicio', name: 'app_inicio')]
+
+    public function index(UsuariosRepository $usuariosRepository): Response
+    {
+        $usuarios = $usuariosRepository->findAll();
+        $labels = [];
+        $data = [];
+
+        foreach ($usuarios as $usuario) {
+            $labels[] = $usuario->getNombre();
+            $data[] = count($usuario->getTareas());
+        }
+
+        return $this->render('inicio/index.html.twig', [
+            'labels' => json_encode($labels),
+            'data' => json_encode($data),
+            'controller_name' => 'InicioController',
+
      public function index(ClientesRepository $clientesRepository, Request $request): Response
     {
         // Obtener todos los clientes desde el repositorio
@@ -44,6 +62,7 @@ class InicioController extends AbstractController
         return $this->render('inicio/index.html.twig', [
             'clientes' => $datosClientes,
             'totalClientes' => $totalClientes,
+
         ]);
     }
 }

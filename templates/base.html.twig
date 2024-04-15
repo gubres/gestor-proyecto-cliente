@@ -11,6 +11,7 @@
     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
    
     {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
     <link href="https://cdn.datatables.net/v/dt/dt-2.0.2/datatables.min.css" rel="stylesheet">
     
     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
@@ -95,6 +96,7 @@
         });
     </script>
 {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
     <!-- Puedes incluir scripts adicionales aquí si es necesario -->
 {% endblock %}
 </body>
