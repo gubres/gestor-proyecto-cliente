@@ -16,16 +16,21 @@ class ClientesController extends AbstractController
 {
     private $clientesRepository;
 
-    public function __construct(ClientesRepository $clientesRepository)
+    public function __construct(ClientesRepository $clientesRepository, EntityManagerInterface $entityManager)
     {
         $this->clientesRepository = $clientesRepository;
+        $this->entityManager = $entityManager;
     }
 
     #[Route('/', name: 'app_clientes_index', methods: ['GET'])]
-    public function index(ClientesRepository $clientesRepository): Response
+    public function index(Request $request): Response
     {
+        $clientes = $this->clientesRepository->findAll();
+        $clientesTabla = $this->obtenerDatosClientes(); // Obtener los datos de los clientes para la tabla
+
         return $this->render('clientes/index.html.twig', [
-            'clientes' => $clientesRepository->findAll(),
+            'clientes' => $clientes,
+            'clientesTabla' => $clientesTabla,
         ]);
     }
 
@@ -112,4 +117,37 @@ class ClientesController extends AbstractController
         }
     }
 
+    public function obtenerDatosClientes(): array
+    {
+
+        return $this->clientesRepository->findAll();
+    }
+
+
+    // Método para actualizar los datos de los clientes
+    private function actualizarDatos($nuevosDatos)
+    {
+        // Verificar si $nuevosDatos es nulo
+        if ($nuevosDatos === null) {
+            return; // Salir del método si $nuevosDatos es nulo
+        }
+
+        foreach ($nuevosDatos as $nuevoDato) {
+            // Supongamos que $nuevoDato es un array asociativo con los datos del cliente
+            // Por ejemplo: ['id' => 1, 'nombre' => 'Nuevo nombre', 'telefono' => 'Nuevo teléfono', 'email' => 'Nuevo email']
+
+            // Buscar el cliente en la base de datos por su ID
+            $cliente = $this->entityManager->getRepository(Cliente::class)->find($nuevoDato['id']);
+
+            // Si el cliente existe, actualizar sus datos
+            if ($cliente) {
+                $cliente->setNombre($nuevoDato['nombre']);
+                $cliente->setTelefono($nuevoDato['telefono']);
+                $cliente->setEmail($nuevoDato['email']);
+
+                // Persistir los cambios en la base de datos
+                $this->entityManager->flush();
+            }
+        }
+    }
 }

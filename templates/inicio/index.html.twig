@@ -1,12 +1,52 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-{% endblock %}
+{% block title %}Inicio{% endblock %}
 
 {% block body %}
-  
-{% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<h1>Inicio</h1>
+  <div id="chartContainer" style="width: 100%; height: 400px;"></div>
+    <div style="text-align: center;">
+        <p><strong>Total de clientes:</strong> {{ totalClientes }}</p>
+    </div>
+
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Highcharts.chart('chartContainer', {
+                chart: {
+                    type: 'pie'
+                },
+                title: {
+                    text: 'Clientes y Proyectos'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.y}'
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Proyectos',
+                    colorByPoint: true,
+                    data: [
+                        {% for cliente in clientes %}
+                            {
+                                name: '{{ cliente.nombre }}',
+                                y: {{ cliente.cantidad }}, // Suponiendo que cada cliente tiene una propiedad 'cantidad' que representa el número de proyectos
+                            },
+                        {% endfor %}
+                    ]
+                }]
+            });
+        });
+    </script>
 {% endblock %}
