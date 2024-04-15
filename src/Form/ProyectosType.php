@@ -34,6 +34,7 @@ class ProyectosType extends AbstractType
             ])
             ->add('Estado', ChoiceType::class, [
                 'choices' => [
+                    'Selecciona el estado' => null, // Opción predeterminada
                     'Activo' => 'Activo',
                     'Inactivo' => 'Inactivo',
                 ],
