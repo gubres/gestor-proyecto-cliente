@@ -5,6 +5,13 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://cdn.datatables.net/v/zf/dt-2.0.3/sl-2.0.0/datatables.min.css" rel="stylesheet">
+    <style>
+        /* Estilo para centrar el texto en las celdas de la tabla */
+        table.table th,
+        table.table td {
+            text-align: center;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -16,6 +23,8 @@
                 <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Nombre</th>
+                <th>Cliente</th>
+                <th>Usuarios</th>
                 <th>Estado</th>
                 <th>Actions</th>
             </tr>
@@ -26,6 +35,13 @@
                 <td><input type="checkbox" class="seleccionarProyecto" name="proyectos_seleccionados[]" value="{{ proyecto.id }}"></td>
                 <td>{{ proyecto.id }}</td>
                 <td>{{ proyecto.nombre }}</td>
+                <td>{{ proyecto.cliente.nombre }}</td>
+                <td>
+                    {% for usuarioProyecto in proyecto.usuariosProyectos %}
+                        {{ usuarioProyecto.usuario.nombre }}
+                        {% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
                 <td>{{ proyecto.estado }}</td>
                 <td>
                     <a href="{{ path('app_proyectos_show', {'id': proyecto.id}) }}" class="btn btn-info ">Detalles</a>
@@ -34,33 +50,30 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="4">no records found</td>
+                <td colspan="7">no records found</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-  <div style="margin-bottom: 10px;">
-    <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
+    <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
 
-    <!-- Nuevo formulario para eliminar registros -->
-    <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
-        <!-- Campos ocultos para los IDs de los registros -->
-        <input type="hidden" name="id" id="idToDelete" value="">
+        <!-- Nuevo formulario para eliminar registros -->
+        <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
+            <!-- Campos ocultos para los IDs de los registros -->
+            <input type="hidden" name="id" id="idToDelete" value="">
+            
+            <!-- Botón para eliminar registros -->
+            <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+        </form>
+    </div>
 
-        
-        <!-- Botón para eliminar registros -->
-        <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
-    </form>
-</div>
-
-<!-- Divs para mostrar mensajes de éxito y error -->
-<div id="successMessage" class="alert alert-success d-none" role="alert"></div>
-<div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+    <!-- Divs para mostrar mensajes de éxito y error -->
+    <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
+    <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
 
 {% endblock %}
-
-
 
 {% block javascripts %}
     {{ parent() }}
@@ -69,7 +82,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script>
         $(document).ready(function() {
-           var table = $('#proyectosTabla').DataTable({  
+            var table = $('#proyectosTabla').DataTable({  
                 dom: 'Bfrtip',
                 buttons: [
                     {
@@ -95,75 +108,71 @@
                 order: [[1, 'asc']] // Ordena la tabla por la segunda columna
             });
 
-       // Función para actualizar la visibilidad del botón de eliminar selección
-        function updateDeleteButtonVisibility() {
-            var deleteButton = $('#eliminarSeleccionButton');
-            var checkedCount = $('.seleccionarProyecto:checked').length;
-            if (checkedCount > 0) {
-               deleteButton.show(); // Mostrar el botón si hay alguna selección
-            } else {
-                deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+            // Función para actualizar la visibilidad del botón de eliminar selección
+            function updateDeleteButtonVisibility() {
+                var deleteButton = $('#eliminarSeleccionButton');
+                var checkedCount = $('.seleccionarProyecto:checked').length;
+                if (checkedCount > 0) {
+                    deleteButton.show(); // Mostrar el botón si hay alguna selección
+                } else {
+                    deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+                }
             }
-        }
-        $('#seleccionarTodo').on('click', function() {
-            var isChecked = $(this).prop('checked');
-            $('.seleccionarProyecto').prop('checked', isChecked);
-            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-        });
 
-        $('.seleccionarProyecto').on('click', function() {
-            updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-        });
-        
-        // Agregar evento click al botón para eliminar filas seleccionadas
-        $('#eliminarSeleccionButton').on('click', function () {
-            table.rows('.selected').remove().draw(false);
-        });
-
-         // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
-           $('#formEliminarRegistros').submit(function (event) {
-               event.preventDefault(); // Evita el envío del formulario por defecto
-
-               // Obtener los IDs seleccionados
-               var idsSeleccionados = obtenerIDsSeleccionados();
-
-               // Asignar los IDs al campo oculto 'idToDelete'
-               $('#idToDelete').val(idsSeleccionados);
-
-               // Realizar la solicitud AJAX
-               $.ajax({
-                   type: 'POST',
-                   url: $(this).attr('action'),
-                   data: $(this).serialize(),
-                   success: function(response) {
-                       if (response.trim() === 'Proyectos eliminados correctamente') {
-                           $('#successMessage').removeClass('d-none').text(response);
-                           
-                           // Después de mostrar el mensaje de éxito, redirige a la página de índice de proyectos
-                            window.location.href = "{{ path('app_proyectos_index') }}";
-                       } else {
-                           $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
-                       }
-                   },
-                   error: function() {
-                       $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
-                   }
-               });
-           });
-
-
-        // Definir la función obtenerIDsSeleccionados
-        function obtenerIDsSeleccionados() {
-            var ids = [];
-            $('.seleccionarProyecto:checked').each(function() {
-                ids.push($(this).val());
+            $('#seleccionarTodo').on('click', function() {
+                var isChecked = $(this).prop('checked');
+                $('.seleccionarProyecto').prop('checked', isChecked);
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
             });
-            return ids;
-        }
 
-    });
+            $('.seleccionarProyecto').on('click', function() {
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+            });
+            
+            // Agregar evento click al botón para eliminar filas seleccionadas
+            $('#eliminarSeleccionButton').on('click', function () {
+                table.rows('.selected').remove().draw(false);
+            });
+
+            // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
+            $('#formEliminarRegistros').submit(function (event) {
+                event.preventDefault(); // Evita el envío del formulario por defecto
+
+                // Obtener los IDs seleccionados
+                var idsSeleccionados = obtenerIDsSeleccionados();
+
+                // Asignar los IDs al campo oculto 'idToDelete'
+                $('#idToDelete').val(idsSeleccionados);
+
+                // Realizar la solicitud AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.trim() === 'Proyectos eliminados correctamente') {
+                            $('#successMessage').removeClass('d-none').text(response);
+                            
+                            // Después de mostrar el mensaje de éxito, redirige a la página de índice de proyectos
+                            window.location.href = "{{ path('app_proyectos_index') }}";
+                        } else {
+                            $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
+                        }
+                    },
+                    error: function() {
+                        $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
+                    }
+                });
+            });
+
+            // Definir la función obtenerIDsSeleccionados
+            function obtenerIDsSeleccionados() {
+                var ids = [];
+                $('.seleccionarProyecto:checked').each(function() {
+                    ids.push($(this).val());
+                });
+                return ids;
+            }
+        });
     </script>
 {% endblock %}
-
-
-

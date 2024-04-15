@@ -14,6 +14,7 @@
         <thead>
             <tr>
                 <th>Id</th>
+                <th>Nombre</th>
                 <th>Email</th>
                 <th>Estado</th>
                 <th>Roles</th>
@@ -26,8 +27,11 @@
             {% for usuario in usuarios %}
             <tr>
                 <td>{{ usuario.id }}</td>
+                <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.email }}</td>
-                 {% if usuario.isActive %}
+                <td>{{ usuario.isActive ? 'Activo' : 'Inactivo' }}</td>
+                <td>
+                    {% if usuario.isActive %}
                         {% if 'ROLE_USER' in usuario.roles %}
                             ROLE_USER
                         {% else %}
@@ -37,9 +41,14 @@
                         
                     {% endif %}
                 </td>
-                <td>{{ usuario.isActive ? 'Activo' : 'Inactivo' }}</td>
-                <td><td>{{ usuario.password }}</td>
-                <td>{{ usuario.isVerified ? 'Yes' : 'No' }}</td>
+                <td>{{ usuario.password }}</td>
+                <td>
+                    {% if not usuario.isVerified %}
+                        <i class="fas fa-times-circle text-danger"></i> <!-- Icono de cruz roja -->
+                    {% else %}
+                        <i class="fas fa-check-circle text-success"></i> <!-- Icono de check verde -->
+                    {% endif %}
+                </td>
                 <td>
                     <a href="{{ path('app_usuarios_show', {'id': usuario.id}) }}" class="btn btn-info">Detalles</a>
                     <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar</a>

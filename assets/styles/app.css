@@ -1,4 +1,14 @@
+.red-arrow-up::after {
+    content: "\25B2"; /* Unicode para la flecha hacia arriba */
+    color: red; /* Color rojo */
+}
 
-.btn-group .btn {
-    display: inline-block;
+.yellow-arrow-up::after {
+    content: "\25B2"; /* Unicode para la flecha hacia arriba */
+    color: yellow; /* Color amarillo */
+}
+
+.green-arrow-up::after {
+    content: "\25B2"; /* Unicode para la flecha hacia arriba */
+    color: green; /* Color verde */
 }
