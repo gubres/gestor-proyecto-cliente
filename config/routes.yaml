@@ -22,8 +22,3 @@ app_login:
     path: /login
     controller: App\Controller\SecurityController::login
 
-    
-app_obtener_estado_usuarios:
-    path: '/obtener-estado-usuarios'
-    controller: App\Controller\ProyectosController::obtenerEstadoUsuarios
-    methods: ['POST']

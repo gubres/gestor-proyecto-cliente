@@ -103,40 +103,5 @@ class ClientesController extends AbstractController
         return $this->redirectToRoute('app_clientes_index');
     }
 
-    #[Route('/eliminarclientes', name: 'eliminar_clientes', methods: ['POST'])]
-    public function eliminarClientes(Request $request, EntityManagerInterface $entityManager)
-    {
-        // Obtener el ID del cliente a eliminar desde la solicitud
-        $id = $request->request->get('id'); 
-    
-        // Buscar el cliente por su ID
-        $cliente = $entityManager->getRepository(Clientes::class)->find($id);
-    
-        if ($cliente) { 
-            // Obtener los proyectos asociados al cliente
-            $proyectos = $cliente->getProyectos();
-            
-            dd($proyectos);
-    
-            // Cambiar el estado de los proyectos asociados a "Inactivo"
-            foreach ($proyectos as $proyecto) {
-               
-                var_dump($proyecto->getEstado());
-                $proyecto->setEstado('Inactivo');
-                $entityManager->persist($proyecto);
-            }
-    
-            // Eliminar el cliente
-            $entityManager->remove($cliente);
-            $entityManager->flush();
-    
-            // Devuelve una respuesta HTTP 200 indicando éxito
-            return new Response('Clientes eliminados correctamente', Response::HTTP_OK);
-        } else {
-            // Si el cliente no existe, devuelve una respuesta HTTP 404
-            return new Response('El cliente no existe', Response::HTTP_NOT_FOUND);
-        }
-    }
-    
 
 }
