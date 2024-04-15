@@ -30,6 +30,8 @@ class InicioController extends AbstractController
             $data[] = count($usuario->getTareas());
         }
 
+    
+
         // Obtener todos los clientes desde el repositorio
         $clientes = $this->clientesRepository->findAll();
         // Obtener el total de clientes
