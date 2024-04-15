@@ -65,18 +65,25 @@ class TareasController extends AbstractController
     {
         $form = $this->createForm(TareasType::class, $tarea);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
+            // Asignar el proyecto seleccionado a la tarea
+            $proyectoSeleccionado = $form->get('proyecto')->getData();
+            $tarea->setProyecto($proyectoSeleccionado);
+    
+            // Guardar la tarea
             $entityManager->flush();
-
+    
             return $this->redirectToRoute('app_tareas_index', [], Response::HTTP_SEE_OTHER);
         }
-
+    
         return $this->render('tareas/edit.html.twig', [
             'tarea' => $tarea,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
+    
+    
 
     #[Route('/{id}', name: 'app_tareas_delete', methods: ['POST'])]
     public function delete(Request $request, Tareas $tarea, EntityManagerInterface $entityManager): Response

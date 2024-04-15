@@ -26,7 +26,8 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_clientes_index') }}" class="btn btn-secondary">Back</a>
+     <a href="javascript:history.go(-1);" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Volver </a>
 
     <a href="{{ path('app_clientes_edit', {'id': cliente.id}) }}" class="btn btn-warning ">Editar</a>
 
