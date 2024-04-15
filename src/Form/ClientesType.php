@@ -17,10 +17,7 @@ class ClientesType extends AbstractType
             ->add('nombre')
             ->add('telefono')
             ->add('email')
-            ->add('proyectos', EntityType::class, [
-                'class' => Proyectos::class,
-                'choice_label' => 'id',
-            ])
+
         ;
     }
 

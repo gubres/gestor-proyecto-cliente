@@ -56,7 +56,7 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, UsuariosProyectos>
      */
-    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuarios')]
+    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuario', cascade: ['remove'])]
     private Collection $usuariosProyectos;
 
     /**
@@ -251,18 +251,6 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->tareas->removeElement($tarea)) {
             $tarea->removeUsuario($this);
         }
-
-        return $this;
-    }
-
-    public function isVerified(): bool
-    {
-        return $this->isVerified;
-    }
-
-    public function setVerified(bool $isVerified): static
-    {
-        $this->isVerified = $isVerified;
 
         return $this;
     }

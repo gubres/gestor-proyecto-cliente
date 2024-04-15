@@ -80,36 +80,63 @@ class ClientesController extends AbstractController
     {
         $id = $request->attributes->get('id');
         $cliente = $this->clientesRepository->find($id);
-
+    
         if (!$cliente) {
             throw $this->createNotFoundException('Cliente no encontrado');
         }
-
+    
         if ($this->isCsrfTokenValid('delete'.$cliente->getId(), $request->request->get('_token'))) {
+            // Obtener los proyectos asociados al cliente
+            $proyectos = $cliente->getProyectos();
+            
+            // Cambiar el estado de los proyectos asociados a "Inactivo"
+            foreach ($proyectos as $proyecto) {
+                $proyecto->setEstado('Inactivo');
+                $entityManager->persist($proyecto);
+            }
+    
+            // Eliminar el cliente
             $entityManager->remove($cliente);
             $entityManager->flush();
         }
-
+    
         return $this->redirectToRoute('app_clientes_index');
     }
 
     #[Route('/eliminarclientes', name: 'eliminar_clientes', methods: ['POST'])]
-    public function eliminarClientes(Request $request, Clientes $cliente, EntityManagerInterface $entityManager)
+    public function eliminarClientes(Request $request, EntityManagerInterface $entityManager)
     {
-         $id = $request->request->get('id'); 
-        $cliente = $this->clientesRepository->find($id);
-
+        // Obtener el ID del cliente a eliminar desde la solicitud
+        $id = $request->request->get('id'); 
+    
+        // Buscar el cliente por su ID
+        $cliente = $entityManager->getRepository(Clientes::class)->find($id);
+    
         if ($cliente) { 
-            try {
-                $entityManager->remove($cliente);
-                $entityManager->flush();
-                // Devuelve una respuesta HTTP 200 indicando éxito
-                return new Response('Clientes eliminados correctamente', Response::HTTP_OK);
-            } catch (\Exception $e) {
-                // En caso de error, devuelve una respuesta HTTP 500
-                return new Response('Ha ocurrido un error al eliminar los clientes.', Response::HTTP_INTERNAL_SERVER_ERROR);
+            // Obtener los proyectos asociados al cliente
+            $proyectos = $cliente->getProyectos();
+            
+            dd($proyectos);
+    
+            // Cambiar el estado de los proyectos asociados a "Inactivo"
+            foreach ($proyectos as $proyecto) {
+               
+                var_dump($proyecto->getEstado());
+                $proyecto->setEstado('Inactivo');
+                $entityManager->persist($proyecto);
             }
+    
+            // Eliminar el cliente
+            $entityManager->remove($cliente);
+            $entityManager->flush();
+    
+            // Devuelve una respuesta HTTP 200 indicando éxito
+            return new Response('Clientes eliminados correctamente', Response::HTTP_OK);
+        } else {
+            // Si el cliente no existe, devuelve una respuesta HTTP 404
+            return new Response('El cliente no existe', Response::HTTP_NOT_FOUND);
         }
     }
+    
 
 }
