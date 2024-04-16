@@ -24,7 +24,7 @@
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Cliente</th>
-                <th>Usuarios</th>
+                <th>Usuarios Asignados</th>
                 <th>Estado</th>
                 <th>Actions</th>
             </tr>
@@ -44,8 +44,9 @@
                 </td>
                 <td>{{ proyecto.estado }}</td>
                 <td>
-                    <a href="{{ path('app_proyectos_show', {'id': proyecto.id}) }}" class="btn btn-info ">Detalles</a>
-                    <a href="{{ path('app_proyectos_edit', {'id': proyecto.id}) }}" class="btn btn-warning ">Editar</a>
+                    <!-- Botón para abrir el modal de detalles -->
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#detallesModal{{ proyecto.id }}">Detalles</button>
+                    <a href="{{ path('app_proyectos_edit', {'id': proyecto.id}) }}" class="btn btn-warning">Editar</a>
                 </td>
             </tr>
             {% else %}
@@ -73,6 +74,71 @@
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
     <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
 
+    <!-- Modal de detalles -->
+    {% for proyecto in proyectos %}
+    <div class="modal fade" id="detallesModal{{ proyecto.id }}" tabindex="-1" aria-labelledby="detallesModalLabel{{ proyecto.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg"> <!-- modal-lg para hacer el modal más grande -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detallesModalLabel{{ proyecto.id }}">Detalles del Proyecto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Aquí agregamos estilos para la tabla -->
+                    <style>
+                        .modal-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        .modal-table th,
+                        .modal-table td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                        }
+                        .modal-table th {
+                            background-color: #f2f2f2;
+                            text-align: left;
+                        }
+                    </style>
+                    <table class="modal-table">
+                        <tbody>
+                            <tr>
+                                <th>Id</th>
+                                <td>{{ proyecto.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nombre</th>
+                                <td>{{ proyecto.nombre }}</td>
+                            </tr>
+                            <tr>
+                                <th>Cliente</th>
+                                <td>{{ proyecto.cliente.nombre }}</td>
+                            </tr>
+                            <tr>
+                                <th>Usuarios Asignados</th>
+                                <td>
+                                    {% for usuarioProyecto in proyecto.usuariosProyectos %}
+                                        {{ usuarioProyecto.usuario.nombre }}
+                                        {% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Estado</th>
+                                <td>{{ proyecto.estado }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="window.history.back();" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 {% endblock %}
 
 {% block javascripts %}

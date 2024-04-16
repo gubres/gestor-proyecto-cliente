@@ -5,7 +5,7 @@
 {% block body %}
     <h1>Editar Clientes</h1>
 
-    {{ include('clientes/_form.html.twig', {'modal_button': true}) }}
+  {{ include('clientes/_form.html.twig', {'modal_button': true}) }}
 
     <a href="javascript:history.go(-1);" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Volver
@@ -64,7 +64,6 @@
         document.getElementById('guardarButton').addEventListener('click', function() {
             $('#confirmModal').modal('show');
         });
-
         // Manejar el clic en el botón "Aceptar" del modal de confirmación
         document.getElementById('confirmChanges').addEventListener('click', function() {
             document.getElementById('form').submit();
@@ -74,15 +73,19 @@
         document.getElementById('cancelChanges').addEventListener('click', function() {
             // Cerrar la ventana modal
             $('#confirmModal').modal('hide');
+            
         });
+ </script>
 
+    <script>
         // Mostrar la ventana modal de confirmación de eliminación cuando se hace clic en el botón "Eliminar"
-        document.getElementById('deleteButton').addEventListener('click', function() {
+        document.getElementById('deleteConfirmButton').addEventListener('click', function() {
             $('#deleteConfirmModal').modal('show');
         });
 
         // Manejar el clic en el botón "Eliminar" del modal de confirmación de eliminación
         document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+            // Enviar el formulario de eliminación
             document.getElementById('deleteForm').submit();
         });
 
