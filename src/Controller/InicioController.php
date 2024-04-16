@@ -21,6 +21,7 @@ class InicioController extends AbstractController
     #[Route('/inicio', name: 'app_inicio')]
     public function index(UsuariosRepository $usuariosRepository, Request $request): Response
     {
+
         //obtener todos los usuarios e inicializar los arrays para poder almaxcenar
         $usuarios = $usuariosRepository->findAll();
         $labels = [];
@@ -52,8 +53,6 @@ class InicioController extends AbstractController
             $dataMedia[] = $media;
             $dataAlta[] = $alta;
         }
-
-    
 
         // Obtener todos los clientes desde el repositorio
         $clientes = $this->clientesRepository->findAll();
