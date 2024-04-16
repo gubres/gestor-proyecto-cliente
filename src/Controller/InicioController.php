@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Repository\ClientesRepository;
 use App\Repository\UsuariosRepository;
 
@@ -19,6 +20,7 @@ class InicioController extends AbstractController
     }
 
     #[Route('/inicio', name: 'app_inicio')]
+    #[IsGranted('ROLE_USER')]
     public function index(UsuariosRepository $usuariosRepository, Request $request): Response
     {
 

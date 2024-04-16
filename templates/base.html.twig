@@ -73,7 +73,12 @@
     </nav>
     <nav class="navbar bg-body-tertiary fixed-bottom">
         <div class="container-fluid justify-content-end">
-            <a class="navbar-brand" href="#">Tu usuario</a>
+                {% if app.user %}
+                    <class="nav-item">
+                        <a class="navbar-brand" href="{{ path('app_logout') }}">
+                            Cerrar sesión ({{ app.user.email }})
+                        </a>
+                {% endif %}
         </div>
     </nav>
 {% block body %}
