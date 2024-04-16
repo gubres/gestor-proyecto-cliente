@@ -72,6 +72,10 @@
         </tbody>
     </table>
 
+    <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
+
     <!-- Divs para mostrar detalles de la tarea -->
     {% for tarea in tareas %}
         <div class="modal fade" id="detallesTarea{{ tarea.id }}" tabindex="-1" role="dialog" aria-labelledby="detallesTarea{{ tarea.id }}Label" aria-hidden="true">
