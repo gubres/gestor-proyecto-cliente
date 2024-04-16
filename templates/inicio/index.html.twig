@@ -58,9 +58,23 @@
                     enabled: false
                 },
                 series: [{
-                    name: 'Tareas',
-                    data: {{ data|raw }}
-                }]
+                    name: 'Baja',
+                    data: {{ dataBaja|raw }},
+                    color: 'green'  // Verde para Baja Prioridad
+                    
+                }, {
+                    name: 'Media',
+                    data: {{ dataMedia|raw }},
+                     color: 'orange'  // Naranja para Media Prioridad
+                    
+                }, {
+                    name: 'Alta',
+                    data: {{ dataAlta|raw }},
+                    color: 'red'  // Rojo para Alta Prioridad
+                    
+                }
+                
+                ]
             });
         });
     </script>
