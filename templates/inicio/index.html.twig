@@ -58,9 +58,20 @@
                     enabled: false
                 },
                 series: [{
-                    name: 'Tareas',
-                    data: {{ data|raw }}
-                }]
+                    name: 'Baja',
+                    data: {{ dataBaja|raw }}
+                    
+                }, {
+                    name: 'Media',
+                    data: {{ dataMedia|raw }}
+                    
+                }, {
+                    name: 'Alta',
+                    data: {{ dataAlta|raw }}
+                    
+                }
+                
+                ]
             });
         });
     </script>
