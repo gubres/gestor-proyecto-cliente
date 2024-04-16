@@ -38,8 +38,10 @@
                 <td>{{ proyecto.cliente.nombre }}</td>
                 <td>
                     {% for usuarioProyecto in proyecto.usuariosProyectos %}
-                        {{ usuarioProyecto.usuario.nombre }}
-                        {% if not loop.last %}, {% endif %}
+                        {% if usuarioProyecto.estado %}
+                            {{ usuarioProyecto.usuario.nombre }}
+                            {% if not loop.last %}, {% endif %}
+                        {% endif %}
                     {% endfor %}
                 </td>
                 <td>{{ proyecto.estado }}</td>
@@ -116,12 +118,14 @@
                             </tr>
                             <tr>
                                 <th>Usuarios Asignados</th>
-                                <td>
-                                    {% for usuarioProyecto in proyecto.usuariosProyectos %}
+                            <td>
+                                {% for usuarioProyecto in proyecto.usuariosProyectos %}
+                                    {% if usuarioProyecto.estado %}
                                         {{ usuarioProyecto.usuario.nombre }}
                                         {% if not loop.last %}, {% endif %}
-                                    {% endfor %}
-                                </td>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
                             </tr>
                             <tr>
                                 <th>Estado</th>
