@@ -12,6 +12,51 @@
             text-align: center;
         }
     </style>
+    <style>
+    /* Estilos para los botones pdf,excel y print */
+    .dt-button {
+        color: white !important;
+        border-color: transparent !important;
+        border-radius: 5px !important;
+        margin-right: 5px;
+    }
+   .toolbar .btn-group > .btn {
+        margin-right: 0 !important;
+    }
+
+    .dt-button:hover {
+        opacity: 0.8;
+    }
+
+    /* Eliminar los márgenes entre los botones */
+    .dt-buttons .btn {
+        margin-right: 0 !important;
+    }
+
+    /* Estilo personalizado para el botón de Excel */
+    .btn-excel {
+        background-color: green !important; /* Cambiar el color de fondo a verde oscuro */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+
+    /* Estilo personalizado para el botón de PDF */
+    .btn-pdf {
+        background-color: purple !important; /* Cambiar el color de fondo a morado */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+
+    /* Estilo personalizado para el botón de impresión */
+    .btn-print {
+        background-color: lightblue !important; /* Cambiar el color de fondo a azul claro */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+    /* Estilo personalizado para los botones de PDF, Excel y Print */
+    .btn-pdf,
+    .btn-excel,
+    .btn-print {
+        margin-right: 0 !important;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
@@ -38,8 +83,10 @@
                 <td>{{ proyecto.cliente.nombre }}</td>
                 <td>
                     {% for usuarioProyecto in proyecto.usuariosProyectos %}
-                        {{ usuarioProyecto.usuario.nombre }}
-                        {% if not loop.last %}, {% endif %}
+                        {% if usuarioProyecto.estado %}
+                            {{ usuarioProyecto.usuario.nombre }}
+                            {% if not loop.last %}, {% endif %}
+                        {% endif %}
                     {% endfor %}
                 </td>
                 <td>{{ proyecto.estado }}</td>
@@ -116,12 +163,14 @@
                             </tr>
                             <tr>
                                 <th>Usuarios Asignados</th>
-                                <td>
-                                    {% for usuarioProyecto in proyecto.usuariosProyectos %}
+                            <td>
+                                {% for usuarioProyecto in proyecto.usuariosProyectos %}
+                                    {% if usuarioProyecto.estado %}
                                         {{ usuarioProyecto.usuario.nombre }}
                                         {% if not loop.last %}, {% endif %}
-                                    {% endfor %}
-                                </td>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
                             </tr>
                             <tr>
                                 <th>Estado</th>
@@ -149,31 +198,43 @@
     <script>
         $(document).ready(function() {
             var table = $('#proyectosTabla').DataTable({  
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        extend: 'excel',
-                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
-                        titleAttr: 'Exportar a Excel',
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
-                        titleAttr: 'Exportar a PDF',
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="fas fa-print"></i> Imprimir',
-                        titleAttr: 'Imprimir',
-                    }
-                ],
-                select: {
-                    style: 'multi',
-                    selector: 'td:first-child'
+                dom: '<"toolbar">Bfrtip',
+            buttons: [
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    titleAttr: 'Exportar a Excel',
+                    className: 'btn-excel'
                 },
-                order: [[1, 'asc']] // Ordena la tabla por la segunda columna
-            });
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    titleAttr: 'Exportar a PDF',
+                    className: 'btn-pdf'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    titleAttr: 'Imprimir',
+                    className: 'btn-print'
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child'
+            },
+            order: [[1, 'asc']], // Ordena la tabla por la segunda columna
+            initComplete: function () {
+                $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
+            }
+        });
 
+
+            // Agregar un contenedor para los botones en la parte superior izquierda
+            $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
+                '<button type="button" class="btn btn-primary" id="crearNuevo">Crear Nuevo</button>' +
+                '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
+                '</div>');
             // Función para actualizar la visibilidad del botón de eliminar selección
             function updateDeleteButtonVisibility() {
                 var deleteButton = $('#eliminarSeleccionButton');
