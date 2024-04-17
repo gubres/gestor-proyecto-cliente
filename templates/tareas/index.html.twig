@@ -185,36 +185,36 @@
     <script>
         $(document).ready(function() {
             var table = $('#tareasTabla').DataTable({  
-        dom: '<"toolbar">Bfrtip',
-        buttons: [
-            {
-                extend: 'excel',
-                text: '<i class="fas fa-file-excel"></i>',
-                titleAttr: 'Exportar a Excel',
-                className: 'btn-excel'
+            dom: '<"toolbar">Bfrtip',
+            buttons: [
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    titleAttr: 'Exportar a Excel',
+                    className: 'btn-excel'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    titleAttr: 'Exportar a PDF',
+                    className: 'btn-pdf'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    titleAttr: 'Imprimir',
+                    className: 'btn-print'
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child'
             },
-            {
-                extend: 'pdf',
-                text: '<i class="fas fa-file-pdf"></i>',
-                titleAttr: 'Exportar a PDF',
-                className: 'btn-pdf'
-            },
-            {
-                extend: 'print',
-                text: '<i class="fas fa-print"></i>',
-                titleAttr: 'Imprimir',
-                className: 'btn-print'
+            order: [[1, 'asc']], // Ordena la tabla por la segunda columna
+            initComplete: function () {
+                $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
             }
-        ],
-        select: {
-            style: 'multi',
-            selector: 'td:first-child'
-        },
-        order: [[1, 'asc']], // Ordena la tabla por la segunda columna
-        initComplete: function () {
-            $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
-        }
-    });
+        });
 
 
             // Agregar un contenedor para los botones en la parte superior izquierda
