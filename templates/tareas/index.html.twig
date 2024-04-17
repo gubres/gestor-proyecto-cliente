@@ -70,7 +70,13 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Tareas</h1>
+   <div class="container">
+        <h1>Clientes</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ path('app_tareas_new') }}" class="btn btn-primary">Crear Nuevo</a>
+            </div>
+        </div>
 
     <table class="table" id="tareasTabla">
         <thead>
@@ -219,7 +225,7 @@
 
             // Agregar un contenedor para los botones en la parte superior izquierda
             $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
-                '<button type="button" class="btn btn-primary" id="crearNuevo">Crear Nuevo</button>' +
+                
                 '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
                 '</div>');
             // Ocultar todas las ventanas modales al principio

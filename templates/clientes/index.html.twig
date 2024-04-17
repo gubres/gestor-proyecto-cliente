@@ -70,7 +70,13 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Clientes</h1>
+     <div class="container">
+        <h1>Clientes</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ path('app_clientes_new') }}" class="btn btn-primary">Crear Nuevo</a>
+            </div>
+        </div>
     <table class="table" id="clientesTabla">
         <thead>
             <tr>
@@ -108,9 +114,7 @@
         {% endfor %}
         </tbody>
     </table>
-
-    <div style="margin-bottom: 10px;">
-        <a href="{{ path('app_clientes_new') }}" class="btn btn-primary">Crear Nuevo</a>
+    </div>
 
         <!-- Nuevo formulario para eliminar clientes -->
         <form action="/eliminar-clientes" method="post" id="formEliminarClientes" style="display: inline-block;">
@@ -120,7 +124,6 @@
             <!-- Botón para eliminar clientes -->
             <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
         </form>
-    </div>
 
     <!-- Divs para mostrar mensajes de éxito y error -->
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
@@ -134,6 +137,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.4/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/rr-1.5.0/sb-1.7.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
     <script>
         $(document).ready(function() {
             var table = $('#clientesTabla').DataTable({  
@@ -178,10 +182,9 @@
 
             // Agregar un contenedor para los botones en la parte superior izquierda
             $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
-                '<button type="button" class="btn btn-primary" id="crearNuevo">Crear Nuevo</button>' +
+                
                 '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
                 '</div>');
-
             // Función para actualizar la visibilidad del botón de eliminar selección
             function updateDeleteButtonVisibility() {
                 var deleteButton = $('#eliminarSeleccionButton');

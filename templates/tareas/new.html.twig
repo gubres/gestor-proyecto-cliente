@@ -3,9 +3,15 @@
 {% block title %}Nueva Tarea{% endblock %}
 
 {% block body %}
-    <h1>Crear nueva tarea</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="h3 mb-3 font-weight-normal text-center">Crear nueva tarea</h1>
 
-    {{ include('tareas/_form.html.twig', {'modal_button': false}) }}
+            {{ include('tareas/_form.html.twig', {'modal_button': false}) }}
 
-    <a href="{{ path('app_tareas_index') }}" class="btn btn-secondary">Back</a>
+            <a href="{{ path('app_tareas_index') }}" class="btn btn-secondary">Volver</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

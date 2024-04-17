@@ -55,7 +55,13 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Usuarios</h1>
+    <div class="container">
+        <h1>Usuarios</h1>
+        <div class="row">
+                <div class="col-md-6">
+                    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+                </div>
+        </div>
     <table class="table" id="usuariosTabla">
         <thead>
             <tr>
@@ -108,9 +114,6 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <div style="margin-bottom: 10px;">
-        <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
     </div>
 
     <!-- Divs para mostrar mensajes de éxito y error -->
