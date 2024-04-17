@@ -59,7 +59,7 @@
         <h1>Usuarios</h1>
         <div class="row">
                 <div class="col-md-6">
-                    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+                    <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Registrar nuevo usuario</a>
                 </div>
         </div>
     <table class="table" id="usuariosTabla">
@@ -70,9 +70,8 @@
                 <th>Email</th>
                 <th>Estado</th>
                 <th>Roles</th>
-                <th>Password</th>
-                <th>IsVerified</th>
-                <th>Actions</th>
+                <th>Verificado</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -93,7 +92,6 @@
                         
                     {% endif %}
                 </td>
-                <td>{{ usuario.password }}</td>
                 <td>
                     {% if not usuario.isVerified %}
                         <i class="fas fa-times-circle text-danger"></i> <!-- Icono de cruz roja -->
