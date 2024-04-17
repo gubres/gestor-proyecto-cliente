@@ -1,4 +1,8 @@
-{{ form_start(form) }}
+{{ form_start(form, { 'attr': {'id': 'form'} }) }}
     {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    {% if app.request.attributes.get('_route') == 'app_usuarios_edit' %}
+        <button type="button" class="btn btn-success" id="guardarButton">{{ button_label|default('Guardar') }}</button>
+    {% else %}
+        <button class="btn btn-success">{{ button_label|default('Guardar') }}</button>
+    {% endif %}
 {{ form_end(form) }}

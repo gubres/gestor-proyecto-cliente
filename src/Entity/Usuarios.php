@@ -35,25 +35,72 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+
+    // incluidas nuevas propiedades nombre y apellidos
+    #[ORM\Column(type: 'string', length: 50)]
+    private ?string $nombre = null;
+
+    #[ORM\Column(type: 'string', length: 100)]
+    private ?string $apellidos = null;
+
+
+    // token de confirmación
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $confirmationToken = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isActive;
+    
+
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+
+         // Actualizar los roles basados en la activación
+        $this->updateRolesBasedOnActivation();
+
+
+        return $this;
+    }
+
+    public function updateRolesBasedOnActivation(): void
+    {
+        if (!$this->isActive) {
+            $this->roles = []; // Si el usuario está desactivado, elimina todos los roles
+        } else {
+            $this->roles = ['ROLE_USER']; // Si el usuario está activado, asigna el rol 'ROLE_USER'
+        }
+    }
+
     /**
-     * @var Collection<int, Proyectos>
+     * @var Collection<int, UsuariosProyectos>
      */
-    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuario')]
+    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'usuario', cascade: ['remove'])]
     private Collection $usuariosProyectos;
 
     /**
      * @var Collection<int, Tareas>
      */
-    #[ORM\ManyToMany(targetEntity: Tareas::class, mappedBy: 'usuario')]
+    #[ORM\ManyToMany(targetEntity: Tareas::class, mappedBy: 'usuarios')]
     private Collection $tareas;
 
-    #[ORM\Column(type: 'boolean')]
-    private $isVerified = false;
+ /*   #[ORM\Column(type: 'boolean')]
+    private $isVerified = false; */
 
     public function __construct()
     {
         $this->usuariosProyectos = new ArrayCollection();
         $this->tareas = new ArrayCollection();
+        $this->isActive = true;
     }
 
     public function getId(): ?int
@@ -131,15 +178,64 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
+
+    public function getNombre(): ?string
+    {
+        return $this->nombre;
+    }
+
+    public function setNombre(string $nombre): self
+    {
+        $this->nombre = $nombre;
+        return $this;
+    }
+
+    public function getApellidos(): ?string
+    {
+        return $this->apellidos;
+    }
+
+    public function setApellidos(string $apellidos): self
+    {
+        $this->apellidos = $apellidos;
+        return $this;
+    }
+
+    // Getter y setter para confirmationToken
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+
+    public function setConfirmationToken(?string $confirmationToken): self
+    {
+        $this->confirmationToken = $confirmationToken;
+        return $this;
+    }
+
+    // Getter y setter para isVerified
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+
+
     /**
-     * @return Collection<int, Proyectos>
+     * @return Collection<int, UsuariosProyectos>
      */
     public function getUsuariosProyectos(): Collection
     {
         return $this->usuariosProyectos;
     }
 
-    public function addUsuariosProyecto(UsuariosProyectos $usuariosProyecto): self
+    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyecto): self
     {
         if (!$this->usuariosProyectos->contains($usuariosProyecto)) {
             $this->usuariosProyectos[] = $usuariosProyecto;
@@ -148,11 +244,11 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-    
 
-    public function removeUsuariosProyecto(UsuariosProyectos $usuariosProyecto): self
+    public function removeUsuariosProyectos(UsuariosProyectos $usuariosProyecto): self
     {
         if ($this->usuariosProyectos->removeElement($usuariosProyecto)) {
+            // set the owning side to null (unless already changed)
             if ($usuariosProyecto->getUsuario() === $this) {
                 $usuariosProyecto->setUsuario(null);
             }
@@ -188,15 +284,8 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isVerified(): bool
+    public function __toString()
     {
-        return $this->isVerified;
-    }
-
-    public function setVerified(bool $isVerified): static
-    {
-        $this->isVerified = $isVerified;
-
-        return $this;
+        return $this->getEmail();
     }
 }

@@ -7,18 +7,32 @@ use App\Form\ClientesType;
 use App\Repository\ClientesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/clientes')]
+#[IsGranted('ROLE_USER')]
 class ClientesController extends AbstractController
 {
-    #[Route('/', name: 'app_clientes_index', methods: ['GET'])]
-    public function index(ClientesRepository $clientesRepository): Response
+    private $clientesRepository;
+
+    public function __construct(ClientesRepository $clientesRepository, EntityManagerInterface $entityManager)
     {
+        $this->clientesRepository = $clientesRepository;
+        $this->entityManager = $entityManager;
+    }
+
+    #[Route('/', name: 'app_clientes_index', methods: ['GET'])]
+    public function index(Request $request): Response
+    {
+        $clientes = $this->clientesRepository->findAll();
+        $clientesTabla = $this->obtenerDatosClientes(); // Obtener los datos de los clientes para la tabla
+
         return $this->render('clientes/index.html.twig', [
-            'clientes' => $clientesRepository->findAll(),
+            'clientes' => $clientes,
+            'clientesTabla' => $clientesTabla,
         ]);
     }
 
@@ -71,11 +85,63 @@ class ClientesController extends AbstractController
     #[Route('/{id}', name: 'app_clientes_delete', methods: ['POST'])]
     public function delete(Request $request, Clientes $cliente, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$cliente->getId(), $request->getPayload()->get('_token'))) {
+        $id = $request->attributes->get('id');
+        $cliente = $this->clientesRepository->find($id);
+    
+        if (!$cliente) {
+            throw $this->createNotFoundException('Cliente no encontrado');
+        }
+    
+        if ($this->isCsrfTokenValid('delete'.$cliente->getId(), $request->request->get('_token'))) {
+            // Obtener los proyectos asociados al cliente
+            $proyectos = $cliente->getProyectos();
+            
+            // Cambiar el estado de los proyectos asociados a "Inactivo"
+            foreach ($proyectos as $proyecto) {
+                $proyecto->setEstado('Inactivo');
+                $entityManager->persist($proyecto);
+            }
+    
+            // Eliminar el cliente
             $entityManager->remove($cliente);
             $entityManager->flush();
         }
+    
+        return $this->redirectToRoute('app_clientes_index');
+    }
 
-        return $this->redirectToRoute('app_clientes_index', [], Response::HTTP_SEE_OTHER);
+
+    public function obtenerDatosClientes(): array
+    {
+
+        return $this->clientesRepository->findAll();
+    }
+
+
+    // Método para actualizar los datos de los clientes
+    private function actualizarDatos($nuevosDatos)
+    {
+        // Verificar si $nuevosDatos es nulo
+        if ($nuevosDatos === null) {
+            return; // Salir del método si $nuevosDatos es nulo
+        }
+
+        foreach ($nuevosDatos as $nuevoDato) {
+            // Supongamos que $nuevoDato es un array asociativo con los datos del cliente
+            // Por ejemplo: ['id' => 1, 'nombre' => 'Nuevo nombre', 'telefono' => 'Nuevo teléfono', 'email' => 'Nuevo email']
+
+            // Buscar el cliente en la base de datos por su ID
+            $cliente = $this->entityManager->getRepository(Cliente::class)->find($nuevoDato['id']);
+
+            // Si el cliente existe, actualizar sus datos
+            if ($cliente) {
+                $cliente->setNombre($nuevoDato['nombre']);
+                $cliente->setTelefono($nuevoDato['telefono']);
+                $cliente->setEmail($nuevoDato['email']);
+
+                // Persistir los cambios en la base de datos
+                $this->entityManager->flush();
+            }
+        }
     }
 }

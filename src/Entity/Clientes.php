@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\ClientesRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Proyectos;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientesRepository::class)]
@@ -22,8 +25,11 @@ class Clientes
     #[ORM\Column(length: 50)]
     private ?string $email = null;
 
-    #[ORM\OneToOne(mappedBy: 'cliente', cascade: ['persist', 'remove'])]
-    private ?Proyectos $proyectos = null;
+    /**
+     * @var Collection<int, Proyectos>
+     */
+    #[ORM\OneToMany(targetEntity: Proyectos::class, mappedBy: 'cliente', fetch: 'EAGER')]
+    private Collection $proyectos;
 
     public function getId(): ?int
     {
@@ -66,20 +72,27 @@ class Clientes
         return $this;
     }
 
-    public function getProyectos(): ?Proyectos
+ /**
+     * @return Collection<int, Proyectos>
+     */
+    public function getProyectos(): Collection
     {
         return $this->proyectos;
     }
 
-    public function setProyectos(Proyectos $proyectos): static
+    public function addProyecto(Proyectos $proyecto): self
     {
-        // set the owning side of the relation if necessary
-        if ($proyectos->getCliente() !== $this) {
-            $proyectos->setCliente($this);
+        if (!$this->proyectos->contains($proyecto)) {
+            $this->proyectos[] = $proyecto;
+            $proyecto->setCliente($this);
         }
 
-        $this->proyectos = $proyectos;
+        return $this;
+    }
 
+    public function removeProyecto(Proyectos $proyecto): self
+    {
+        $this->proyectos->removeElement($proyecto);
         return $this;
     }
 }

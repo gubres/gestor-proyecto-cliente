@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ProyectosRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Entity\UsuariosProyectos;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProyectosRepository::class)]
@@ -27,11 +28,11 @@ class Proyectos
     #[ORM\OneToMany(targetEntity: Tareas::class, mappedBy: 'proyecto', orphanRemoval: true)]
     private Collection $tareas;
 
-    #[ORM\OneToOne(inversedBy: 'proyectos', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Clientes::class, inversedBy: 'proyectos')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Clientes $cliente = null;
 
-    #[ORM\OneToMany(targetEntity: UsuariosProyectos::class, mappedBy: 'proyectos')]
+    #[ORM\OneToMany(mappedBy: 'proyecto', targetEntity: UsuariosProyectos::class, cascade: ['persist', 'remove'])]
     private Collection $usuariosProyectos;
 
     public function __construct()
@@ -119,19 +120,24 @@ class Proyectos
         return $this->usuariosProyectos;
     }
 
-    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyectos): static
+    public function addUsuariosProyectos(UsuariosProyectos $usuariosProyecto): static
     {
-        if (!$this->usuariosProyectos->contains($usuariosProyectos)) {
-            $this->usuariosProyectos[] = $usuariosProyectos;
-            $usuariosProyectos->setProyecto($this);
+        if (!$this->usuariosProyectos->contains($usuariosProyecto)) {
+            $this->usuariosProyectos->add($usuariosProyecto);
+            $usuariosProyecto->setProyecto($this);
         }
 
         return $this;
     }
 
-    public function removeUsuariosProyectos(UsuariosProyectos $usuariosProyectos): static
+    public function removeUsuariosProyectos(UsuariosProyectos $usuariosProyecto): static
     {
-        $this->usuariosProyectos->removeElement($usuariosProyectos);
+        if ($this->usuariosProyectos->removeElement($usuariosProyecto)) {
+            // set the owning side to null (unless already changed)
+            if ($usuariosProyecto->getProyecto() === $this) {
+                $usuariosProyecto->setProyecto(null);
+            }
+        }
 
         return $this;
     }

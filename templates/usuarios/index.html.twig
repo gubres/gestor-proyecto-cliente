@@ -2,40 +2,205 @@
 
 {% block title %}Usuarios index{% endblock %}
 
-{% block body %}
-    <h1>Usuarios index</h1>
+{% block stylesheets %}
+    {{ parent() }}
+    <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
+    <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
+{% endblock %}
 
-    <table class="table">
+{% block body %}
+    <h1>Usuarios</h1>
+    <table class="table" id="usuariosTabla">
         <thead>
             <tr>
                 <th>Id</th>
+                <th>Nombre</th>
                 <th>Email</th>
+                <th>Estado</th>
                 <th>Roles</th>
                 <th>Password</th>
                 <th>IsVerified</th>
-                <th>actions</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-        {% for usuario in usuarios %}
+            {% for usuario in usuarios %}
             <tr>
                 <td>{{ usuario.id }}</td>
+                <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.email }}</td>
-                <td>{{ usuario.roles ? usuario.roles|json_encode : '' }}</td>
-                <td>{{ usuario.password }}</td>
-                <td>{{ usuario.isVerified ? 'Yes' : 'No' }}</td>
+                <td>{{ usuario.isActive ? 'Activo' : 'Inactivo' }}</td>
                 <td>
-                    <a href="{{ path('app_usuarios_show', {'id': usuario.id}) }}">show</a>
-                    <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}">edit</a>
+                    {% if usuario.isActive %}
+                        {% if 'ROLE_USER' in usuario.roles %}
+                            ROLE_USER
+                        {% else %}
+                            {{ usuario.roles ? usuario.roles|json_encode : '' }}
+                        {% endif %}
+                    {% else %}
+                        
+                    {% endif %}
+                </td>
+                <td>{{ usuario.password }}</td>
+                <td>
+                    {% if not usuario.isVerified %}
+                        <i class="fas fa-times-circle text-danger"></i> <!-- Icono de cruz roja -->
+                    {% else %}
+                        <i class="fas fa-check-circle text-success"></i> <!-- Icono de check verde -->
+                    {% endif %}
+                </td>
+                <td>
+                    <!-- Botón para abrir el modal de detalles -->
+                    <button type="button" class="btn btn-info open-modal" data-bs-toggle="modal" data-bs-target="#detallesModal{{ usuario.id }}">Detalles</button>
+                    <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar</a>
                 </td>
             </tr>
-        {% else %}
+            {% else %}
             <tr>
-                <td colspan="6">no records found</td>
+                <td colspan="7">no records found</td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
 
-    <a href="{{ path('app_usuarios_new') }}">Create new</a>
+    <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+    </div>
+
+    <!-- Divs para mostrar mensajes de éxito y error -->
+    <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
+    <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
+   <!-- Modal de detalles -->
+{% for usuario in usuarios %}
+<div class="modal fade" id="detallesModal{{ usuario.id }}" tabindex="-1" aria-labelledby="detallesModalLabel{{ usuario.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detallesModalLabel{{ usuario.id }}">Detalles del Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <style>
+                        .modal-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        .modal-table th,
+                        .modal-table td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                        }
+                        .modal-table th {
+                            background-color: #f2f2f2;
+                            text-align: left;
+                        }
+                    </style>
+                <table class="table" style="border: 1px solid #dee2e6;">
+                    <tbody>
+                        <tr>
+                            <th>Id</th>
+                            <td>{{ usuario.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nombre</th>
+                            <td>{{ usuario.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ usuario.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Estado</th>
+                            <td>{{ usuario.isActive ? 'Activo' : 'Inactivo' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Roles</th>
+                            <td>
+                                {% if usuario.isActive %}
+                                    {% if 'ROLE_USER' in usuario.roles %}
+                                        ROLE_USER
+                                    {% else %}
+                                        {{ usuario.roles ? usuario.roles|json_encode : '' }}
+                                    {% endif %}
+                                {% else %}
+                                    
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Password</th>
+                            <td>{{ usuario.password }}</td>
+                        </tr>
+                        <tr>
+                            <th>IsVerified</th>
+                            <td>
+                                {% if not usuario.isVerified %}
+                                    <i class="fas fa-times-circle text-danger"></i> <!-- Icono de cruz roja -->
+                                {% else %}
+                                    <i class="fas fa-check-circle text-success"></i> <!-- Icono de check verde -->
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script>
+        $(document).ready(function() {
+            var table = $('#usuariosTabla').DataTable({  
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                        titleAttr: 'Exportar a Excel',
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
+                        titleAttr: 'Exportar a PDF',
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Imprimir',
+                        titleAttr: 'Imprimir',
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child'
+                },
+                order: [[1, 'asc']] // Ordena la tabla por la segunda columna
+            });
+
+            $(document).ready(function() {
+                $('.open-modal').click(function() {
+                    var userId = $(this).data('id');
+                    $.ajax({
+                        type: 'GET',
+                        url: '{{ path("app_usuarios_index") }}',
+                        data: { id: userId },
+                        success: function(response) {
+                            $('#detallesModal' + userId + ' .modal-body').html(response);
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 {% endblock %}

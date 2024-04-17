@@ -2,12 +2,34 @@
 
 {% block title %}Tareas index{% endblock %}
 
-{% block body %}
-    <h1>Tareas index</h1>
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Estilos para la ventana modal -->
+    <style>
+        /* Estilos para la ventana modal */
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .modal-table th,
+        .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .modal-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+{% endblock %}
 
-    <table class="table">
+{% block body %}
+    <h1>Tareas</h1>
+
+    <table class="table" id="tareasTabla">
         <thead>
             <tr>
+                <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Finalizada</th>
@@ -17,25 +39,210 @@
             </tr>
         </thead>
         <tbody>
-        {% for tarea in tareas %}
-            <tr>
-                <td>{{ tarea.id }}</td>
-                <td>{{ tarea.nombre }}</td>
-                <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
-                <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ tarea.prioridad }}</td>
-                <td>
-                    <a href="{{ path('app_tareas_show', {'id': tarea.id}) }}">show</a>
-                    <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
+            {% for tarea in tareas %}
+                <tr>
+                    <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionados[]" value="{{ tarea.id }}"></td>
+                    <td>{{ tarea.id }}</td>
+                    <td>{{ tarea.nombre }}</td>
+                    <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
+                    <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
+                    <td>
+                        {% set priorityColor = '' %}
+                        {% if tarea.prioridad == 'ALTA' %}
+                            {% set priorityColor = 'red' %}
+                        {% elseif tarea.prioridad == 'MEDIA' %}
+                            {% set priorityColor = 'orange' %}
+                        {% elseif tarea.prioridad == 'BAJA' %}
+                            {% set priorityColor = 'green' %}
+                        {% endif %}
+                        <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
+                    </td>
+                    <td>
+                        <!-- Botón para abrir la ventana modal con los detalles de la tarea -->
+                        <button type="button" class="btn btn-info abrirModal" data-toggle="modal" data-target="#detallesTarea{{ tarea.id }}">Detalles</button>
+
+                        <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning ">Editar</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6">no records found</td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
 
-    <a href="{{ path('app_tareas_new') }}">Create new</a>
+    <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_tareas_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
+
+    <!-- Divs para mostrar detalles de la tarea -->
+    {% for tarea in tareas %}
+        <div class="modal fade" id="detallesTarea{{ tarea.id }}" tabindex="-1" role="dialog" aria-labelledby="detallesTarea{{ tarea.id }}Label" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detallesTarea{{ tarea.id }}Label">Detalles de la Tarea</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="modal-table">
+                            <tbody>
+                                <tr>
+                                    <th>Id</th>
+                                    <td>{{ tarea.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <td>{{ tarea.nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Finalizada</th>
+                                    <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Creado_en</th>
+                                    <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Prioridad</th>
+                                    <td>
+                                        {% set priorityColor = '' %}
+                                        {% if tarea.prioridad == 'ALTA' %}
+                                            {% set priorityColor = 'red' %}
+                                        {% elseif tarea.prioridad == 'MEDIA' %}
+                                            {% set priorityColor = 'orange' %}
+                                        {% elseif tarea.prioridad == 'BAJA' %}
+                                            {% set priorityColor = 'green' %}
+                                        {% endif %}
+                                        <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                           <button type="button" onclick="window.history.back();" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+     <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script>
+        $(document).ready(function() {
+            var table = $('#tareasTabla').DataTable({  
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                        titleAttr: 'Exportar a Excel',
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
+                        titleAttr: 'Exportar a PDF',
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Imprimir',
+                        titleAttr: 'Imprimir',
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child'
+                },
+                order: [[1, 'asc']] // Ordena la tabla por la segunda columna
+            });
+
+            // Ocultar todas las ventanas modales al principio
+            $('.modal').modal('hide');
+
+            // Mostrar ventana modal al hacer clic en el botón de detalles
+            $('.abrirModal').on('click', function() {
+                var modalId = $(this).data('target');
+                $(modalId).modal('show');
+            });
+
+            // Función para actualizar la visibilidad del botón de eliminar selección
+            function updateDeleteButtonVisibility() {
+                var deleteButton = $('#eliminarSeleccionButton');
+                var checkedCount = $('.seleccionarTarea:checked').length;
+                if (checkedCount > 0) {
+                    deleteButton.show(); // Mostrar el botón si hay alguna selección
+                } else {
+                    deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+                }
+            }
+
+            $('#seleccionarTodo').on('click', function() {
+                var isChecked = $(this).prop('checked');
+                $('.seleccionarTarea').prop('checked', isChecked);
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+            });
+
+            $('.seleccionarTarea').on('click', function() {
+                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+            });
+
+            // Agregar evento click al botón para eliminar filas seleccionadas
+            $('#eliminarSeleccionButton').on('click', function () {
+                table.rows('.selected').remove().draw(false);
+            });
+
+            // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
+            $('#formEliminarTareas').submit(function (event) {
+                event.preventDefault(); // Evita el envío del formulario por defecto
+
+                // Obtener los IDs seleccionados
+                var idsSeleccionados = obtenerIDsSeleccionados();
+
+                // Asignar los IDs al campo oculto 'idToDelete'
+                $('#idToDelete').val(idsSeleccionados);
+
+                // Realizar la solicitud AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.trim() === 'Tareas eliminadas correctamente') {
+                            $('#successMessage').removeClass('d-none').text(response);
+                            
+                            // Después de mostrar el mensaje de éxito, redirige a la página de índice de tareas
+                            window.location.href = "{{ path('app_tareas_index') }}";
+                        } else {
+                            $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar las tareas.');
+                        }
+                    },
+                    error: function() {
+                        $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar las tareas.');
+                    }
+                });
+            });
+
+            // Definir la función obtenerIDsSeleccionados
+            function obtenerIDsSeleccionados() {
+                var ids = [];
+                $('.seleccionarTarea:checked').each(function() {
+                    ids.push($(this).val());
+                });
+                return ids;
+            }
+
+        });
+    </script>
 {% endblock %}

@@ -1,13 +1,101 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Tareas{% endblock %}
+{% block title %}Editar Tareas{% endblock %}
 
 {% block body %}
-    <h1>Edit Tareas</h1>
+    <h1>Editar Tareas</h1>
 
-    {{ include('tareas/_form.html.twig', {'button_label': 'Update'}) }}
+    {{ include('tareas/_form.html.twig', {'modal_button': true}) }}
 
-    <a href="{{ path('app_tareas_index') }}">back to list</a>
+    <a href="javascript:history.go(-1);" class="btn btn-secondary">
 
-    {{ include('tareas/_delete_form.html.twig') }}
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+
+    {{ include('tareas/_delete_form.html.twig', {'button_label': 'Eliminar'}) }}
+ 
+    <!-- Ventana modal de confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirmación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que quieres realizar los cambios?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="confirmChanges">Aceptar</button>
+                    <a href="javascript:history.go(-1);" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver </a>
+                 </div>
+            </div>
+        </div>
+    </div>   
+               <!-- Ventana modal de confirmación de eliminación -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Confirmación de Eliminación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar los registros seleccionados?
+                </div>
+                <div class="modal-footer">
+                    <a href="javascript:history.go(-1);" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver </a>
+                    <button type="button" class="btn btn-danger" id="deleteButton">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Mostrar la ventana modal de confirmación cuando se hace clic en el botón "Guardar"
+        document.getElementById('guardarButton').addEventListener('click', function() {
+            $('#confirmModal').modal('show');
+        });
+        // Manejar el clic en el botón "Aceptar" del modal de confirmación
+        document.getElementById('confirmChanges').addEventListener('click', function() {
+            document.getElementById('form').submit();
+        });
+
+        // Manejar el clic en el botón "Cancelar" del modal
+        document.getElementById('cancelChanges').addEventListener('click', function() {
+            // Cerrar la ventana modal
+            $('#confirmModal').modal('hide');
+            
+        });
+ </script>
+
+    <script>
+        // Mostrar la ventana modal de confirmación de eliminación cuando se hace clic en el botón "Eliminar"
+        document.getElementById('deleteConfirmButton').addEventListener('click', function() {
+            $('#deleteConfirmModal').modal('show');
+        });
+
+        // Manejar el clic en el botón "Eliminar" del modal de confirmación de eliminación
+        document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+            // Enviar el formulario de eliminación
+            document.getElementById('deleteForm').submit();
+        });
+
+        // Manejar el clic en el botón "Cancelar" del modal de confirmación de eliminación
+        document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+            // Cerrar la ventana modal de confirmación de eliminación
+            $('#deleteConfirmModal').modal('hide');
+        });
+    </script>
+{% endblock %}
+
+

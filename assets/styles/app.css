@@ -1,3 +1,14 @@
-body {
-    background-color: skyblue;
+.red-arrow-up::after {
+    content: "\25B2"; /* Unicode para la flecha hacia arriba */
+    color: red; /* Color rojo */
+}
+
+.yellow-arrow-up::after {
+    content: "\25B2"; /* Unicode para la flecha hacia arriba */
+    color: yellow; /* Color amarillo */
+}
+
+.green-arrow-up::after {
+    content: "\25B2"; /* Unicode para la flecha hacia arriba */
+    color: green; /* Color verde */
 }
