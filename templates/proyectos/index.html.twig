@@ -60,7 +60,13 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Proyectos</h1>
+    <div class="container">
+        <h1>Clientes</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
+            </div>
+        </div>
 
     <table class="table" id="proyectosTabla">
         <thead>
@@ -103,10 +109,7 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <div style="margin-bottom: 10px;">
-        <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
-
+    </div>
         <!-- Nuevo formulario para eliminar registros -->
         <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
             <!-- Campos ocultos para los IDs de los registros -->
@@ -115,7 +118,7 @@
             <!-- Botón para eliminar registros -->
             <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
         </form>
-    </div>
+    
 
     <!-- Divs para mostrar mensajes de éxito y error -->
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
@@ -232,7 +235,7 @@
 
             // Agregar un contenedor para los botones en la parte superior izquierda
             $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
-                '<button type="button" class="btn btn-primary" id="crearNuevo">Crear Nuevo</button>' +
+               
                 '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
                 '</div>');
             // Función para actualizar la visibilidad del botón de eliminar selección
