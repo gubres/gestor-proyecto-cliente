@@ -12,10 +12,61 @@
             text-align: center;
         }
     </style>
+    <style>
+    /* Estilos para los botones pdf,excel y print */
+    .dt-button {
+        color: white !important;
+        border-color: transparent !important;
+        border-radius: 5px !important;
+        margin-right: 5px;
+    }
+   .toolbar .btn-group > .btn {
+        margin-right: 0 !important;
+    }
+
+    .dt-button:hover {
+        opacity: 0.8;
+    }
+
+    /* Eliminar los márgenes entre los botones */
+    .dt-buttons .btn {
+        margin-right: 0 !important;
+    }
+
+    /* Estilo personalizado para el botón de Excel */
+    .btn-excel {
+        background-color: green !important; /* Cambiar el color de fondo a verde oscuro */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+
+    /* Estilo personalizado para el botón de PDF */
+    .btn-pdf {
+        background-color: purple !important; /* Cambiar el color de fondo a morado */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+
+    /* Estilo personalizado para el botón de impresión */
+    .btn-print {
+        background-color: lightblue !important; /* Cambiar el color de fondo a azul claro */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+    /* Estilo personalizado para los botones de PDF, Excel y Print */
+    .btn-pdf,
+    .btn-excel,
+    .btn-print {
+        margin-right: 0 !important;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-    <h1>Proyectos</h1>
+    <div class="container">
+        <h1>Clientes</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
+            </div>
+        </div>
 
     <table class="table" id="proyectosTabla">
         <thead>
@@ -35,7 +86,13 @@
                 <td><input type="checkbox" class="seleccionarProyecto" name="proyectos_seleccionados[]" value="{{ proyecto.id }}"></td>
                 <td>{{ proyecto.id }}</td>
                 <td>{{ proyecto.nombre }}</td>
-                <td>{{ proyecto.cliente.nombre }}</td>
+                <td>
+                    {% if proyecto.cliente is null %}
+                        Cliente eliminado
+                    {% else %}
+                        {{ proyecto.cliente.nombre }}
+                    {% endif %}
+                </td>
                 <td>
                     {% for usuarioProyecto in proyecto.usuariosProyectos %}
                         {% if usuarioProyecto.estado %}
@@ -58,10 +115,7 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <div style="margin-bottom: 10px;">
-        <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
-
+    </div>
         <!-- Nuevo formulario para eliminar registros -->
         <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
             <!-- Campos ocultos para los IDs de los registros -->
@@ -70,7 +124,7 @@
             <!-- Botón para eliminar registros -->
             <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
         </form>
-    </div>
+    
 
     <!-- Divs para mostrar mensajes de éxito y error -->
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
@@ -114,7 +168,13 @@
                             </tr>
                             <tr>
                                 <th>Cliente</th>
-                                <td>{{ proyecto.cliente.nombre }}</td>
+                                <td>
+                                {% if proyecto.cliente is null %}
+                                    Cliente eliminado
+                                {% else %}
+                                    {{ proyecto.cliente.nombre }}
+                                {% endif %}
+                            </td>
                             </tr>
                             <tr>
                                 <th>Usuarios Asignados</th>
@@ -135,9 +195,9 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" onclick="window.history.back();" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i>
-    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-arrow-left"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -156,6 +216,7 @@
     <script>
         $(document).ready(function() {
             var table = $('#proyectosTabla').DataTable({  
+
                 dom: 'Bfrtip',
                 buttons: [
                     {
@@ -196,6 +257,11 @@
                 colReorder: true // Permite reordenar las columnas
             });
 
+            // Agregar un contenedor para los botones en la parte superior izquierda
+            $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
+               
+                '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
+                '</div>');
             // Función para actualizar la visibilidad del botón de eliminar selección
             function updateDeleteButtonVisibility() {
                 var deleteButton = $('#eliminarSeleccionButton');
