@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TareasRepository::class)]
 class Tareas
@@ -16,20 +17,38 @@ class Tareas
     #[ORM\Column]
     private ?int $id = null;
 
+    //restricciones nombre tarea
     #[ORM\Column(length: 30)]
+    #[Assert\NotBlank(message: "El nombre de la tarea no puede estar vacío.")]
+    #[Assert\Length(
+        min: 1,
+        max: 30,
+        maxMessage: "El nombre de la tarea debe ser entre 1 y 30 caracteres."
+    )]
     private ?string $nombre = null;
 
     #[ORM\Column]
     private ?bool $finalizada = null;
 
+    //validación fecha, no puede estar vacía
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "La fecha de creación no puede estar vacía.")]
     private ?\DateTimeInterface $creado_en = null;
+    
 
+    //añado restricciones a la prioridad
     #[ORM\Column(length: 10)]
+    #[Assert\NotBlank(message: "La prioridad de la tarea es requerida.")]
+    #[Assert\Choice(
+        choices: ['ALTA', 'MEDIA', 'BAJA'],
+        message: "La prioridad debe ser alta, media o baja."
+    )]
     private ?string $prioridad = null;
 
+    //restricción de asociación tarea/proyecto
     #[ORM\ManyToOne(inversedBy: 'tareas')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "La tarea debe estar asociada a un proyecto.")]
     private ?Proyectos $proyecto = null;
 
     /**
