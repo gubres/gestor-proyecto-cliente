@@ -5,6 +5,25 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
+     <!-- Estilos para la ventana modal -->
+    <style>
+        /* Estilos para la ventana modal */
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .modal-table th,
+        .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .modal-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+
+    
     <style>
         /* Estilo para centrar el texto en las celdas de la tabla */
         table.table th,
@@ -15,7 +34,7 @@
     <style>
     /* Estilos para los botones pdf,excel y print */
     .dt-button {
-        color: white !important;
+        
         border-color: transparent !important;
         border-radius: 5px !important;
         margin-right: 5px;
@@ -65,8 +84,18 @@
         <div class="row">
             <div class="col-md-6">
                 <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
+                <!-- Nuevo formulario para eliminar registros -->
+                <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
+                    <!-- Campos ocultos para los IDs de los registros -->
+                    <input type="hidden" name="id" id="idToDelete" value="">
+                    
+                    <!-- Botón para eliminar registros -->
+                    <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+                </form>
             </div>
         </div>
+
+    <div id="toolbar"></div> <!-- Contenedor para los botones -->
 
     <table class="table" id="proyectosTabla">
         <thead>
@@ -116,14 +145,6 @@
         </tbody>
     </table>
     </div>
-        <!-- Nuevo formulario para eliminar registros -->
-        <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
-            <!-- Campos ocultos para los IDs de los registros -->
-            <input type="hidden" name="id" id="idToDelete" value="">
-            
-            <!-- Botón para eliminar registros -->
-            <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
-        </form>
     
 
     <!-- Divs para mostrar mensajes de éxito y error -->
@@ -140,22 +161,6 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Aquí agregamos estilos para la tabla -->
-                    <style>
-                        .modal-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                        }
-                        .modal-table th,
-                        .modal-table td {
-                            border: 1px solid #ddd;
-                            padding: 8px;
-                        }
-                        .modal-table th {
-                            background-color: #f2f2f2;
-                            text-align: left;
-                        }
-                    </style>
                     <table class="modal-table">
                         <tbody>
                             <tr>
@@ -207,55 +212,91 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.4/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/rr-1.5.0/sb-1.7.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
+     <!-- Estilos y scripts para DataTables con botones y selección múltiple -->
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    
-    <!-- Agrega el script de DataTables ColVis -->
-    <script src="https://cdn.datatables.net/colvis/1.2.0/js/dataTables.colVis.min.js"></script>
+    <!-- Agrega el script de DataTables Buttons -->
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
     <script>
         $(document).ready(function() {
             var table = $('#proyectosTabla').DataTable({  
-
-                dom: 'Bfrtip',
+                dom: '<"toolbar">Bfrtip',
                 buttons: [
                     {
                         extend: 'excel',
-                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                        text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
+                        className: 'btn-excel'
                     },
                     {
                         extend: 'pdf',
-                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
+                        text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
+                        className: 'btn-pdf'
                     },
                     {
                         extend: 'print',
-                        text: '<i class="fas fa-print"></i> Imprimir',
+                        text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
-                    },
-                    {
-                       extend: 'colvis',
-                       text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
-                       collectionLayout: 'fixed single', // Cambiar el diseño a una sola columna
-                       columns: ':not(:last-child)', // Selecciona todas las columnas excepto la última
-                       columnText: function ( dt, idx, title ) {
-                       return '<label class="checkbox-custom">' +
-                              '<input type="checkbox" value="'+idx+'" id="colvis_'+idx+'" class="d-none">' +
-                              '<span class="column-title">'+title+'</span>' +
-                              '</label>';
-                        }
+                        className: 'btn-print'
                     }
-
-            ],
-
+                ],
                 select: {
                     style: 'multi',
                     selector: 'td:first-child'
                 },
                 order: [[1, 'asc']], // Ordena la tabla por la segunda columna
-                colReorder: true // Permite reordenar las columnas
+                initComplete: function () {
+                    $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
+                }
             });
+
+
+            // Agrega el botón de filtrar usando los botones de extensión
+            new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
+                        className: 'btn-filter',
+                    }
+                ]
+            }).container().appendTo($('#toolbar'));
+
+            // Inicializar los botones de extensión
+            table.buttons().container().appendTo($('#toolbar'));
+
+            // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
+            $('#toolbar').on('click', '.btn-filter', function () {
+                $(this).next().toggleClass('show');
+            });
+
+            // Agregar evento para mostrar la marca de verificación al seleccionar una columna
+            $('#toolbar').on('change', 'input[type="checkbox"].dt-checkbox', function() {
+                var index = $(this).val();
+                var checked = $(this).prop('checked');
+                table.column(index).visible(checked);
+                updateCheckboxesVisibility(); // Llama a la función para actualizar la visibilidad de los checkboxes
+            });
+
+            // Función para actualizar la visibilidad de los checkboxes
+            function updateCheckboxesVisibility() {
+                $('#toolbar input[type="checkbox"].dt-checkbox').each(function() {
+                    var column = table.column($(this).val());
+                    $(this).prop('checked', column.visible()); // Marcar o desmarcar el checkbox según la visibilidad de la columna
+                });
+            }
+
+            // Cerrar el desplegable al hacer clic fuera de él
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.btn-filter').length) {
+                    $('.show').removeClass('show');
+                }
+            });
+
+
 
             // Agregar un contenedor para los botones en la parte superior izquierda
             $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
