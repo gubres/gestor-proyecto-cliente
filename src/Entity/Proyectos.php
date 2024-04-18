@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\UsuariosProyectos;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProyectosRepository::class)]
 class Proyectos
@@ -16,10 +17,22 @@ class Proyectos
     #[ORM\Column]
     private ?int $id = null;
 
+    //restricción nombre proyecto 1-50 caracteres
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "El nombre del proyecto no puede estar vacío.")]
+    #[Assert\Length(
+        max: 50,
+        maxMessage: "El nombre del proyecto no puede tener más de 50 caracteres."
+    )]
     private ?string $nombre = null;
 
+    //se requiere hacer click a un estado del proyecto
     #[ORM\Column(length: 15)]
+    #[Assert\NotBlank(message: "El estado del proyecto es requerido.")]
+    #[Assert\Choice(
+        choices: ['Activo', 'Inactivo'],
+        message: "El estado del proyecto debe ser activo o inactivo."
+    )]
     private ?string $estado = null;
 
     /**

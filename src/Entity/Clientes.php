@@ -7,8 +7,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Proyectos;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: ClientesRepository::class)]
+//campo email único en bbdd
+#[UniqueEntity(fields: ['email'], message: 'Ya existe una cuenta con este email')]
 class Clientes
 {
     #[ORM\Id]
@@ -16,13 +21,34 @@ class Clientes
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
+    //restricciones nombre cliente
+    #[ORM\Column(length: 30)]
+    #[Assert\NotBlank(message: "El nombre del cliente no puede estar vacío.")]
+    #[Assert\Length(
+        min: 1,
+        max: 30,
+        maxMessage: "El nombre no puede sobrepasar los 30 caracteres."
+    )]
     private ?string $nombre = null;
-
+    
+    //validación teléfono cliente
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: "El teléfono no puede estar vacío.")]
+    #[Assert\Length(
+        min: 9,
+        minMessage: "El teléfono debe tener un mínimo de 9 caracteres.",
+        max: 20,
+        maxMessage: "El teléfono no puede sobrepasar los 20 caracteres."
+    )]
     private ?string $telefono = null;
 
+    //validaciones email cliente
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "El campo email no puede estar vacío.")]
+    #[Assert\Email(
+        message: "El formato del email '{{ value }}' no es válido.",
+        mode: "strict"
+    )]
     private ?string $email = null;
 
     /**

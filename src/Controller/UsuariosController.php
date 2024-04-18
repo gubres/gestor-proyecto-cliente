@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Form\UsuarioEditType;
 use App\Form\RegistrationFormType;
 use Symfony\Component\Form\FormError;
@@ -36,6 +37,7 @@ class UsuariosController extends AbstractController
     #[Route('/', name: 'app_usuarios_index', methods: ['GET'])]
     public function index(UsuariosRepository $usuariosRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
         return $this->render('usuarios/index.html.twig', [
             'usuarios' => $usuariosRepository->findAll(),
         ]);
@@ -126,6 +128,7 @@ class UsuariosController extends AbstractController
     #[Route('/usuarios/{id}/edit', name: 'app_usuarios_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
         $form = $this->createForm(UsuarioEditType::class, $usuario);
         $form->handleRequest($request);
 
@@ -168,6 +171,7 @@ class UsuariosController extends AbstractController
     public function delete(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager): Response
 
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
         $id = $request->attributes->get('id');
         $usuario = $this->usuariosRepository->find($id);
 
@@ -187,6 +191,7 @@ class UsuariosController extends AbstractController
     #[Route('/{id}', name: 'app_usuarios_show', methods: ['GET'])]
     public function show(Usuarios $usuario): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
         return $this->render('usuarios/show.html.twig', [
             'usuario' => $usuario,
         ]);
