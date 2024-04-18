@@ -72,6 +72,9 @@ class UsuariosController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
+            // Registro exitoso, agregamos un mensaje flash
+            $this->addFlash('success', '¡Registro completado! Por favor, inicia sesión.');
+
             // Llama al método para actualizar los roles basados en la activación del usuario
             $user->updateRolesBasedOnActivation();
 
@@ -195,6 +198,11 @@ class UsuariosController extends AbstractController
         return $this->render('usuarios/show.html.twig', [
             'usuario' => $usuario,
         ]);
+    }
+
+    public function success(): Response
+    {
+        return $this->render('registration/success.html.twig');
     }
     
 

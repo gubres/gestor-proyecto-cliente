@@ -5,29 +5,29 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
+    
+    <!-- Estilos para la ventana modal -->
     <style>
-        /* Estilo para centrar el texto en las celdas de la tabla */
-        table.table th,
-        table.table td {
-            text-align: center;
+        /* Estilos para la ventana modal */
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        table.table thead th{
-            text-align: center;
+        .modal-table th,
+        .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
         }
-        /* Estilo para centrar la columna 'Creado_en' */
-        .text-center {
-            text-align: center;
-        }
-        
-        #tareasTabla td:nth-child(5) {
-            text-align: center;
+        .modal-table th {
+            background-color: #f2f2f2;
+            text-align: left;
         }
     </style>
 
     <style>
     /* Estilos para los botones pdf,excel y print */
     .dt-button {
-        color: white !important;
+       color: black !important;
         border-color: transparent !important;
         border-radius: 5px !important;
         margin-right: 5px;
@@ -77,8 +77,19 @@
         <div class="row">
             <div class="col-md-6">
                 <a href="{{ path('app_tareas_new') }}" class="btn btn-primary">Crear Nuevo</a>
+                <!-- Nuevo formulario para eliminar registros -->
+                <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
+                    <!-- Campos ocultos para los IDs de los registros -->
+                    <input type="hidden" name="id" id="idToDelete" value="">
+                    
+                    <!-- Botón para eliminar registros -->
+                    <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+                </form>
+                    
             </div>
         </div>
+
+    <div id="toolbar"></div> <!-- Contenedor para los botones -->
 
     <table class="table" id="tareasTabla">
         <thead>
@@ -87,175 +98,140 @@
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Finalizada</th>
-                <th class="text-center">Creado_en</th> {# Se agrega la clase 'text-center' aquí #}
+                <th>Fecha creación</th>
                 <th>Prioridad</th>
-                <th>Actions</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for tarea in tareas %}
+                <tr>
+                    <td><input type="checkbox" class="seleccionarProyecto" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
+                    <td>{{ tarea.id }}</td>
+                    <td>{{ tarea.nombre }}</td>
+                    <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
+                    <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
+                    <td>
+                        {% set priorityColor = '' %}
+                        {% if tarea.prioridad == 'ALTA' %}
+                            {% set priorityColor = 'red' %}
+                        {% elseif tarea.prioridad == 'MEDIA' %}
+                            {% set priorityColor = 'orange' %}
+                        {% elseif tarea.prioridad == 'BAJA' %}
+                            {% set priorityColor = 'green' %}
+                        {% endif %}
+                        <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
+                    </td>
+                    <td>
+                        <!-- Botón para abrir la ventana modal con los detalles de la tarea -->
+                        <button type="button" class="btn btn-info abrirModal" data-toggle="modal" data-target="#detallesTarea{{ tarea.id }}">Detalles</button>
 
-            <tr>
-                <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionados[]" value="{{ tarea.id }}"></td>
-                <td>{{ tarea.id }}</td>
-                <td>{{ tarea.nombre }}</td>
-                <td>
-    {% if tarea.finalizada %}
-        <i class="fas fa-check-circle text-success"></i> <!-- Icono de tick verde -->
-    {% else %}
-        <i class="fas fa-times-circle text-danger"></i> <!-- Icono de cruz roja -->
-    {% endif %}
-</td>
-                <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    {% set priorityColor = '' %}
-                    {% if tarea.prioridad == 'ALTA' %}
-                        {% set priorityColor = 'red' %}
-                    {% elseif tarea.prioridad == 'MEDIA' %}
-                        {% set priorityColor = 'orange' %}
-                    {% elseif tarea.prioridad == 'BAJA' %}
-                        {% set priorityColor = 'green' %}
-                    {% endif %}
-                    <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
-                </td>
-                <td>
-                    <!-- Botón para abrir el modal de detalles -->
-                    <button type="button" class="btn btn-info abrirModal" data-toggle="modal" data-target="#detallesTarea{{ tarea.id }}">Detalles</button>
-                    <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning">Editar</a>
-                </td>
-            </tr>
-
+                        <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning ">Editar</a>
+                    </td>
+                </tr>
             {% else %}
-            <tr>
-                <td colspan="7">no records found</td>
-            </tr>
+                <tr>
+                    <td colspan="6">no records found</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
-
-    <div style="margin-bottom: 10px;">
-
-        <a href="{{ path('app_tareas_new') }}" class="btn btn-primary">Crear Nuevo</a>
-
-        <!-- Nuevo formulario para eliminar registros -->
-        <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
-            <!-- Campos ocultos para los IDs de los registros -->
-            <input type="hidden" name="id" id="idToDelete" value="">
-            
-            <!-- Botón para eliminar registros -->
-            <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
-        </form>
-    </div>
-
-    <!-- Divs para mostrar mensajes de éxito y error -->
+    
+    
+     <!-- Divs para mostrar mensajes de éxito y error -->
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
-    <div id="errorMessage" class="alert alert-danger d-none" role="alert">
+    <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
 
-     
-
-
-    <!-- Modal de detalles -->
+    <!-- Divs para mostrar detalles de la tarea -->
     {% for tarea in tareas %}
-
-    <div class="modal fade" id="detallesTarea{{ tarea.id }}" tabindex="-1" role="dialog" aria-labelledby="detallesTarea{{ tarea.id }}Label" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="detallesTarea{{ tarea.id }}Label">Detalles de la Tarea</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="modal-table">
-                        <tbody>
-                            <tr>
-                                <th>Id</th>
-                                <td>{{ tarea.id }}</td>
-                            </tr>
-                            <tr>
-                                <th>Nombre</th>
-                                <td>{{ tarea.nombre }}</td>
-                            </tr>
-                            <tr>
-                                <th>Finalizada</th>
-                                <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Creado_en</th>
-                                <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Prioridad</th>
-                                <td>
-                                    {% set priorityColor = '' %}
-                                    {% if tarea.prioridad == 'ALTA' %}
-                                        {% set priorityColor = 'red' %}
-                                    {% elseif tarea.prioridad == 'MEDIA' %}
-                                        {% set priorityColor = 'orange' %}
-                                    {% elseif tarea.prioridad == 'BAJA' %}
-                                        {% set priorityColor = 'green' %}
-                                    {% endif %}
-                                    <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="window.history.back();" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-
+        <div class="modal fade" id="detallesTarea{{ tarea.id }}" tabindex="-1" role="dialog" aria-labelledby="detallesTarea{{ tarea.id }}Label" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detallesTarea{{ tarea.id }}Label">Detalles de la Tarea</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="modal-table">
+                            <tbody>
+                                <tr>
+                                    <th>Id</th>
+                                    <td>{{ tarea.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <td>{{ tarea.nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Finalizada</th>
+                                    <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Creado_en</th>
+                                    <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Prioridad</th>
+                                    <td>
+                                        {% set priorityColor = '' %}
+                                        {% if tarea.prioridad == 'ALTA' %}
+                                            {% set priorityColor = 'red' %}
+                                        {% elseif tarea.prioridad == 'MEDIA' %}
+                                            {% set priorityColor = 'orange' %}
+                                        {% elseif tarea.prioridad == 'BAJA' %}
+                                            {% set priorityColor = 'green' %}
+                                        {% endif %}
+                                        <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="window.history.back();" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     {% endfor %}
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-
-    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.4/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/rr-1.5.0/sb-1.7.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
-
+    <!-- Estilos y scripts para DataTables con botones y selección múltiple -->
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    
-    <!-- Agrega el script de DataTables ColVis -->
-    <script src="https://cdn.datatables.net/colvis/1.2.0/js/dataTables.colVis.min.js"></script>
+    <!-- Agrega el script de DataTables Buttons -->
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
+
     <script>
         $(document).ready(function() {
             var table = $('#tareasTabla').DataTable({  
-
-                dom: 'Bfrtip',
+                dom: '<"toolbar">Bfrtip',
                 buttons: [
                     {
                         extend: 'excel',
-                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                        text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
+                        className: 'btn-excel'
                     },
                     {
                         extend: 'pdf',
-                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
+                        text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
+                        className: 'btn-pdf'
                     },
                     {
                         extend: 'print',
-                        text: '<i class="fas fa-print"></i> Imprimir',
+                        text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
-                    },
-                    {
-                        extend: 'colvis',
-                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
-                        collectionLayout: 'fixed single', // Cambiar el diseño a una sola columna
-                        columns: ':not(:last-child)', // Selecciona todas las columnas excepto la última
-                        columnText: function ( dt, idx, title ) {
-                            return '<label class="checkbox-custom">' +
-                                   '<input type="checkbox" value="'+idx+'" id="colvis_'+idx+'" class="d-none">' +
-                                   '<span class="column-title">'+title+'</span>' +
-                                   '</label>';
-                        }
+                        className: 'btn-print'
                     }
                 ],
                 select: {
@@ -263,15 +239,54 @@
                     selector: 'td:first-child'
                 },
                 order: [[1, 'asc']], // Ordena la tabla por la segunda columna
-                colReorder: true // Permite reordenar las columnas
+                initComplete: function () {
+                    $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
+                }
+            });
+
+             // Agrega el botón de filtrar usando los botones de extensión
+            new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
+                        className: 'btn-filter',
+                    }
+                ]
+            }).container().appendTo($('#toolbar'));
+
+            // Inicializar los botones de extensión
+            table.buttons().container().appendTo($('#toolbar'));
+
+            // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
+            $('#toolbar').on('click', '.btn-filter', function () {
+                $(this).next().toggleClass('show');
+            });
+
+            // Agregar evento para mostrar la marca de verificación al seleccionar una columna
+            $('#toolbar').on('change', 'input[type="checkbox"].dt-checkbox', function() {
+                var index = $(this).val();
+                var checked = $(this).prop('checked');
+                table.column(index).visible(checked);
+                updateCheckboxesVisibility(); // Llama a la función para actualizar la visibilidad de los checkboxes
+            });
+
+            // Función para actualizar la visibilidad de los checkboxes
+            function updateCheckboxesVisibility() {
+                $('#toolbar input[type="checkbox"].dt-checkbox').each(function() {
+                    var column = table.column($(this).val());
+                    $(this).prop('checked', column.visible()); // Marcar o desmarcar el checkbox según la visibilidad de la columna
+                });
+            }
+
+            // Cerrar el desplegable al hacer clic fuera de él
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.btn-filter').length) {
+                    $('.show').removeClass('show');
+                }
             });
 
 
-            // Agregar un contenedor para los botones en la parte superior izquierda
-            $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
-                
-                '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
-                '</div>');
             // Ocultar todas las ventanas modales al principio
             $('.modal').modal('hide');
 
