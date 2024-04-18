@@ -4,9 +4,18 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <!--Esto es para el datatable de botones y selección múltiple con boostrap-->
     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
     <style>
+
+        /* Estilo para centrar el texto en las celdas de la tabla */
+        table.table th,
+        table.table td {
+            text-align: center;
+        }
+        table.table thead th{
+            text-align: center;
+        }
+  
     /* Estilos para los botones pdf,excel y print */
     .dt-button {
         color: white !important;
@@ -62,21 +71,25 @@
                     <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Registrar nuevo usuario</a>
                 </div>
         </div>
+
     <table class="table" id="usuariosTabla">
         <thead>
             <tr>
+                <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Estado</th>
-                <th>Roles</th>
-                <th>Verificado</th>
-                <th>Acciones</th>
+
+                <th>IsVerified</th>
+                <th>Actions</th>
+
             </tr>
         </thead>
         <tbody>
             {% for usuario in usuarios %}
             <tr>
+                <td><input type="checkbox" class="seleccionarUsuario" name="usuarios_seleccionados[]" value="{{ usuario.id }}"></td>
                 <td>{{ usuario.id }}</td>
                 <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.email }}</td>
@@ -101,34 +114,49 @@
                 </td>
                 <td>
                     <!-- Botón para abrir el modal de detalles -->
-                    <button type="button" class="btn btn-info open-modal" data-bs-toggle="modal" data-bs-target="#detallesModal{{ usuario.id }}">Detalles</button>
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#detallesModal{{ usuario.id }}">Detalles</button>
                     <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar</a>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="7">no records found</td>
+                <td colspan="9">no records found</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+
+    <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_usuarios_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
+        <!-- Nuevo formulario para eliminar registros -->
+        <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
+            <!-- Campos ocultos para los IDs de los registros -->
+            <input type="hidden" name="id" id="idToDelete" value="">
+            
+            <!-- Botón para eliminar registros -->
+            <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+        </form>
+
     </div>
 
     <!-- Divs para mostrar mensajes de éxito y error -->
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
     <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
 
-   <!-- Modal de detalles -->
-{% for usuario in usuarios %}
-<div class="modal fade" id="detallesModal{{ usuario.id }}" tabindex="-1" aria-labelledby="detallesModalLabel{{ usuario.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="detallesModalLabel{{ usuario.id }}">Detalles del Usuario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            <style>
+    <!-- Modal de detalles -->
+    {% for usuario in usuarios %}
+    <div class="modal fade" id="detallesModal{{ usuario.id }}" tabindex="-1" aria-labelledby="detallesModalLabel{{ usuario.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg"> <!-- modal-lg para hacer el modal más grande -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detallesModalLabel{{ usuario.id }}">Detalles del Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Aquí agregamos estilos para la tabla -->
+                    <style>
                         .modal-table {
                             width: 100%;
                             border-collapse: collapse;
@@ -143,115 +171,126 @@
                             text-align: left;
                         }
                     </style>
-                <table class="table" style="border: 1px solid #dee2e6;">
-                    <tbody>
-                        <tr>
-                            <th>Id</th>
-                            <td>{{ usuario.id }}</td>
-                        </tr>
-                        <tr>
-                            <th>Nombre</th>
-                            <td>{{ usuario.nombre }}</td>
-                        </tr>
-                        <tr>
-                            <th>Email</th>
-                            <td>{{ usuario.email }}</td>
-                        </tr>
-                        <tr>
-                            <th>Estado</th>
-                            <td>{{ usuario.isActive ? 'Activo' : 'Inactivo' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Roles</th>
-                            <td>
-                                {% if usuario.isActive %}
-                                    {% if 'ROLE_USER' in usuario.roles %}
-                                        ROLE_USER
+                    <table class="modal-table">
+                        <tbody>
+                            <tr>
+                                <th>Id</th>
+                                <td>{{ usuario.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nombre</th>
+                                <td>{{ usuario.nombre }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ usuario.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Estado</th>
+                                <td>{{ usuario.isActive ? 'Activo' : 'Inactivo' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Roles</th>
+                                <td>
+                                    {% if usuario.isActive %}
+                                        {% if 'ROLE_USER' in usuario.roles %}
+                                            ROLE_USER
+                                        {% else %}
+                                            {{ usuario.roles ? usuario.roles|json_encode : '' }}
+                                        {% endif %}
                                     {% else %}
-                                        {{ usuario.roles ? usuario.roles|json_encode : '' }}
+                                        
                                     {% endif %}
-                                {% else %}
-                                    
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Password</th>
-                            <td>{{ usuario.password }}</td>
-                        </tr>
-                        <tr>
-                            <th>IsVerified</th>
-                            <td>
-                                {% if not usuario.isVerified %}
-                                    <i class="fas fa-times-circle text-danger"></i> <!-- Icono de cruz roja -->
-                                {% else %}
-                                    <i class="fas fa-check-circle text-success"></i> <!-- Icono de check verde -->
-                                {% endif %}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Password</th>
+                                <td>{{ usuario.password }}</td>
+                            </tr>
+                            <tr>
+                                <th>IsVerified</th>
+                                <td>
+                                    {% if not usuario.isVerified %}
+                                        <i class="fas fa-times-circle text-danger"></i> <!-- Icono de cruz roja -->
+                                    {% else %}
+                                        <i class="fas fa-check-circle text-success"></i> <!-- Icono de check verde -->
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="window.history.back();" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{% endfor %}
+    {% endfor %}
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.4/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/rr-1.5.0/sb-1.7.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    
+    <!-- Agrega el script de DataTables ColVis -->
+    <script src="https://cdn.datatables.net/colvis/1.2.0/js/dataTables.colVis.min.js"></script>
     <script>
         $(document).ready(function() {
             var table = $('#usuariosTabla').DataTable({  
-                dom: '<"toolbar">Bfrtip',
-            buttons: [
-                {
-                    extend: 'excel',
-                    text: '<i class="fas fa-file-excel"></i>',
-                    titleAttr: 'Exportar a Excel',
-                    className: 'btn-excel'
-                },
-                {
-                    extend: 'pdf',
-                    text: '<i class="fas fa-file-pdf"></i>',
-                    titleAttr: 'Exportar a PDF',
-                    className: 'btn-pdf'
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="fas fa-print"></i>',
-                    titleAttr: 'Imprimir',
-                    className: 'btn-print'
-                }
-            ],
-            select: {
-                style: 'multi',
-                selector: 'td:first-child'
-            },
-            order: [[1, 'asc']], // Ordena la tabla por la segunda columna
-            initComplete: function () {
-                $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
-            }
-        });
 
-            $(document).ready(function() {
-                $('.open-modal').click(function() {
-                    var userId = $(this).data('id');
-                    $.ajax({
-                        type: 'GET',
-                        url: '{{ path("app_usuarios_index") }}',
-                        data: { id: userId },
-                        success: function(response) {
-                            $('#detallesModal' + userId + ' .modal-body').html(response);
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                        titleAttr: 'Exportar a Excel',
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i> Exportar PDF',
+                        titleAttr: 'Exportar a PDF',
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Imprimir',
+                        titleAttr: 'Imprimir',
+                    },
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
+                        collectionLayout: 'fixed single', // Cambiar el diseño a una sola columna
+                        columns: ':not(:last-child)', // Selecciona todas las columnas excepto la última
+                        columnText: function ( dt, idx, title ) {
+                            return '<label class="checkbox-custom">' +
+                                   '<input type="checkbox" value="'+idx+'" id="colvis_'+idx+'" class="d-none">' +
+                                   '<span class="column-title">'+title+'</span>' +
+                                   '</label>';
                         }
-                    });
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child'
+                },
+                order: [[1, 'asc']], // Ordena la tabla por la segunda columna
+                colReorder: true // Permite reordenar las columnas
+            });
+
+
+            $('.open-modal').click(function() {
+                var userId = $(this).data('id');
+                $.ajax({
+                    type: 'GET',
+                    url: '{{ path("app_usuarios_index") }}',
+                    data: { id: userId },
+                    success: function(response) {
+                        $('#detallesModal' + userId + ' .modal-body').html(response);
+                    }
                 });
             });
         });
