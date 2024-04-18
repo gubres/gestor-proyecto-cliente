@@ -98,7 +98,7 @@
                     <td>{{ tarea.nombre }}</td>
                     <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
                     <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
-                    <td>
+                    <td>    
                         {% set priorityColor = '' %}
                         {% if tarea.prioridad == 'ALTA' %}
                             {% set priorityColor = 'red' %}
@@ -124,6 +124,9 @@
         </tbody>
     </table>
 
+    <div style="margin-bottom: 10px;">
+        <a href="{{ path('app_tareas_new') }}" class="btn btn-primary">Crear Nuevo</a>
+
     <!-- Divs para mostrar detalles de la tarea -->
     {% for tarea in tareas %}
         <div class="modal fade" id="detallesTarea{{ tarea.id }}" tabindex="-1" role="dialog" aria-labelledby="detallesTarea{{ tarea.id }}Label" aria-hidden="true">
@@ -131,9 +134,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="detallesTarea{{ tarea.id }}Label">Detalles de la Tarea</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <table class="modal-table">
@@ -171,11 +172,11 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" onclick="window.history.back();" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </button>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
                 </div>
             </div>
         </div>

@@ -86,7 +86,13 @@
                 <td><input type="checkbox" class="seleccionarProyecto" name="proyectos_seleccionados[]" value="{{ proyecto.id }}"></td>
                 <td>{{ proyecto.id }}</td>
                 <td>{{ proyecto.nombre }}</td>
-                <td>{{ proyecto.cliente.nombre }}</td>
+                <td>
+                    {% if proyecto.cliente is null %}
+                        Cliente eliminado
+                    {% else %}
+                        {{ proyecto.cliente.nombre }}
+                    {% endif %}
+                </td>
                 <td>
                     {% for usuarioProyecto in proyecto.usuariosProyectos %}
                         {% if usuarioProyecto.estado %}
@@ -162,7 +168,13 @@
                             </tr>
                             <tr>
                                 <th>Cliente</th>
-                                <td>{{ proyecto.cliente.nombre }}</td>
+                                <td>
+                                {% if proyecto.cliente is null %}
+                                    Cliente eliminado
+                                {% else %}
+                                    {{ proyecto.cliente.nombre }}
+                                {% endif %}
+                            </td>
                             </tr>
                             <tr>
                                 <th>Usuarios Asignados</th>
@@ -183,9 +195,9 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" onclick="window.history.back();" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i>
-    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-arrow-left"></i>
+                    </button>
                 </div>
             </div>
         </div>
