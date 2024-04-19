@@ -118,7 +118,7 @@
                     {% endfor %}
                     </td>
                 <td>
-                    <a href="{{ path('app_clientes_show', {'id': cliente.id}) }}" class="btn btn-info ">Detalles</a>
+                    <button type="button" class="btn btn-info abrirDetallesModal" data-toggle="modal" data-target="#detallesCliente{{ cliente.id }}">Detalles</button>
                     <a href="{{ path('app_clientes_edit', {'id': cliente.id}) }}" class="btn btn-warning ">Editar</a>
                 </td>
             </tr>
@@ -136,7 +136,7 @@
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
     <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
 
-    <!-- Divs para mostrar detalles del cliente -->
+    <!-- Ventanas modales para mostrar detalles de los clientes -->
     {% for cliente in clientes %}
         <div class="modal fade" id="detallesCliente{{ cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="detallesCliente{{ cliente.id }}Label" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -159,21 +159,18 @@
                                     <td>{{ cliente.nombre }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Nombre</th>
+                                    <th>Telefono</th>
                                     <td>{{ cliente.telefono }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Nombre</th>
+                                    <th>Email</th>
                                     <td>{{ cliente.email }}</td>
-                                </tr>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" onclick="window.history.back();" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -268,12 +265,8 @@
                 }
             });
 
-
-            // Ocultar todas las ventanas modales al principio
-            $('.modal').modal('hide');
-
             // Mostrar ventana modal al hacer clic en el botón de detalles
-            $('.abrirModal').on('click', function() {
+            $('.abrirDetallesModal').on('click', function() {
                 var modalId = $(this).data('target');
                 $(modalId).modal('show');
             });

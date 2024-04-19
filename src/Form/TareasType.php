@@ -14,35 +14,42 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 class TareasType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
-{
-    $builder
-        ->add('nombre')
-        ->add('finalizada')
-        ->add('creado_en', null, [
-            'widget' => 'single_text',
-        ])
-        ->add('prioridad', ChoiceType::class, [
-            'choices' => [
-                'Selecciona la prioridad' => null, // Opción predeterminada
-                'ALTA' => 'ALTA',
-                'MEDIA' => 'MEDIA',
-                'BAJA' => 'BAJA',
-            ],
+    {
+        $builder
+            ->add('nombre', null, [
+                'attr' => ['class' => 'form-control'], // Agrega la clase 'form-control' al campo nombre
+            ])
+            ->add('finalizada', ChoiceType::class, [
+                'choices' => [
+                    'Sí' => true,
+                    'No' => false,
+                ],
+                'expanded' => true,
+                'multiple' => false,
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('creado_en', null, [
+                'widget' => 'single_text',
+            ])
+            ->add('prioridad', ChoiceType::class, [
+                'choices' => [
+                    'Selecciona la prioridad' => null, // Opción predeterminada
+                    'ALTA' => 'ALTA',
+                    'MEDIA' => 'MEDIA',
+                    'BAJA' => 'BAJA',
+                ],
     
-        ])
-
-        ->add('proyecto', EntityType::class, [
-            'class' => Proyectos::class,
-            'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Proyectos
-        ])
-        ->add('usuario', EntityType::class, [
-            'class' => Usuarios::class,
-            'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Usuarios
-            'multiple' => true,
-        ])
-    ;
-}
-
+            ])
+            ->add('proyecto', EntityType::class, [
+                'class' => Proyectos::class,
+                'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Proyectos
+            ])
+            ->add('usuario', EntityType::class, [
+                'class' => Usuarios::class,
+                'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Usuarios
+                'multiple' => true,
+            ]);
+    }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
