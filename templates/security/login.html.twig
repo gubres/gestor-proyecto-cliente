@@ -37,6 +37,9 @@
                             <button type="button" class="btn btn-outline-secondary" id="togglePassword">Mostrar contraseña</button>
                         </div>
                     </div>
+                     <small class="form-text text-muted mt-2">
+                        <a href="{{ path('recuperar_contraseña') }}">¿Olvidaste tu contraseña?</a>
+                    </small>
                 </div>
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
