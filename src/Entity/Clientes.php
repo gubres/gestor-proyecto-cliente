@@ -57,6 +57,11 @@ class Clientes
     #[ORM\OneToMany(targetEntity: Proyectos::class, mappedBy: 'cliente', fetch: 'EAGER')]
     private Collection $proyectos;
 
+
+    
+
+
+
     public function getId(): ?int
     {
         return $this->id;

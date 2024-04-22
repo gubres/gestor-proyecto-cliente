@@ -37,6 +37,9 @@
                             <i id="eyeIcon" class="fas fa-eye"></i>
                         </button>
                     </div>
+                     <small class="form-text text-muted mt-2">
+                        <a href="{{ path('recuperar_contraseña') }}">¿Olvidaste tu contraseña?</a>
+                    </small>
                 </div>
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
