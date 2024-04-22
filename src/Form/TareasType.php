@@ -34,6 +34,7 @@ class TareasType extends AbstractType
         ->add('proyecto', EntityType::class, [
             'class' => Proyectos::class,
             'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Proyectos
+            'placeholder' => 'Selecciona un proyecto', // Opción predeterminada
         ])
         ->add('usuario', EntityType::class, [
             'class' => Usuarios::class,

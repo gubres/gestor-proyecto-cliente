@@ -13,12 +13,11 @@ eliminar_registros:
     controller: App\Controller\UsuariosController::eliminarUsuarios
     methods: [POST]
 
-eliminar_clientes:
-    path: /eliminar-clientes
-    controller: App\Controller\ClientesController::eliminarClientes
-    methods: [POST]
-
 app_login:
     path: /login
     controller: App\Controller\SecurityController::login
 
+eliminar_clientes:
+    path: /clientes/eliminarclientes
+    controller: App\Controller\ClientesController::eliminarClientes
+    methods: [POST]
