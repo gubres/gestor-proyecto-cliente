@@ -80,13 +80,11 @@
             <div class="col-md-6">
                 <a href="{{ path('app_clientes_new') }}" class="btn btn-primary">Crear Nuevo</a>
                 <!-- Nuevo formulario para eliminar clientes -->
-                <form action="/eliminar-clientes" method="post" id="formEliminarClientes" style="display: inline-block;">
-                    <!-- Campos ocultos para los IDs de los clientes -->
-                    <input type="hidden" name="id" id="idToDelete" value="">
-                    
-                    <!-- Botón para eliminar clientes -->
-                    <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
+                <form action="{{ path('eliminar_clientes') }}" method="post" id="formEliminarClientes" style="display: inline-block;">
+                    <!-- Botón para eliminar selección -->
+                    <button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
                 </form>
+
             </div>
         </div>
         
@@ -175,6 +173,27 @@
                 </div>
             </div>
         </div>
+
+    <div class="modal fade" id="confirmarEliminacionModal" tabindex="-1" role="dialog" aria-labelledby="confirmarEliminacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmarEliminacionModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro que quieres eliminar los clientes seleccionados?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmarEliminacionButton">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     {% endfor %}
 
 {% endblock %}
@@ -188,7 +207,6 @@
     <!-- Agrega el script de DataTables Buttons -->
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
-
     <script>
         $(document).ready(function() {
             var table = $('#clientesTabla').DataTable({  
@@ -211,7 +229,7 @@
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
                         className: 'btn-print'
-                    }
+                    } 
                 ],
                 select: {
                     style: 'multi',
@@ -222,7 +240,10 @@
                     $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
                 }
             });
-
+            // Script para limpiar la selección de clientes
+            $('#limpiarSeleccionButton').on('click', function() {
+                $('.seleccionarCliente').prop('checked', false);
+            });
              // Agrega el botón de filtrar usando los botones de extensión
             new $.fn.dataTable.Buttons(table, {
                 buttons: [
@@ -233,15 +254,12 @@
                     }
                 ]
             }).container().appendTo($('#toolbar'));
-
             // Inicializar los botones de extensión
             table.buttons().container().appendTo($('#toolbar'));
-
             // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
             $('#toolbar').on('click', '.btn-filter', function () {
                 $(this).next().toggleClass('show');
             });
-
             // Agregar evento para mostrar la marca de verificación al seleccionar una columna
             $('#toolbar').on('change', 'input[type="checkbox"].dt-checkbox', function() {
                 var index = $(this).val();
@@ -249,7 +267,6 @@
                 table.column(index).visible(checked);
                 updateCheckboxesVisibility(); // Llama a la función para actualizar la visibilidad de los checkboxes
             });
-
             // Función para actualizar la visibilidad de los checkboxes
             function updateCheckboxesVisibility() {
                 $('#toolbar input[type="checkbox"].dt-checkbox').each(function() {
@@ -257,86 +274,63 @@
                     $(this).prop('checked', column.visible()); // Marcar o desmarcar el checkbox según la visibilidad de la columna
                 });
             }
-
             // Cerrar el desplegable al hacer clic fuera de él
             $(document).on('click', function (e) {
                 if (!$(e.target).closest('.btn-filter').length) {
                     $('.show').removeClass('show');
                 }
             });
-
+            // Ocultar todas las ventanas modales al principio
+            $('.modal').modal('hide');
             // Mostrar ventana modal al hacer clic en el botón de detalles
             $('.abrirDetallesModal').on('click', function() {
                 var modalId = $(this).data('target');
                 $(modalId).modal('show');
             });
 
-            // Función para actualizar la visibilidad del botón de eliminar selección
-            function updateDeleteButtonVisibility() {
-                var deleteButton = $('#eliminarSeleccionButton');
-                var checkedCount = $('.seleccionarCliente:checked').length;
-                if (checkedCount > 0) {
-                    deleteButton.show(); // Mostrar el botón si hay alguna selección
-                } else {
-                    deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
-                }
-            }
-
-            $('#seleccionarTodo').on('click', function() {
-                var isChecked = $(this).prop('checked');
-                $('.seleccionarCliente').prop('checked', isChecked);
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-            });
-
-            $('.seleccionarCliente').on('click', function() {
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-            });
-
-            // Agregar evento click al botón para eliminar filas seleccionadas
-            $('#eliminarSeleccionButton').on('click', function () {
-                table.rows('.selected').remove().draw(false);
-            });
-
-            // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
-            $('#formEliminarClientes').submit(function (event) {
-                event.preventDefault(); // Evita el envío del formulario por defecto
-
-                // Obtener los IDs seleccionados
-                var idsSeleccionados = obtenerIDsSeleccionados();
-
-                // Asignar los IDs al campo oculto 'idToDelete'
-                $('#idToDelete').val(idsSeleccionados);
-
-                // Realizar la solicitud AJAX
-                $.ajax({
-                    type: 'POST',
-                    url: $(this).attr('action'),
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        if (response.trim() === 'Clientes eliminadas correctamente') {
-                            $('#successMessage').removeClass('d-none').text(response);
-                            
-                            // Después de mostrar el mensaje de éxito, redirige a la página de índice de clientes
-                            window.location.href = "{{ path('app_clientes_index') }}";
-                        } else {
-                            $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar las clientes.');
-                        }
-                    },
-                    error: function() {
-                        $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar las clientes.');
-                    }
-                });
-            });
-
-            // Definir la función obtenerIDsSeleccionados
-            function obtenerIDsSeleccionados() {
-                var ids = [];
-                $('.seleccionarCliente:checked').each(function() {
-                    ids.push($(this).val());
-                });
-                return ids;
-            }
-
+            // Mostrar el botón de eliminar selección cuando se seleccionan clientes
+        $('#clientesTabla').on('change', '.seleccionarCliente', function() {
+            var seleccionados = $('.seleccionarCliente:checked').length > 0;
+            $('#eliminarSeleccionButton').toggle(seleccionados);
         });
+
+        // Mostrar el modal de confirmación al hacer clic en el botón de eliminación
+        $('#eliminarSeleccionButton').on('click', function() {
+            $('#confirmarEliminacionModal').modal('show');
+        });
+
+        // Eliminar los clientes seleccionados al confirmar en el modal
+        $('#confirmarEliminacionButton').on('click', function() {
+            var clientesSeleccionados = $('.seleccionarCliente:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            // Envía una solicitud al servidor para eliminar los clientes seleccionados
+            $.ajax({
+                url: '{{ path('eliminar_clientes') }}',
+                method: 'POST',
+                 data: { clientes: JSON.stringify(clientesSeleccionados) }, // Convertir a cadena JSON
+                success: function(response) {
+                   // Verificar si la eliminación fue exitosa
+                    if (response === 'ok') {
+                        // Mostrar un mensaje de éxito
+                        $('#successMessage').text('Clientes eliminados correctamente').removeClass('d-none');
+                        // Actualizar la tabla u otra interfaz de usuario según sea necesario
+                        // Por ejemplo, puedes recargar la página para reflejar los cambios
+                        // window.location.reload();
+                    } else {
+                        // Mostrar un mensaje de error
+                        $('#errorMessage').text('Error al eliminar clientes').removeClass('d-none');
+                    }
+                    // Ocultar el modal después de eliminar
+                    $('#confirmarEliminacionModal').modal('hide');
+                },
+                error: function(xhr, status, error) {
+                    // Manejar errores de la solicitud AJAX, si es necesario
+                    console.error('Error al procesar la solicitud AJAX:', error);
+                }
+            });
+         });
+         });
     </script>
 {% endblock %}

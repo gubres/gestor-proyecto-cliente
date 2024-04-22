@@ -25,17 +25,17 @@
                 {% endif %}
 
                 <h2 class="h3 mb-3 font-weight-normal">Iniciar Sesión</h2>
-                <div class="form-group">
-                    <label for="inputEmail">Email</label>
+                <div class="form-floating mb-3">
                     <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+                    <label for="inputEmail">Email</label>
                 </div>
-                <div class="form-group">
+                <div class="form-floating mb-3">
+                    <input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
                     <label for="inputPassword">Contraseña</label>
-                    <div class="input-group">
-                        <input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword">Mostrar contraseña</button>
-                        </div>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                            <i id="eyeIcon" class="fas fa-eye"></i>
+                        </button>
                     </div>
                      <small class="form-text text-muted mt-2">
                         <a href="{{ path('recuperar_contraseña') }}">¿Olvidaste tu contraseña?</a>
@@ -66,11 +66,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             const togglePassword = document.getElementById('togglePassword');
             const passwordInput = document.getElementById('inputPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
 
             togglePassword.addEventListener('click', function() {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
-                this.textContent = type === 'password' ? 'Mostrar contraseña' : 'Ocultar contraseña';
+                eyeIcon.classList.toggle('fa-eye-slash');
             });
         });
     </script>

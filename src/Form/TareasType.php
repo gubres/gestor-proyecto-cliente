@@ -38,18 +38,20 @@ class TareasType extends AbstractType
                     'MEDIA' => 'MEDIA',
                     'BAJA' => 'BAJA',
                 ],
-    
-            ])
-            ->add('proyecto', EntityType::class, [
-                'class' => Proyectos::class,
-                'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Proyectos
-            ])
-            ->add('usuario', EntityType::class, [
-                'class' => Usuarios::class,
-                'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Usuarios
-                'multiple' => true,
-            ]);
-    }
+        ])
+
+        ->add('proyecto', EntityType::class, [
+            'class' => Proyectos::class,
+            'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Proyectos
+            'placeholder' => 'Selecciona un proyecto', // Opción predeterminada
+        ])
+        ->add('usuario', EntityType::class, [
+            'class' => Usuarios::class,
+            'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Usuarios
+            'multiple' => true,
+        ])
+    ;
+}
 
     public function configureOptions(OptionsResolver $resolver): void
     {
