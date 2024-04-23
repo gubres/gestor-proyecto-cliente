@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Proyectos;
 use App\Entity\UsuariosProyectos;
 use App\Form\ProyectosType;
+use App\Form\ClientesType;
+use App\Entity\Clientes;
 use App\Repository\ProyectosRepository;
 use App\Repository\UsuariosRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -53,8 +55,12 @@ class ProyectosController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {        
         $proyecto = new Proyectos();
+        $cliente = new clientes();
         $form = $this->createForm(ProyectosType::class, $proyecto);
         $form->handleRequest($request);
+        $clienteForm = $this->createForm(ClientesType::class, $cliente);
+        $clienteForm->handleRequest($request);
+        $cliente = $proyecto->getCliente();
         
         if ($form->isSubmitted() && $form->isValid()) {
              // Asignar los usuarios seleccionados al proyecto
@@ -73,7 +79,24 @@ class ProyectosController extends AbstractController
         return $this->render('proyectos/new.html.twig', [
             'pageName' => 'Nuevo Proyecto',
             'form' => $form->createView(),
+            'clienteForm' => $clienteForm->createView(),
+            'proyecto' => $proyecto,
         ]);
+
+        if ($clienteForm->isSubmitted() && $clienteForm->isValid()) {
+            // Persistir el nuevo cliente
+            $entityManager->persist($cliente);
+            $entityManager->flush();
+    
+            // Obtener la URL de la página de crear nuevo cliente
+            $urlNuevoCliente = $this->generateUrl('app_clientes_new');
+    
+            // Devolver la URL de la página de crear nuevo cliente en formato JSON
+            return new JsonResponse(['urlNuevoCliente' => $urlNuevoCliente]);
+        }
+    
+        // En caso de error, devolver una respuesta de error
+        return new JsonResponse(['error' => 'Error al guardar el nuevo cliente'], Response::HTTP_BAD_REQUEST);
     }
 
     #[Route('/{id}', name: 'app_proyectos_show', methods: ['GET'])]
@@ -90,6 +113,9 @@ class ProyectosController extends AbstractController
     {
         $form = $this->createForm(ProyectosType::class, $proyecto);
         $form->handleRequest($request);
+        $clienteForm = $this->createForm(ClientesType::class);
+        $clienteForm->handleRequest($request);
+        $cliente = $proyecto->getCliente();
     
         if ($form->isSubmitted() && $form->isValid()) {
             // Obtener los usuarios seleccionados del formulario
@@ -155,6 +181,7 @@ class ProyectosController extends AbstractController
         return $this->render('proyectos/edit.html.twig', [
             'proyecto' => $proyecto,
             'form' => $form,
+            'clienteForm' => $clienteForm->createView(),
         ]);
     }
     

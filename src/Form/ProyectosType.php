@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Proyectos;
 use App\Entity\Clientes;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use App\Entity\Usuarios;
 use App\Repository\UsuariosRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -27,10 +28,11 @@ class ProyectosType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('Nombre') 
+            ->add('nombre', TextType::class) // Definir el campo 'nombre'
             ->add('Cliente', EntityType::class, [
                 'class' => Clientes::class,
-                'choice_label' => 'nombre', // Usar la propiedad 'nombre' del cliente como etiqueta
+                'choice_label' => 'nombre', 
+                'placeholder' => '', // Opción predeterminada
             ])
             ->add('Estado', ChoiceType::class, [
                 'choices' => [
