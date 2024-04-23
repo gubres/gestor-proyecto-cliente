@@ -54,6 +54,23 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'boolean')]
     private bool $isActive;
+
+   
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+     
+    private $resetToken;
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): self
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
+
     
 
 
