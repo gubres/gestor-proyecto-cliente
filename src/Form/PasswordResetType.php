@@ -34,8 +34,8 @@ class PasswordResetType extends AbstractType
                         'max' => 30,
                     ]),
                 ],
-            ])
-            ->add('submit', SubmitType::class, ['label' => 'Restablecer contraseña']);
+            ]);
+            //->add('submit', SubmitType::class, ['label' => 'Restablecer contraseña']);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
