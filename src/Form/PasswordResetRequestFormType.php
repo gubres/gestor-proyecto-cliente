@@ -18,11 +18,13 @@ class PasswordResetRequestFormType extends AbstractType
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Ingrese su correo electrónico'],
                 'help' => 'Introduzca el email asociado a su cuenta.',
                 'required' => true,
-            ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'Enviar enlace de recuperación',
-                'attr' => ['class' => 'btn btn-primary mt-3'],
             ]);
+          
+          //  ->add('submit', SubmitType::class, [
+          
+          //  'label' => 'Enviar enlace de recuperación',
+           //     'attr' => ['class' => 'btn btn-primary mt-3'],
+           // ]);
     }
 
    

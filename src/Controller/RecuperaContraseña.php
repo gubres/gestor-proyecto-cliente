@@ -9,8 +9,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Usuarios;
 use App\Form\PasswordResetRequestFormType;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,19 +35,9 @@ class RecuperaContraseña extends AbstractController
             $entityManager->flush();
 
             $resetUrl = $this->generateUrl('resetear_contraseña', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+           
+                return $this->redirectToRoute('resetear_contraseña', ['token' => $token]);
             
-            $email = (new TemplatedEmail())
-                ->from('no-reply@example.com')
-                ->to($usuario->getEmail())
-                ->subject('Solicitud de restablecimiento de contraseña')
-                ->htmlTemplate('security/reset_password.html.twig')
-                ->context(['resetUrl' => $resetUrl]);
-
-            $mailer->send($email);
-
-            $this->addFlash('success', 'Se ha enviado a su dirección de correo electrónico un enlace para restablecer su contraseña.');
-
-            return $this->redirectToRoute('app_login');
         }
 
         $this->addFlash('error', 'No se ha encontrado ninguna cuenta para este correo electrónico.');
@@ -61,33 +49,56 @@ class RecuperaContraseña extends AbstractController
 }
 
     
-    #[Route('/resetearcontraseña/{token}', name: 'resetear_contraseña', methods: ['GET', 'POST'])]
-    public function reset(Request $request, string $token, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
-{
+    
+
+
+
+
+#[Route('/resetearcontraseña/{token}', name: 'resetear_contraseña', methods: ['GET', 'POST'])]
+public function reset(Request $request, string $token, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
+{   
+    // Obtener el usuario por el token
     $usuario = $entityManager->getRepository(Usuarios::class)->findOneBy(['resetToken' => $token]);
-
-    if (!$usuario) {
-        $this->addFlash('error', 'Token inválido');
-        return $this->redirectToRoute('app_login');
-    }
-
     $form = $this->createForm(PasswordResetType::class);
     $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $newPassword = $form->get('newPassword')->getData();
-        $usuario->setPassword($passwordHasher->hashPassword($usuario, $newPassword));
-        $usuario->setResetToken(null);
-        $entityManager->flush();
+    // Comprobar si el usuario existe
+    if (!$usuario) {
+        $this->addFlash('error', 'Token inválido');
+        return $this->render('security/reset_password.html.twig', [
+            'resetForm' => $form->createView(),
+            'token' => $token
+        ]);
 
-        $this->addFlash('success', 'Su contraseña se ha restablecido correctamente.');
-
-        return $this->redirectToRoute('app_login');
     }
+    
+    if ($form->isSubmitted() && $form->isValid()) {
+        $newPassword = $form->get('newPassword')->getData(); // Directamente obteniendo el dato como string
+        if (!empty($newPassword)) {  // Verifica directamente si la contraseña no está vacía
+            $usuario->setPassword($passwordHasher->hashPassword($usuario, $newPassword));
+            $usuario->setResetToken(null);  // Importante eliminar el token una vez usado
+            $entityManager->flush();  // Confirmar cambios en la base de datos
+    
+            $this->addFlash('success', 'Su contraseña se ha restablecido correctamente.');
+            return $this->redirectToRoute('app_login');
+        } else {
+            $this->addFlash('error', 'La nueva contraseña no puede estar vacía.');
+        }
+    } else {
+        // Capturar y mostrar errores de validación
+        foreach ($form->getErrors(true) as $error) {
+            $this->addFlash('error', $error->getMessage());
+        }
+    }
+    
 
     return $this->render('security/reset_password.html.twig', [
         'resetForm' => $form->createView(),
+        'token' => $token,
     ]);
+
+
 }
 
 }
+    
