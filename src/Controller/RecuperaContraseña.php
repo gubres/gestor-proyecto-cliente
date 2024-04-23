@@ -42,7 +42,7 @@ class RecuperaContraseña extends AbstractController
                 ->from('no-reply@example.com')
                 ->to($usuario->getEmail())
                 ->subject('Solicitud de restablecimiento de contraseña')
-                ->htmlTemplate('emails/reset_password.html.twig')
+                ->htmlTemplate('security/reset_password.html.twig')
                 ->context(['resetUrl' => $resetUrl]);
 
             $mailer->send($email);

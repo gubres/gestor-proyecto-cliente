@@ -289,4 +289,11 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->getEmail();
     }
+
+    // Método setResetToken
+    public function setResetToken(?string $resetToken): self
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
 }

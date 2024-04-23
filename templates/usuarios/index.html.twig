@@ -4,8 +4,11 @@
 
 {% block stylesheets %}
     {{ parent() }}
-     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
-    
+      <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
+    <!-- Biblioteca para la fecha de creación -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
+    <!-- Biblioteca de Jquery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- Estilos para la ventana modal -->
     <style>
         /* Estilos para la ventana modal */
@@ -262,7 +265,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <!-- Agrega el script de DataTables Buttons -->
-    <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
+  
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
 
     <script>

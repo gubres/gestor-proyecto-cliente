@@ -91,6 +91,10 @@ class TareasController extends AbstractController
     {
         $form = $this->createForm(TareasType::class, $tarea);
         $form->handleRequest($request);
+        $proyectoForm = $this->createForm(ProyectosType::class);
+        $proyectoForm->handleRequest($request);
+         // Obtener el proyecto asociado a la tarea
+        $proyecto = $tarea->getProyecto();
     
         if ($form->isSubmitted() && $form->isValid()) {
             // Asignar el proyecto seleccionado a la tarea
@@ -106,6 +110,7 @@ class TareasController extends AbstractController
         return $this->render('tareas/edit.html.twig', [
             'tarea' => $tarea,
             'form' => $form->createView(),
+            'proyectoForm' => $proyectoForm->createView(),
         ]);
     }
     
@@ -129,35 +134,33 @@ class TareasController extends AbstractController
         return $this->redirectToRoute('app_tareas_index');
     }
 
-    #[Route('/eliminartareas', name: 'eliminar_tareas', methods: ['POST'])]
+    #[Route('/eliminar_tareas', name: 'eliminar_tareas', methods: ['POST'])]
     public function eliminarTareas(Request $request, EntityManagerInterface $entityManager)
     {
-        // Obtener los IDs de las tareas a eliminar de la solicitud
-        $ids = $request->request->get('tareas_seleccionadas');
 
-        // Verificar si se enviaron IDs
-        if (!empty($ids)) { 
-            try {
-                // Buscar y eliminar las tareas por sus IDs
-                foreach ($ids as $id) {
-                    $tarea = $entityManager->getRepository(Tareas::class)->find($id);
-                    if ($tarea) {
-                        $entityManager->remove($tarea);
-                    }
-                }
-                // Confirmar los cambios en la base de datos
-                $entityManager->flush();
-                // Devolver una respuesta HTTP 200 indicando éxito
-                return new Response('Tareas eliminadas correctamente', Response::HTTP_OK);
-            } catch (\Exception $e) {
-                // En caso de error, devolver una respuesta HTTP 500
-                return new Response('Ha ocurrido un error al eliminar las tareas.', Response::HTTP_INTERNAL_SERVER_ERROR);
+        // Decodificar el contenido JSON de la solicitud
+        $data = json_decode($request->getContent(), true);
+        $tareasIds = $data['ids'];
+
+        // Obtener el EntityManager
+
+        foreach ($tareasIds as $tareaId) {
+            // Buscar la tarea por su ID
+            $tarea = $entityManager->getRepository(Tareas::class)->find($tareaId);
+
+            if (!$tarea) {
+                return new JsonResponse(['error' => 'Tarea no encontrada con el ID: ' . $tareaId], 404);
             }
-        } else {
-            // Si no se enviaron IDs, devolver un error 400 (Bad Request)
-            return new Response('No se proporcionaron IDs de tarea para eliminar', Response::HTTP_BAD_REQUEST);
+
+            // Eliminar la tarea
+            $entityManager->remove($tarea);
         }
+
+        // Guardar los cambios en la base de datos
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Tareas eliminadas correctamente.']);
     }
-
-
 }
+
+        
