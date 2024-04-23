@@ -13,7 +13,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PasswordResetType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+
     {
         $builder
             ->add('newPassword', RepeatedType::class, [
@@ -33,8 +34,18 @@ class PasswordResetType extends AbstractType
                         'max' => 30,
                     ]),
                 ],
-            ])
-            ->add('submit', SubmitType::class, ['label' => 'Restablecer contraseña']);
+            ]);
+            //->add('submit', SubmitType::class, ['label' => 'Restablecer contraseña']);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            // No vincular automáticamente a una entidad
+            'data_class' => null,
+        ]);
     }
 
 }
+
+
