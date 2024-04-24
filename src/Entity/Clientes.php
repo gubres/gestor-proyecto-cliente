@@ -10,9 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
 #[ORM\Entity(repositoryClass: ClientesRepository::class)]
-//campo email único en bbdd
 #[UniqueEntity(fields: ['email'], message: 'Ya existe una cuenta con este email')]
 class Clientes
 {
@@ -21,7 +19,6 @@ class Clientes
     #[ORM\Column]
     private ?int $id = null;
 
-    //restricciones nombre cliente
     #[ORM\Column(length: 30)]
     #[Assert\NotBlank(message: "El nombre del cliente no puede estar vacío.")]
     #[Assert\Length(
@@ -30,8 +27,7 @@ class Clientes
         maxMessage: "El nombre no puede sobrepasar los 30 caracteres."
     )]
     private ?string $nombre = null;
-    
-    //validación teléfono cliente
+
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: "El teléfono no puede estar vacío.")]
     #[Assert\Length(
@@ -42,7 +38,6 @@ class Clientes
     )]
     private ?string $telefono = null;
 
-    //validaciones email cliente
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: "El campo email no puede estar vacío.")]
     #[Assert\Email(
@@ -51,16 +46,32 @@ class Clientes
     )]
     private ?string $email = null;
 
-    /**
-     * @var Collection<int, Proyectos>
-     */
     #[ORM\OneToMany(targetEntity: Proyectos::class, mappedBy: 'cliente', fetch: 'EAGER')]
     private Collection $proyectos;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $eliminado = false;
 
-    
+    #[ORM\ManyToOne(targetEntity: Usuarios::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $creado_por = null;
 
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $creado_en = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $actualizado_en = null;
+
+    #[ORM\ManyToOne(targetEntity: Usuarios::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $actualizado_por = null;
+
+    public function __construct()
+    {
+        $this->proyectos = new ArrayCollection();
+        $this->creado_en = new \DateTime();
+        $this->actualizado_en = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -72,10 +83,9 @@ class Clientes
         return $this->nombre;
     }
 
-    public function setNombre(string $nombre): static
+    public function setNombre(string $nombre): self
     {
         $this->nombre = $nombre;
-
         return $this;
     }
 
@@ -84,10 +94,9 @@ class Clientes
         return $this->telefono;
     }
 
-    public function setTelefono(string $telefono): static
+    public function setTelefono(string $telefono): self
     {
         $this->telefono = $telefono;
-
         return $this;
     }
 
@@ -96,16 +105,16 @@ class Clientes
         return $this->email;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
- /**
+    /**
      * @return Collection<int, Proyectos>
      */
+
     public function getProyectos(): Collection
     {
         return $this->proyectos;
@@ -117,13 +126,67 @@ class Clientes
             $this->proyectos[] = $proyecto;
             $proyecto->setCliente($this);
         }
-
         return $this;
     }
 
     public function removeProyecto(Proyectos $proyecto): self
     {
         $this->proyectos->removeElement($proyecto);
+        return $this;
+    }
+
+    public function isEliminado(): bool
+    {
+        return $this->eliminado;
+    }
+
+    public function setEliminado(bool $eliminado): self
+    {
+        $this->eliminado = $eliminado;
+        return $this;
+    }
+
+    public function getCreadoPor(): ?Usuarios
+    {
+        return $this->creado_por;
+    }
+
+    public function setCreadoPor(?Usuarios $creado_por): self
+    {
+        $this->creado_por = $creado_por;
+        return $this;
+    }
+
+    public function getCreadoEn(): ?\DateTimeInterface
+    {
+        return $this->creado_en;
+    }
+
+    public function setCreadoEn(\DateTimeInterface $creado_en): self
+    {
+        $this->creado_en = $creado_en;
+        return $this;
+    }
+
+    public function getActualizadoEn(): ?\DateTimeInterface
+    {
+        return $this->actualizado_en;
+    }
+
+    public function setActualizadoEn(?\DateTimeInterface $actualizado_en): self
+    {
+        $this->actualizado_en = $actualizado_en;
+        return $this;
+    }
+
+    public function getActualizadoPor(): ?Usuarios
+    {
+        return $this->actualizado_por;
+    }
+
+    public function setActualizadoPor(?Usuarios $actualizado_por): self
+    {
+        $this->actualizado_por = $actualizado_por;
         return $this;
     }
 }

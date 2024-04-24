@@ -88,10 +88,7 @@
             <div class="col-md-6">
                 <a href="{{ path('app_proyectos_new') }}" class="btn btn-primary">Crear Nuevo</a>
                 <!-- Nuevo formulario para eliminar registros -->
-                <form action="/eliminar-registros" method="post" id="formEliminarRegistros" style="display: inline-block;">
-                    <!-- Campos ocultos para los IDs de los registros -->
-                    <input type="hidden" name="id" id="idToDelete" value="">
-                    
+                <form action="{{ path("eliminar_proyectos") }}" method="post" id="formEliminarRegistros" style="display: inline-block;">                    
                     <!-- Botón para eliminar registros -->
                     <button type="submit" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
                 </form>
@@ -211,6 +208,9 @@
         </div>
     </div>
     {% endfor %}
+    <!-- Div para mostrar los IDs seleccionados -->
+<div id="selectedIdsPreview" class="alert alert-info d-none"></div>
+
 {% endblock %}
 
 {% block javascripts %}
@@ -231,24 +231,79 @@
         $(document).ready(function() {
             var table = $('#proyectosTabla').DataTable({  
                 dom: '<"toolbar">Bfrtip',
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                }, 
                 buttons: [
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
-                        className: 'btn-excel'
+                        className: 'btn-excel',
+                         exportOptions: {
+                        columns: [1, 2, 3, 4, 5]
+                        },
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
-                        className: 'btn-pdf'
+                        className: 'btn-pdf',
+                        exportOptions: {
+                        columns: [1, 2, 3, 4, 5]
+                        },
+                    customize: function(doc) {
+                    var docContent = doc.content[1];
+                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                    docContent.layout = {
+                        hLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        vLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        hLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        vLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        paddingLeft: function(i, node) {
+                            return 4;
+                        },
+                        paddingRight: function(i, node) {
+                            return 4;
+                        },
+                        paddingTop: function(i, node) {
+                            return 2;
+                        },
+                        paddingBottom: function(i, node) {
+                            return 2;
+                        }
+                    };
+                }
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
-                        className: 'btn-print'
+                        className: 'btn-print',
+                         exportOptions: {
+                        columns: [1, 2, 3, 4]
+                        },
                     }
                 ],
                 select: {
@@ -305,77 +360,72 @@
             });
 
 
-
             // Agregar un contenedor para los botones en la parte superior izquierda
             $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
                
                 '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
                 '</div>');
-            // Función para actualizar la visibilidad del botón de eliminar selección
+            
+        // Función para actualizar la visibilidad del botón de eliminar selección
             function updateDeleteButtonVisibility() {
-                var deleteButton = $('#eliminarSeleccionButton');
                 var checkedCount = $('.seleccionarProyecto:checked').length;
                 if (checkedCount > 0) {
-                    deleteButton.show(); // Mostrar el botón si hay alguna selección
+                    $('#eliminarSeleccionButton').show();
                 } else {
-                    deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
+                    $('#eliminarSeleccionButton').hide();
                 }
             }
 
-            $('#seleccionarTodo').on('click', function() {
-                var isChecked = $(this).prop('checked');
-                $('.seleccionarProyecto').prop('checked', isChecked);
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+            // Agregar evento al hacer clic en cada checkbox de proyecto
+            $('.seleccionarProyecto').on('change', function() {
+                updateDeleteButtonVisibility();
             });
 
-            $('.seleccionarProyecto').on('click', function() {
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-            });
-            
-            // Agregar evento click al botón para eliminar filas seleccionadas
-            $('#eliminarSeleccionButton').on('click', function () {
-                table.rows('.selected').remove().draw(false);
+            // Agregar evento al hacer clic en el checkbox "seleccionar todo"
+            $('#seleccionarTodo').on('change', function() {
+                $('.seleccionarProyecto').prop('checked', $(this).prop('checked')).trigger('change');
             });
 
-            // Llamar a la función obtenerIDsSeleccionados en el evento submit del formulario
-            $('#formEliminarRegistros').submit(function (event) {
-                event.preventDefault(); // Evita el envío del formulario por defecto
 
-                // Obtener los IDs seleccionados
-                var idsSeleccionados = obtenerIDsSeleccionados();
+         // Agregar evento clic al botón de eliminar selección de tareas
+             $('#eliminarSeleccionButton').on('click', function() {
+                
+            var proyectosSeleccionados = []; // Array para almacenar los IDs de las tareas seleccionadas
 
-                // Asignar los IDs al campo oculto 'idToDelete'
-                $('#idToDelete').val(idsSeleccionados);
-
-                // Realizar la solicitud AJAX
-                $.ajax({
-                    type: 'POST',
-                    url: $(this).attr('action'),
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        if (response.trim() === 'Proyectos eliminados correctamente') {
-                            $('#successMessage').removeClass('d-none').text(response);
-                            
-                            // Después de mostrar el mensaje de éxito, redirige a la página de índice de proyectos
-                            window.location.href = "{{ path('app_proyectos_index') }}";
-                        } else {
-                            $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
-                        }
-                    },
-                    error: function() {
-                        $('#errorMessage').removeClass('d-none').text('Ha ocurrido un error al eliminar los proyectos.');
-                    }
-                });
+            // Obtener los IDs de los proyectos seleccionados
+            $('.seleccionarProyecto:checked').each(function() {
+                proyectosSeleccionados.push($(this).val());
+                console.log(proyectosSeleccionados);
             });
 
-            // Definir la función obtenerIDsSeleccionados
-            function obtenerIDsSeleccionados() {
-                var ids = [];
-                $('.seleccionarProyecto:checked').each(function() {
-                    ids.push($(this).val());
-                });
-                return ids;
+            if (proyectosSeleccionados.length > 0) { // Verificar si se seleccionaron tareas
+                eliminarProyectos(proyectosSeleccionados); // Llamar a la función para eliminar las tareas seleccionadas
+            } else {
+                // Mostrar un mensaje de advertencia si no se seleccionaron tareas
+                alert('No se ha seleccionado ningun proyecto para eliminar.');
             }
         });
+            // Función para enviar IDs de proyectos seleccionados para eliminación lógica
+            function eliminarProyectos(proyectosSeleccionados) {
+            $.ajax({
+                type: 'POST',
+                url: '{{ path("eliminar_proyectos") }}',
+                data: JSON.stringify({ ids: proyectosSeleccionados }),
+                success: function(response) {
+                    console.log('Proyectos eliminados correctamente:', response);
+                    location.reload(); 
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al eliminar los proyectos:', error);
+                }
+            });
+        }
+
+
+    });
+
+
+
+
     </script>
 {% endblock %}

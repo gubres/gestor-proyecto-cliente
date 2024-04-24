@@ -1,23 +1,28 @@
 controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+  resource:
+    path: ../src/Controller/
+    namespace: App\Controller
+  type: attribute
 
 inicio:
-    path: /
-    controller: App\Controller\InicioController::index
+  path: /
+  controller: App\Controller\InicioController::index
 
 app_login:
-    path: /login
-    controller: App\Controller\SecurityController::login
+  path: /login
+  controller: App\Controller\SecurityController::login
 
 eliminar_clientes:
-    path: /clientes/eliminarclientes
-    controller: App\Controller\ClientesController::eliminarClientes
-    methods: [POST]
+  path: /clientes/eliminarclientes
+  controller: App\Controller\ClientesController::eliminarClientes
+  methods: [POST]
 
 eliminar_tareas:
-    path: /tareas/eliminar_tareas
-    controller: App\Controller\TareasController::eliminarTareas
-    methods: [POST]
+  path: /tareas/eliminar_tareas
+  controller: App\Controller\TareasController::eliminarTareas
+  methods: [POST]
+
+eliminar_proyectos:
+  path: /proyectos/eliminar_proyectos
+  controller: App\Controller\ProyectosController::eliminarProyectos
+  methods: [POST]

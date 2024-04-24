@@ -16,11 +16,11 @@ class UsuariosProyectos
     #[ORM\Column(type: "integer")]
     private int $id;
 
-    #[ORM\ManyToOne(targetEntity: Usuarios::class, inversedBy: "proyectos")]
+    #[ORM\ManyToOne(targetEntity: Usuarios::class, inversedBy: "usuariosProyectos")]
     #[ORM\JoinColumn(nullable: false)]
     private ?Usuarios $usuario;
 
-    #[ORM\ManyToOne(targetEntity: Proyectos::class, inversedBy: "usuarios")]
+    #[ORM\ManyToOne(targetEntity: Proyectos::class, inversedBy: "usuariosProyectos")]
     #[ORM\JoinColumn(nullable: false)]
     private ?Proyectos $proyecto;
 

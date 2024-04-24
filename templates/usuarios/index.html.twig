@@ -272,24 +272,79 @@
         $(document).ready(function() {
             var table = $('#usuariosTabla').DataTable({  
                 dom: '<"toolbar">Bfrtip',
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                },
                 buttons: [
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
-                        className: 'btn-excel'
+                        className: 'btn-excel',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
-                        className: 'btn-pdf'
+                        className: 'btn-pdf',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },customize: function(doc) {
+                  
+                    var docContent = doc.content[1];
+                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                    docContent.layout = {
+                        hLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        vLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        hLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        vLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        paddingLeft: function(i, node) {
+                            return 4;
+                        },
+                        paddingRight: function(i, node) {
+                            return 4;
+                        },
+                        paddingTop: function(i, node) {
+                            return 2;
+                        },
+                        paddingBottom: function(i, node) {
+                            return 2;
+                        }
+                    };
+                },
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
-                        className: 'btn-print'
+                        className: 'btn-print',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },
                     }
                 ],
                 select: {

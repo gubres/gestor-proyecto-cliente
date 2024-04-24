@@ -11,39 +11,47 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Bundle\SecurityBundle\Security;
 
 #[Route('/clientes')]
 class ClientesController extends AbstractController
 {
     private $clientesRepository;
 
-    public function __construct(ClientesRepository $clientesRepository, EntityManagerInterface $entityManager)
+    public function __construct(ClientesRepository $clientesRepository, EntityManagerInterface $entityManager, Security $security)
     {
         $this->clientesRepository = $clientesRepository;
         $this->entityManager = $entityManager;
+        $this->security = $security;
     }
 
     #[Route('/', name: 'app_clientes_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $clientes = $this->clientesRepository->findAll();
+        $clientes = $this->clientesRepository->findNotDeleted();
         $clientesTabla = $this->obtenerDatosClientes(); // Obtener los datos de los clientes para la tabla
 
         return $this->render('clientes/index.html.twig', [
             'clientes' => $clientes,
             'clientesTabla' => $clientesTabla,
-            
+
         ]);
     }
 
     #[Route('/new', name: 'app_clientes_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
         $cliente = new Clientes();
         $form = $this->createForm(ClientesType::class, $cliente);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Asignar el usuario actual como creador del cliente
+            $cliente->setCreadoPor($security->getUser());
+            $cliente->setActualizadoPor($security->getUser());
+            $cliente->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
+            $cliente->setCreadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
+
             $entityManager->persist($cliente);
             $entityManager->flush();
 
@@ -82,30 +90,6 @@ class ClientesController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_clientes_delete', methods: ['POST'])]
-    public function delete(Request $request, Clientes $cliente, EntityManagerInterface $entityManager): Response
-    {
-        if (!$this->isCsrfTokenValid('delete'.$cliente->getId(), $request->request->get('_token'))) {
-            // Manejar token CSRF inválido si es necesario
-        }
-    
-        // Cambiar el estado del cliente a "inactivo" o "eliminado"
-        $cliente->setEstado('eliminado');
-        $entityManager->persist($cliente);
-    
-        // Cambiar el estado de los proyectos asociados
-        $proyectos = $cliente->getProyectos();
-        foreach ($proyectos as $proyecto) {
-            $proyecto->setEstado('eliminado');
-            $entityManager->persist($proyecto);
-        }
-    
-        // Guardar los cambios en la base de datos
-        $entityManager->flush();
-    
-        return $this->redirectToRoute('app_clientes_index');
-    }
-    
 
     public function obtenerDatosClientes(): array
     {
@@ -127,7 +111,7 @@ class ClientesController extends AbstractController
             // Por ejemplo: ['id' => 1, 'nombre' => 'Nuevo nombre', 'telefono' => 'Nuevo teléfono', 'email' => 'Nuevo email']
 
             // Buscar el cliente en la base de datos por su ID
-            $cliente = $this->entityManager->getRepository(Cliente::class)->find($nuevoDato['id']);
+            $cliente = $this->entityManager->getRepository(Clientes::class)->find($nuevoDato['id']);
 
             // Si el cliente existe, actualizar sus datos
             if ($cliente) {
@@ -140,42 +124,64 @@ class ClientesController extends AbstractController
             }
         }
     }
-    #[Route('/eliminarclientes', name: 'eliminar_clientes', methods: ['POST'])]
-    public function eliminarClientes(Request $request, Clientes $cliente, EntityManagerInterface $entityManager): Response
+    #[Route('/eliminar_clientes', name: 'eliminar_clientes', methods: ['POST'])]
+    public function eliminarClientes(Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
-        // Obtener el EntityManager
-    $entityManager = $this->getDoctrine()->getManager();
-        // Recuperar los IDs de los clientes seleccionados desde la solicitud AJAX
-    $clientesIdsString = $request->request->get('clientes', '');
-    $clientesIds = json_decode($clientesIdsString, true); // Convertir de cadena JSON a array
+        // Decodificar el contenido JSON de la solicitud
+        $data = json_decode($request->getContent(), true);
+        $clientesIds = $data['ids'];
 
-    // Verificar si se recibieron clientes para eliminar
-    if (empty($clientesIds)) {
-        return new JsonResponse(['message' => 'No se proporcionaron clientes para eliminar'], JsonResponse::HTTP_BAD_REQUEST);
-    }
+        $usuarioActual = $security->getUser(); // Obtener el usuario actual con Symfony Security
 
-    // Obtener el repositorio de clientes
-    $clientesRepository = $entityManager->getRepository(Clientes::class);
+        // Obtener el repositorio de clientes
+        $clientesRepository = $entityManager->getRepository(Clientes::class);
 
-    // Iterar sobre los IDs de clientes y eliminarlos uno por uno
-    foreach ($clientesIds as $clienteId) {
-        // Buscar el cliente por su ID
-        $cliente = $clientesRepository->find($clienteId);
+        foreach ($clientesIds as $clienteId) {
+            // Buscar el cliente por su ID
+            $cliente = $clientesRepository->find($clienteId);
 
-        if (!$cliente) {
-            // Si el cliente no existe, devuelve una respuesta de error
-            return new JsonResponse(['message' => 'Cliente no encontrado: ' . $clienteId], JsonResponse::HTTP_NOT_FOUND);
+            if (!$cliente) {
+                // Si el cliente no existe, devuelve una respuesta de error
+                return new JsonResponse(['error' => 'Cliente no encontrado: ' . $clienteId], 404);
+            }
+
+            // Realizar borrado lógico
+            $cliente->setEliminado(true);
+            $cliente->setActualizadoPor($usuarioActual);
+            $cliente->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
+
+            $entityManager->persist($cliente);
         }
 
-        // Eliminar el cliente
-        $entityManager->remove($cliente);
+        // Guardar los cambios en la base de datos
+        $entityManager->flush();
+
+        // Devolver una respuesta exitosa
+        return new JsonResponse(['message' => 'Clientes actualizados como eliminados correctamente'], JsonResponse::HTTP_OK);
     }
 
-    // Aplicar los cambios en la base de datos
-    $entityManager->flush();
 
-    // Devolver una respuesta exitosa
-    return new JsonResponse(['message' => 'Clientes eliminados correctamente'], JsonResponse::HTTP_OK);
-}
+    #[Route('/delete/{id}', name: 'app_clientes_delete', methods: ['POST'])]
+    public function delete(Request $request, Clientes $cliente, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('delete' . $cliente->getId(), $request->request->get('_token'))) {
+            // Manejar token CSRF inválido si es necesario
+        }
 
+        // Cambiar el estado del cliente a "inactivo" o "eliminado"
+        $cliente->setEliminado('eliminado');
+        $entityManager->persist($cliente);
+
+        // Cambiar el estado de los proyectos asociados
+        $proyectos = $cliente->getProyectos();
+        foreach ($proyectos as $proyecto) {
+            $proyecto->setEstado('eliminado');
+            $entityManager->persist($proyecto);
+        }
+
+        // Guardar los cambios en la base de datos
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_clientes_index');
+    }
 }

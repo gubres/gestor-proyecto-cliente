@@ -124,7 +124,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="5">no records found</td>
+                <td colspan="5">Sin datos disponibles</td>
             </tr>
         {% endfor %}
         </tbody>
@@ -215,35 +215,91 @@
         $(document).ready(function() {
             var table = $('#clientesTabla').DataTable({  
                 dom: '<"toolbar">Bfrtip',
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                }, 
                 buttons: [
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
-                        className: 'btn-excel'
+                        className: 'btn-excel',
+                        exportOptions: {
+                        columns: [1, 2, 3, 4, 5]
+                        }
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
-                        className: 'btn-pdf'
+                        className: 'btn-pdf',
+                        exportOptions: {
+                        columns: [1, 2, 3, 4, 5]
+                        },
+                    customize: function(doc) {
+                    var docContent = doc.content[1];
+                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                    docContent.layout = {
+                        hLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        vLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        hLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        vLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        paddingLeft: function(i, node) {
+                            return 4;
+                        },
+                        paddingRight: function(i, node) {
+                            return 4;
+                        },
+                        paddingTop: function(i, node) {
+                            return 2;
+                        },
+                        paddingBottom: function(i, node) {
+                            return 2;
+                        }
+                    };
+                    }
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
-                        className: 'btn-print'
+                        className: 'btn-print',
+                        exportOptions: {
+                        columns: [1, 2, 3, 4, 5]
+                        }
                     } 
-                ],
-                select: {
-                    style: 'multi',
-                    selector: 'td:first-child'
-                },
-                order: [[1, 'asc']], // Ordena la tabla por la segunda columna
-                initComplete: function () {
-                    $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
-                }
-            });
+                    ],
+                    select: {
+                        style: 'multi',
+                        selector: 'td:first-child'
+                    },
+                    order: [[1, 'asc']], // Ordena la tabla por la segunda columna
+                    initComplete: function () {
+                        $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
+                    }
+                });
+                
             // Script para limpiar la selección de clientes
             $('#limpiarSeleccionButton').on('click', function() {
                 $('.seleccionarCliente').prop('checked', false);
@@ -303,38 +359,30 @@
             $('#confirmarEliminacionModal').modal('show');
         });
 
-        // Eliminar los clientes seleccionados al confirmar en el modal
-        $('#confirmarEliminacionButton').on('click', function() {
-            var clientesSeleccionados = $('.seleccionarCliente:checked').map(function() {
-                return $(this).val();
-            }).get();
+       $('#confirmarEliminacionButton').on('click', function() {
+        var clientesSeleccionados = [];
+        $('.seleccionarCliente:checked').each(function() {
+            clientesSeleccionados.push($(this).val());
+        });
 
-            // Envía una solicitud al servidor para eliminar los clientes seleccionados
+        if (clientesSeleccionados.length > 0) {
             $.ajax({
                 url: '{{ path('eliminar_clientes') }}',
                 method: 'POST',
-                 data: { clientes: JSON.stringify(clientesSeleccionados) }, // Convertir a cadena JSON
+                data: JSON.stringify({ids: clientesSeleccionados}),
                 success: function(response) {
-                   // Verificar si la eliminación fue exitosa
-                    if (response === 'ok') {
-                        // Mostrar un mensaje de éxito
-                        $('#successMessage').text('Clientes eliminados correctamente').removeClass('d-none');
-                        // Actualizar la tabla u otra interfaz de usuario según sea necesario
-                        // Por ejemplo, puedes recargar la página para reflejar los cambios
-                        // window.location.reload();
-                    } else {
-                        // Mostrar un mensaje de error
-                        $('#errorMessage').text('Error al eliminar clientes').removeClass('d-none');
-                    }
-                    // Ocultar el modal después de eliminar
-                    $('#confirmarEliminacionModal').modal('hide');
+                    console.log('Clientes eliminados correctamente:', response);
+                    location.reload(); // Asumiendo que tu DataTable está configurado para usar AJAX
                 },
                 error: function(xhr, status, error) {
-                    // Manejar errores de la solicitud AJAX, si es necesario
-                    console.error('Error al procesar la solicitud AJAX:', error);
+                    console.error('Error al eliminar clientes:', error);
                 }
             });
-         });
+    } else {
+        alert('No se ha seleccionado ningún cliente para eliminar.');
+    }
+    $('#confirmarEliminacionModal').modal('hide');
+});
          });
     </script>
 {% endblock %}

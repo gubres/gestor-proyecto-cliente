@@ -18,42 +18,41 @@ class RegistrationFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-        ->add('nombre', TextType::class, [
-            'attr' => [
-                'maxlength' => 50,
-                'required' => 'required'
-            ]
-        ])
-        ->add('apellidos', TextType::class, [
-            'attr' => [
-                'maxlength' => 100,
-                'required' => 'required'
-            ]
+            ->add('nombre', TextType::class, [
+                'attr' => [
+                    'maxlength' => 50,
+                    'required' => 'required'
+                ]
+            ])
+            ->add('apellidos', TextType::class, [
+                'attr' => [
+                    'maxlength' => 100,
+                    'required' => 'required'
+                ]
 
-        ])
-        ->add('email', EmailType::class, [
-            'attr' => [
-                'maxlength' => 180,
-                'required' => 'required'
-            ]
+            ])
+            ->add('email', EmailType::class, [
+                'attr' => [
+                    'maxlength' => 180,
+                    'required' => 'required'
+                ]
 
-        ])
-        ->add('plainPassword', PasswordType::class, [
-            'mapped' => false,
-            'attr' => [
-                'autocomplete' => 'new-password',
-                'minlength' => 6,
-                'maxlength' => 40,
-                'required' => 'required'
-            ]
+            ])
+            ->add('plainPassword', PasswordType::class, [
+                'mapped' => false,
+                'attr' => [
+                    'autocomplete' => 'new-password',
+                    'minlength' => 6,
+                    'maxlength' => 40,
+                    'required' => 'required'
+                ]
 
-        ])
-        ->add('agreeTerms', CheckboxType::class, [
-            'mapped' => false,
-            'required' => true, 
-            'label' => 'Acepto los términos y condiciones', 
-        ]);
-
+            ])
+            ->add('agreeTerms', CheckboxType::class, [
+                'mapped' => false,
+                'required' => true,
+                'label' => 'Acepto los términos y condiciones',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

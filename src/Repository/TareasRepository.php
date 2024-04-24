@@ -20,7 +20,14 @@ class TareasRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Tareas::class);
     }
-
+    public function findNotDeleted(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.eliminado = :val')
+            ->setParameter('val', false)
+            ->getQuery()
+            ->getResult();
+    }
     //    /**
     //     * @return Tareas[] Returns an array of Tareas objects
     //     */

@@ -248,41 +248,95 @@
 {% block javascripts %}
     {{ parent() }}
 
-    <!-- Agrega el script de DataTables Buttons -->
-    <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
-
-     <!-- JavaScript de jQuery y jQuery UI -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- JavaScript de jQuery y jQuery UI -->
+   
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Estilos y scripts para DataTables con botones y selección múltiple -->
     <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <!-- Agrega el script de DataTables Buttons -->
     
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
+   
 
     <script>
         $(document).ready(function() {
             var table = $('#tareasTabla').DataTable({  
                 dom: '<"toolbar">Bfrtip',
+                 language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                }, 
                 buttons: [
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
-                        className: 'btn-excel'
+                        className: 'btn-excel',
+                          exportOptions: {
+                    columns: [1, 2, 3, 4, 5]
+                },
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
-                        className: 'btn-pdf'
+                        className: 'btn-pdf',
+                          exportOptions: {
+                    columns: [1, 2, 3, 4, 5]
+                },customize: function(doc) {
+                    // Centrar la tabla en la página PDF
+                    var docContent = doc.content[1];
+                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                    docContent.layout = {
+                        hLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        vLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        hLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        vLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        paddingLeft: function(i, node) {
+                            return 4;
+                        },
+                        paddingRight: function(i, node) {
+                            return 4;
+                        },
+                        paddingTop: function(i, node) {
+                            return 2;
+                        },
+                        paddingBottom: function(i, node) {
+                            return 2;
+                        }
+                    };
+                }
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
-                        className: 'btn-print'
+                        className: 'btn-print',
+                          exportOptions: {
+                    columns: [1, 2, 3, 4, 5]
+                },
                     }
                 ],
                 select: {
@@ -421,44 +475,41 @@
                 updateDeleteButtonVisibility(); // Actualizar visibilidad del botón "Eliminar Selección"
             });
 
-            // Agregar evento clic al botón de eliminar selección de tareas
-        $('#eliminarSeleccionButton').on('click', function() {
-            var tareasSeleccionadas = []; // Array para almacenar los IDs de las tareas seleccionadas
+          // Agregar evento clic al botón de eliminar selección de tareas
+$('#eliminarSeleccionButton').on('click', function() {
+    var tareasSeleccionadas = $('.seleccionarTarea:checked').map(function() {
+        return this.value;
+    }).get();
 
-            // Obtener los IDs de las tareas seleccionadas
-            $('.seleccionarTarea:checked').each(function() {
-                tareasSeleccionadas.push($(this).val());
-            });
+    if (tareasSeleccionadas.length > 0) {
+        
+            eliminarTareas(tareasSeleccionadas);
+    } else {
+        console.log('No se ha seleccionado ninguna tarea para eliminar.');
+    }
+});
 
-            if (tareasSeleccionadas.length > 0) { // Verificar si se seleccionaron tareas
-                eliminarTareas(tareasSeleccionadas); // Llamar a la función para eliminar las tareas seleccionadas
-            } else {
-                // Mostrar un mensaje de advertencia si no se seleccionaron tareas
-                alert('No se ha seleccionado ninguna tarea para eliminar.');
-            }
-        });
+// Función para eliminar las tareas seleccionadas mediante fetch
+function eliminarTareas(tareasSeleccionadas) {
+    fetch('{{ path("eliminar_tareas") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ ids: tareasSeleccionadas })
+    })
+    .then(response => response.json()) // convertir la respuesta a JSON
+    .then(data => {
+        console.log('Tareas eliminadas correctamente:', data);
+       location.reload();
+    })
+    .catch(error => {
+        console.error('Error al eliminar las tareas:', error);
+        alert('Error al eliminar las tareas. Por favor, intente de nuevo.');
+    });
+}
 
-        // Función para eliminar las tareas seleccionadas mediante AJAX
-        function eliminarTareas(tareasSeleccionadas) {
-            // Realizar la solicitud AJAX
-            $.ajax({
-                type: 'POST',
-                url: '/tareas/eliminar_tareas', // Reemplaza esto con la ruta correcta de tu controlador para eliminar tareas
-                data: { ids: tareasSeleccionadas }, // Enviar los IDs de las tareas como datos de la solicitud
-                success: function(response) {
-                    // Manejar la respuesta exitosa
-                    console.log('Tareas eliminadas correctamente:', response);
-                    // Aquí puedes actualizar la tabla u otra parte de tu interfaz de usuario si es necesario
-                },
-                error: function(xhr, status, error) {
-                    // Manejar errores de la solicitud AJAX
-                    console.error('Error al eliminar las tareas:', error);
-                    console.log('Estado de la solicitud:', status);
-                    console.log('Respuesta del servidor:', xhr.responseText);
-                }
-            });
-        }
-
-        });
+});
     </script>
 {% endblock %}

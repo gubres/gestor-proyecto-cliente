@@ -35,7 +35,7 @@ class InicioController extends AbstractController
         foreach ($usuarios as $usuario) {
             $labels[] = $usuario->getNombre();
             $baja = $media = $alta = 0;
-            
+
             //contar número de tareas según prioridad y switch para clasificarlas
             foreach ($usuario->getTareas() as $tarea) {
                 switch ($tarea->getPrioridad()) {
@@ -84,4 +84,3 @@ class InicioController extends AbstractController
         ]);
     }
 }
-
