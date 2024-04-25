@@ -1,29 +1,30 @@
 <!-- jQuery sin el atributo 'integrity' -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
 
-{{ form_start(form, { 'attr': {'id': 'form'} }) }}
-    {{ form_row(form.nombre) }}
+{{ form_start(formProyecto, { 'attr': {'id': 'form'} }) }}
+    {{ form_row(formProyecto.nombre) }}
   
     {# Desplegable de clientes #}
     <div class="form-group">
-        {{ form_label(form.Cliente) }}
-        {{ form_widget(form.Cliente, {'attr': {'class': 'form-control'}}) }}
+    {{ form_label(formProyecto.Cliente) }}
+      {{ form_widget(formProyecto.Cliente, {'attr': {'id': 'form_cliente', 'class': 'form-control selectpicker px-2 pt-0'}}) }}
+
+
     </div>
 
     {# Botón para abrir el modal de crear nuevo cliente #}
     <button type="button" class="btn btn-primary mb-3" id="abrirModalNuevoCliente">Crear Nuevo Cliente</button>
 
-    {{ form_row(form.Estado) }}
+    {{ form_row(formProyecto.Estado) }}
 
-
-    {{ form_row(form.usuarios) }}
+    {{ form_row(formProyecto.usuarios, {'attr': {'id': 'form_usuarios', 'class': 'form-control', 'required': 'required'}}) }}
 
     {% if app.request.attributes.get('_route') == 'app_proyectos_edit' %}
         <button type="button" class="btn btn-success" id="guardarButton">{{ button_label|default('Guardar') }}</button>
     {% else %}
         <button class="btn btn-success">{{ button_label|default('Guardar') }}</button>
     {% endif %}
-{{ form_end(form) }}
+{{ form_end(formProyecto) }}
 
 <!-- Modal para crear nuevo cliente -->
 <div class="modal fade" id="nuevoClienteModal" tabindex="-1" role="dialog" aria-labelledby="modalTituloNuevoCliente" aria-hidden="true">
@@ -31,17 +32,58 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTituloNuevoCliente">Crear Nuevo Cliente</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
             </div>
-           <div class="modal-body">
+            <div class="modal-body">
                 <!-- Formulario para crear nuevo cliente -->
                 {{ form_start(clienteForm, { 'attr': {'id': 'nuevoClienteForm'} }) }}
-                {{ form_widget(clienteForm) }}
+    
+                    {{ form_row(clienteForm.nombre, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+     
+                    {{ form_row(clienteForm.telefono, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+          
+                    {{ form_row(clienteForm.email, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+         
+                <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="guardarClienteBtn">Guardar</button>
-                {{ form_end(clienteForm) }}
+                </div>
+               {{ form_end(clienteForm) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- modal mensaje exito -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Éxito</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="successModalText">
+                  {# aqui saldrá el mensaje que esta en la funcion#}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- modal mensaje error -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel" style="color: red;">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="errorModalText">
+                No se ha podido guardar el nuevo cliente. Por favor, revisa los datos introducidos.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -49,43 +91,60 @@
 
 
 <script>
-    $(document).ready(function() {
-        // Evento de clic para abrir el modal de crear nuevo cliente
-        $('#abrirModalNuevoCliente').click(function() {
-            $('#nuevoClienteModal').modal('show');
-        });
 
-        // Evento de clic para guardar el nuevo cliente
-        $('#guardarClienteBtn').click(function() {
-            var nombreCliente = $('#nombreCliente').val(); // Obtener el nombre del cliente desde el formulario
+$(document).ready(function() {
+    $('.selectpicker').niceSelect();
 
-            // Enviar el formulario mediante AJAX
-            $.ajax({
-                type: 'POST',
-                url: '{{ path('app_clientes_new') }}', 
-                // A PARTIR DE AQUÍ YA NO ME VA
-                data: $('#nuevoClienteForm').serialize(), // Serializar el formulario
-            
-                success: function(response) {
 
-                    console.log("hola");
+    // Evento de clic para abrir el modal de crear nuevo cliente
+    $('#abrirModalNuevoCliente').click(function() {
+        $('#nuevoClienteModal').modal('show');
+    });
 
-                    // Actualizar el campo de selección de clientes en el formulario de creación del proyecto
-                    var nuevoClienteOption = $('<option>', { value: response.id, text: response.nombre });
-                    $('#form_cliente').append(nuevoClienteOption);
+    //aqui la funcion para cerrar el modal al clicar en el boton
+    $(document).on('click', '.btn-secondary[data-dismiss="modal"]', function() {
+        $('#nuevoClienteModal').modal('hide');
+    });
 
-                    // Cerrar el modal después de guardar el cliente
-                    $('#nuevoClienteModal').modal('hide');
-                    
-                    // Redirigir a la página de crear nuevo proyecto
-                    window.location.href = '{{ path('app_proyectos_new') }}';
+    function mostrarSuccessModal(mensaje) {
+        $('#successModalText').text(mensaje);
+        $('#successModal').modal('show');
+    }
+    $('#successModal').on('hidden.bs.modal', function () {
+        window.location.href = '{{ path('app_proyectos_new') }}';
+    });
 
-                },
-                error: function(xhr, status, error) {
-                    // Manejar errores de la solicitud AJAX
-                    console.error('Error al guardar el nuevo cliente:', error);
-                }
-            });
+
+    function mostrarErrorModal(mensaje) {
+        $('#errorModalText').text(mensaje); 
+        $('#errorModal').modal('show'); 
+    }
+
+    // Evento de clic para guardar el nuevo cliente
+     $('#guardarClienteBtn').click(function() {
+        
+        // Enviar el formulario mediante AJAX
+        $.ajax({
+            type: 'POST',
+            url: '{{ path('app_clientes_new') }}',
+            data: $('#nuevoClienteForm').serialize(), // Serializar el formulario
+            success: function(response) {
+                 mostrarSuccessModal(' Nuevo cliente creado con éxito');
+
+                // Actualizar el campo de selección de clientes
+                var nuevoClienteOption = $('<option>', { value: response.id, text: response.nombre });
+                $('#form_cliente').append(nuevoClienteOption);
+              
+               $('#nuevoClienteModal').modal('hide');
+
+            },
+            error: function(xhr, status, error) {
+                // Manejar errores de la solicitud AJAX
+                 mostrarErrorModal(error.message);
+            }
         });
     });
+});
+
+
 </script>

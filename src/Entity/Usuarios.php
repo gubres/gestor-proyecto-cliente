@@ -74,8 +74,6 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
 
-
-
     public function getIsActive(): bool
     {
         return $this->isActive;

@@ -1,14 +1,13 @@
 {{ form_start(form, { 'attr': {'id': 'form', 'class': 'needs-validation'}, 'method': 'post' }) }}
     <div class="form-group">
-        {{ form_row(form.nombre, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.nombre, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
     </div>
     <div class="form-group">
-        {{ form_row(form.telefono, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.telefono, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
     </div>
     <div class="form-group">
-        {{ form_row(form.email, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.email, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
     </div>
-    
     
     <div class="form-group">
         {% if app.request.attributes.get('_route') == 'app_clientes_edit' %}
