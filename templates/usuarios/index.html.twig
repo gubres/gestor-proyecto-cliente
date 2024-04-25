@@ -4,109 +4,13 @@
 
 {% block stylesheets %}
     {{ parent() }}
-     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
-    
+      <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
+    <!-- Biblioteca para la fecha de creación -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
+    <!-- Biblioteca de Jquery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- Estilos para la ventana modal -->
-    <style>
-        /* Estilos para la ventana modal */
-        .modal-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .modal-table th,
-        .modal-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        .modal-table th {
-            background-color: #f2f2f2;
-            text-align: left;
-        }
-    </style>
-    <style>
-
-        /* Estilo para centrar el texto en las celdas de la tabla */
-        table.table th,
-        table.table td {
-            text-align: center;
-        }
-        table.table thead th{
-            text-align: center;
-        }
-  
-    /* Estilos para los botones pdf,excel y print */
-    .dt-button {
-       
-        border-color: transparent !important;
-        border-radius: 5px !important;
-        margin-right: 5px;
-    }
-   .toolbar .btn-group > .btn {
-        margin-right: 0 !important;
-    }
-
-    .dt-button:hover {
-        opacity: 0.8;
-    }
-
-    /* Eliminar los márgenes entre los botones */
-    .dt-buttons .btn {
-        margin-right: 0 !important;
-    }
-
-    /* Estilo personalizado para el botón de Excel */
-    .btn-excel {
-        background-color: green !important; /* Cambiar el color de fondo a verde oscuro */
-        color: white !important; /* Cambiar el color del texto a blanco */
-    }
-
-    /* Estilo personalizado para el botón de PDF */
-    .btn-pdf {
-        background-color: purple !important; /* Cambiar el color de fondo a morado */
-        color: white !important; /* Cambiar el color del texto a blanco */
-    }
-
-    /* Estilo personalizado para el botón de impresión */
-    .btn-print {
-        background-color: lightblue !important; /* Cambiar el color de fondo a azul claro */
-        color: white !important; /* Cambiar el color del texto a blanco */
-    }
-    /* Estilo personalizado para los botones de PDF, Excel y Print */
-    .btn-pdf,
-    .btn-excel,
-    .btn-print {
-        margin-right: 0 !important;
-    }
-    /* Estilos para el desplegable */
-        .dt-dropdown {
-            display: none;
-            position: absolute;
-            z-index: 1;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 5px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .dt-dropdown ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .dt-dropdown ul li {
-            margin-bottom: 5px;
-        }
-
-        .dt-dropdown ul li label {
-            cursor: pointer;
-        }
-
-        .dt-dropdown ul li label:hover {
-            background-color: #f0f0f0;
-}   
-</style>
+    
 
 {% endblock %}
 
@@ -262,31 +166,86 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <!-- Agrega el script de DataTables Buttons -->
-    <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
+  
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
 
     <script>
         $(document).ready(function() {
             var table = $('#usuariosTabla').DataTable({  
                 dom: '<"toolbar">Bfrtip',
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                },
                 buttons: [
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
-                        className: 'btn-excel'
+                        className: 'btn-excel',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
-                        className: 'btn-pdf'
+                        className: 'btn-pdf',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },customize: function(doc) {
+                  
+                    var docContent = doc.content[1];
+                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                    docContent.layout = {
+                        hLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        vLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        hLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        vLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        paddingLeft: function(i, node) {
+                            return 4;
+                        },
+                        paddingRight: function(i, node) {
+                            return 4;
+                        },
+                        paddingTop: function(i, node) {
+                            return 2;
+                        },
+                        paddingBottom: function(i, node) {
+                            return 2;
+                        }
+                    };
+                },
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
-                        className: 'btn-print'
+                        className: 'btn-print',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },
                     }
                 ],
                 select: {

@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use App\Entity\Tareas;
+use App\Entity\UsuariosProyectos;
 
 
 #[ORM\Entity(repositoryClass: UsuariosRepository::class)]
@@ -55,9 +57,9 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isActive;
 
-   
+
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-     
+
     private $resetToken;
 
     public function getResetToken(): ?string
@@ -71,8 +73,6 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    
-
 
     public function getIsActive(): bool
     {
@@ -83,7 +83,7 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->isActive = $isActive;
 
-         // Actualizar los roles basados en la activación
+        // Actualizar los roles basados en la activación
         $this->updateRolesBasedOnActivation();
 
 
@@ -110,9 +110,6 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\ManyToMany(targetEntity: Tareas::class, mappedBy: 'usuarios')]
     private Collection $tareas;
-
- /*   #[ORM\Column(type: 'boolean')]
-    private $isVerified = false; */
 
     public function __construct()
     {
@@ -243,8 +240,6 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-
     /**
      * @return Collection<int, UsuariosProyectos>
      */
@@ -274,6 +269,7 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
 
     /**
      * @return Collection<int, Tareas>

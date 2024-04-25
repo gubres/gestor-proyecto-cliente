@@ -34,7 +34,7 @@ class Tareas
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotNull(message: "La fecha de creación no puede estar vacía.")]
     private ?\DateTimeInterface $creado_en = null;
-    
+
 
     //añado restricciones a la prioridad
     #[ORM\Column(length: 10)]
@@ -57,9 +57,25 @@ class Tareas
     #[ORM\ManyToMany(targetEntity: Usuarios::class, inversedBy: 'tareas')]
     private Collection $usuarios;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $eliminado = false;
+
+    #[ORM\ManyToOne(targetEntity: Usuarios::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $creado_por = null;
+
+    #[ORM\ManyToOne(targetEntity: Usuarios::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $actualizado_por = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $actualizado_en = null;
+
     public function __construct()
     {
         $this->usuarios = new ArrayCollection();
+        $this->creado_en = new \DateTime();
+        $this->actualizado_en = new \DateTime();
     }
 
     public function getId(): ?int
@@ -126,7 +142,49 @@ class Tareas
 
         return $this;
     }
+    public function isEliminado(): bool
+    {
+        return $this->eliminado;
+    }
 
+    public function setEliminado(bool $eliminado): self
+    {
+        $this->eliminado = $eliminado;
+        return $this;
+    }
+
+    public function getCreadoPor(): ?Usuarios
+    {
+        return $this->creado_por;
+    }
+
+    public function setCreadoPor(?Usuarios $creado_por): self
+    {
+        $this->creado_por = $creado_por;
+        return $this;
+    }
+
+    public function getActualizadoPor(): ?Usuarios
+    {
+        return $this->actualizado_por;
+    }
+
+    public function setActualizadoPor(?Usuarios $actualizado_por): self
+    {
+        $this->actualizado_por = $actualizado_por;
+        return $this;
+    }
+
+    public function getActualizadoEn(): ?\DateTimeInterface
+    {
+        return $this->actualizado_en;
+    }
+
+    public function setActualizadoEn(?\DateTimeInterface $actualizado_en): self
+    {
+        $this->actualizado_en = $actualizado_en;
+        return $this;
+    }
     /**
      * @return Collection<int, Usuarios>
      */

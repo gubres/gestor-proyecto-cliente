@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Repository\ClientesRepository;
+use App\Repository\TareasRepository;
 use App\Repository\UsuariosRepository;
 
 class InicioController extends AbstractController
@@ -21,11 +22,11 @@ class InicioController extends AbstractController
 
     #[Route('/inicio', name: 'app_inicio')]
     #[IsGranted('ROLE_USER')]
-    public function index(UsuariosRepository $usuariosRepository, Request $request): Response
+    public function index(UsuariosRepository $usuariosRepository, Request $request, TareasRepository $tareasRepository): Response
     {
 
         //obtener todos los usuarios e inicializar los arrays para poder almaxcenar
-        $usuarios = $usuariosRepository->findAll();
+        $usuarios = $usuariosRepository->findOnlyActive();
         $labels = [];
         $dataBaja = [];
         $dataMedia = [];
@@ -35,7 +36,7 @@ class InicioController extends AbstractController
         foreach ($usuarios as $usuario) {
             $labels[] = $usuario->getNombre();
             $baja = $media = $alta = 0;
-            
+
             //contar número de tareas según prioridad y switch para clasificarlas
             foreach ($usuario->getTareas() as $tarea) {
                 switch ($tarea->getPrioridad()) {
@@ -57,7 +58,7 @@ class InicioController extends AbstractController
         }
 
         // Obtener todos los clientes desde el repositorio
-        $clientes = $this->clientesRepository->findAll();
+        $clientes = $this->clientesRepository->findNotDeleted();
         // Obtener el total de clientes
         $totalClientes = $this->clientesRepository->count([]);
 
@@ -67,11 +68,15 @@ class InicioController extends AbstractController
             // Contar la cantidad de proyectos asociados a cada cliente
             $cantidadProyectos = count($cliente->getProyectos());
 
-            // Agregar los datos al array
-            $datosClientes[] = [
-                'nombre' => $cliente->getNombre(),
-                'cantidad' => $cantidadProyectos,
-            ];
+            //he añadido una condicion donde solo se mostrará en el grafico los clientes
+            //que tengan al menos 1 proyecto
+            if ($cantidadProyectos > 0) {
+                // Agregar los datos al array
+                $datosClientes[] = [
+                    'nombre' => $cliente->getNombre(),
+                    'cantidad' => $cantidadProyectos,
+                ];
+            }
         }
 
         return $this->render('inicio/index.html.twig', [
@@ -84,4 +89,3 @@ class InicioController extends AbstractController
         ]);
     }
 }
-

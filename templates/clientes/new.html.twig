@@ -43,4 +43,42 @@
             </div>
         </div>
     </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('form');
+    form.addEventListener('submit', function(event) {
+        const nombre = form.querySelector('[name="nombre"]');
+        const telefono = form.querySelector('[name="telefono"]');
+        const email = form.querySelector('[name="email"]');
+
+        // Validación de nombre: solo letras
+        if (!/^[a-zA-Z\s]+$/.test(nombre.value)) {
+            alert('El nombre debe contener solo letras.');
+            event.preventDefault();
+            return;
+        }
+
+        // Validación de teléfono: mínimo 9 dígitos
+        if (!/^\d{9,}$/.test(telefono.value)) {
+            alert('El número de teléfono debe tener al menos 9 dígitos.');
+            event.preventDefault();
+            return;
+        }
+
+        // Validación de email: formato de email
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value)) {
+            alert('Por favor ingrese un formato de correo electrónico válido.');
+            event.preventDefault();
+            return;
+        }
+    });
+});
+</script>
+
 {% endblock %}

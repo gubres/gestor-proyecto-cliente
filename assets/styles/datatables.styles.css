@@ -1,0 +1,60 @@
+
+        /* Estilos para la ventana modal */
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .modal-table th,
+        .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .modal-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    
+    /* Estilos para los botones pdf,excel y print */
+    .dt-button {
+        
+        border-color: transparent !important;
+        border-radius: 5px !important;
+        margin-right: 5px;
+    }
+   .toolbar .btn-group > .btn {
+        margin-right: 0 !important;
+    }
+
+    .dt-button:hover {
+        opacity: 0.8;
+    }
+
+    /* Eliminar los márgenes entre los botones */
+    .dt-buttons .btn {
+        margin-right: 0 !important;
+    }
+
+    /* Estilo personalizado para el botón de Excel */
+    .btn-excel {
+        background-color: green !important; /* Cambiar el color de fondo a verde oscuro */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+
+    /* Estilo personalizado para el botón de PDF */
+    .btn-pdf {
+        background-color: purple !important; /* Cambiar el color de fondo a morado */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+
+    /* Estilo personalizado para el botón de impresión */
+    .btn-print {
+        background-color: lightblue !important; /* Cambiar el color de fondo a azul claro */
+        color: white !important; /* Cambiar el color del texto a blanco */
+    }
+    /* Estilo personalizado para los botones de PDF, Excel y Print */
+    .btn-pdf,
+    .btn-excel,
+    .btn-print {
+        margin-right: 0 !important;
+    }
+

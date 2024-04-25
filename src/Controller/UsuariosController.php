@@ -53,11 +53,9 @@ class UsuariosController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $emailExistente = $entityManager->getRepository(Usuarios::class)->findOneBy(['email' => $user->getEmail()]);
             if ($emailExistente) {
-                $form->get('email')->addError(new FormError("Este email ya está registrado."));
+                $this->addFlash('error', 'El correo electrónico ya está en uso. Elige otro');
                 // Renderizar el formulario nuevamente si el email ya existe
-                return $this->render('usuarios/new.html.twig', [
-                    'form' => $form->createView(),
-                ]);
+                return $this->redirectToRoute('app_usuarios_new');
             }
 
             $user->setConfirmationToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
@@ -104,25 +102,26 @@ class UsuariosController extends AbstractController
     }
 
 
-     //verificar usuario y marcarlo como verificado. 
-     #[Route('/verify/email', name: 'app_verify_email')]
-     public function verifyUserEmail(Request $request, EntityManagerInterface $entityManager): Response {
+    //verificar usuario y marcarlo como verificado. 
+    #[Route('/verify/email', name: 'app_verify_email')]
+    public function verifyUserEmail(Request $request, EntityManagerInterface $entityManager): Response
+    {
         $token = $request->query->get('token');
-    
+
         if ($token) {
             $user = $entityManager->getRepository(Usuarios::class)->findOneBy(['confirmationToken' => $token]);
-    
+
             if ($user) {
                 $user->setIsVerified(true);
                 $user->setConfirmationToken(null);
                 $entityManager->flush();
-    
+
                 $this->addFlash('success', 'Tu email ha sido verificado.');
-    
-                return $this->redirectToRoute('app_usuarios_index'); 
+
+                return $this->redirectToRoute('app_usuarios_index');
             }
         }
-    
+
         $this->addFlash('error', 'No válido');
         return $this->redirectToRoute('app_usuarios_new');
     }
@@ -153,7 +152,7 @@ class UsuariosController extends AbstractController
             }
             // Aquí llamamos al método para actualizar los roles basados en la activación
             $usuario->updateRolesBasedOnActivation();
-            
+
             // Persiste la entidad actualizada
             $entityManager->persist($usuario);
             $entityManager->flush();
@@ -182,7 +181,7 @@ class UsuariosController extends AbstractController
             throw $this->createNotFoundException('Usuario no encontrado');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$usuario->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $usuario->getId(), $request->request->get('_token'))) {
             $entityManager->remove($usuario);
             $entityManager->flush();
         }
@@ -204,7 +203,4 @@ class UsuariosController extends AbstractController
     {
         return $this->render('registration/success.html.twig');
     }
-    
-
 }
-

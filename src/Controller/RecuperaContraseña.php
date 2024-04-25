@@ -37,7 +37,6 @@ class RecuperaContraseña extends AbstractController
             $entityManager->flush();
 
             $resetUrl = $this->generateUrl('resetear_contraseña', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
-            
            
             $email = (new TemplatedEmail())
             ->to($usuario->getEmail())
