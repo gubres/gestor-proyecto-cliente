@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use App\Repository\UsuariosProyectosRepository;
+
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 
-#[ORM\Entity()]
-#[ORM\Table(name: "clientes_proyectos")]
+#[ORM\Entity(repositoryClass: UsuariosProyectosRepository::class)]
+#[ORM\Table(name: "usuarios_proyectos")]
 class UsuariosProyectos
 {
     #[ORM\Id()]
@@ -15,9 +17,11 @@ class UsuariosProyectos
     private int $id;
 
     #[ORM\ManyToOne(targetEntity: Usuarios::class, inversedBy: "usuariosProyectos")]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Usuarios $usuario;
 
     #[ORM\ManyToOne(targetEntity: Proyectos::class, inversedBy: "usuariosProyectos")]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Proyectos $proyecto;
 
     #[ORM\Column(type: "boolean")]

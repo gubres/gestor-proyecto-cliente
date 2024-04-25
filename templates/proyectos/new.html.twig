@@ -1,11 +1,45 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Proyectos{% endblock %}
+{% block title %}Nuevo Proyecto{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Estilos para el contenedor del formulario */
+        .formulario-container {
+            width: 100%;
+            max-width: 500px; /* Ancho máximo del contenedor */
+            margin: 80px auto; /* Centrar horizontalmente */
+            padding: 20px; /* Añadir espacio alrededor del contenedor */
+            border: 1px solid #ccc; /* Añadir borde al contenedor */
+            border-radius: 10px; /* Añadir bordes redondeados al contenedor */
+        }
+
+        /* Estilos para los campos del formulario */
+        .formulario-container input[type="text"],
+        .formulario-container input[type="checkbox"],
+        .formulario-container select {
+            width: calc(100% - 22px); /* Ocupa todo el ancho disponible menos el espacio del borde */
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px; /* Espacio entre los campos */
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Create new Proyectos</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="formulario-container">
+                <h1 class="h3 mb-3 font-weight-normal text-center">Crear nuevo proyecto</h1>
 
-    {{ include('proyectos/_form.html.twig') }}
+                {{ include('proyectos/_form.html.twig', {'modal_button': false}) }}
 
-    <a href="{{ path('app_proyectos_index') }}">back to list</a>
+                <a href="{{ path('app_proyectos_index') }}" class="btn btn-secondary">Volver</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

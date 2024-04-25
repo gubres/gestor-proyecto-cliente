@@ -1,11 +1,86 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Usuarios{% endblock %}
+{% block title %}Registrar nuevo usuario{% endblock %}
 
 {% block body %}
-    <h1>Create new Usuarios</h1>
 
-    {{ include('usuarios/_form.html.twig') }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Registrar nuevo usuario</div>
+                <div class="card-body">
+                    <p>¿Ya tienes una cuenta? <a href="{{ path('app_login') }}">Inicia sesión aquí</a></p>
 
-    <a href="{{ path('app_usuarios_index') }}">back to list</a>
+                    {# Muestra mensajes de error relacionados con la verificación del correo electrónico #}
+                    {% for flash_error in app.flashes('verify_email_error') %}
+                        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+                    {% endfor %}
+
+                    {{ form_errors(form) }}
+
+                    {{ form_start(form) }}
+                    <div class="form-floating mb-3">
+                       <div class="input-group">
+                        {{ form_widget(form.nombre, { attr: { class: 'form-control', placeholder: 'Nombre' } }) }}
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <div class="input-group">
+                       
+                        {{ form_widget(form.apellidos, { attr: { class: 'form-control', placeholder: 'Apellidos' } }) }}
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <div class="input-group">
+                       
+                        {{ form_widget(form.email, { attr: { class: 'form-control', placeholder: 'Email' } }) }}
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <div class="input-group">
+                            {{ form_widget(form.plainPassword, { attr: { class: 'form-control', type: 'password', placeholder: 'Contraseña' } }) }}
+                            <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-check mb-3">
+                        {{ form_label(form.agreeTerms, 'Acepto los términos y condiciones', { label_attr: { class: 'form-check-label' } }) }}
+                        {{ form_widget(form.agreeTerms, { attr: { class: 'form-check-input ml-3' } }) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Crear nuevo usuario</button>
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{# Script de validación del formulario de registro #}
+<script>
+     $(document).ready(function() {
+        $('#togglePassword').click(function() {
+            var passwordInput = $('#{{ form.plainPassword.vars.id }}');
+            var type = passwordInput.attr('type');
+            if (type === 'password') {
+                passwordInput.attr('type', 'text');
+                $('#toggleIcon').removeClass('fas fa-eye').addClass('fas fa-eye-slash');
+            } else {
+                passwordInput.attr('type', 'password');
+                $('#toggleIcon').removeClass('fas fa-eye-slash').addClass('fas fa-eye');
+            }
+        });
+    });
+</script>
+
 {% endblock %}

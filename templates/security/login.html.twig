@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Iniciar sesión{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form method="post">
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                   {% if errorMessage %}
+                        <div class="alert alert-danger">
+                            {{ errorMessage }}
+                        </div>
+                    {% endif %}
+
+                {% if app.user %}
+                    <div class="mb-3">
+                        You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+                    </div>
+                {% endif %}
+
+                <h2 class="h3 mb-3 font-weight-normal">Iniciar Sesión</h2>
+                <div class="form-floating mb-3">
+                    <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+                    <label for="inputEmail">Email</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+                    <label for="inputPassword">Contraseña</label>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                            <i id="eyeIcon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                     <small class="form-text text-muted mt-2">
+                        <a href="{{ path('recuperar_contraseña') }}">¿Olvidaste tu contraseña?</a>
+                    </small>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="_remember_me" class="form-check-input" id="remember-me">
+                    <label class="form-check-label" for="remember-me">Recordarme</label>
+                </div>
+                <button class="btn btn-lg btn-primary" type="submit">Entrar</button>
+            </form>
+            <div class="row">
+                <div class="col-12">
+                  ¿No tienes una cuenta? <a href="{{ path("app_usuarios_new") }}">Regístrate aquí.</a>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('inputPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                eyeIcon.classList.toggle('fa-eye-slash');
+            });
+        });
+    </script>
+{% endblock %}

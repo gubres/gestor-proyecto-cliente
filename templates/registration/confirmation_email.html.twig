@@ -1,0 +1,13 @@
+{# templates/registration/confirmation_email.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Email</title>
+</head>
+<body>
+    <h1>¡Hola {{ userId }}!</h1>
+    <p>Por favor, confirma tu email haciendo clic en el siguiente enlace:</p>
+    <a href="{{ confirmationUrl }}">Confirmar Email</a>
+</body>
+</html>

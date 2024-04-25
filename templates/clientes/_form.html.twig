@@ -1,4 +1,19 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, { 'attr': {'id': 'form', 'class': 'needs-validation'}, 'method': 'post' }) }}
+    <div class="form-group">
+        {{ form_row(form.nombre, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+    </div>
+    <div class="form-group">
+        {{ form_row(form.telefono, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+    </div>
+    <div class="form-group">
+        {{ form_row(form.email, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+    </div>
+    
+    <div class="form-group">
+        {% if app.request.attributes.get('_route') == 'app_clientes_edit' %}
+            <button type="submit" class="btn btn-success mt-3" id="guardarButton">{{ button_label|default('Guardar') }}</button>
+        {% else %}
+            <button type="submit" class="btn btn-success mt-3">{{ button_label|default('Guardar') }}</button>
+        {% endif %}
+    </div>
 {{ form_end(form) }}

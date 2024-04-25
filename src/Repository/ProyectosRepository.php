@@ -20,6 +20,17 @@ class ProyectosRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Proyectos::class);
     }
+    /**
+     * @return Proyectos[]
+     */
+    public function findNotDeleted(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.eliminado = :val')
+            ->setParameter('val', false)
+            ->getQuery()
+            ->getResult();
+    }
 
     //    /**
     //     * @return Proyectos[] Returns an array of Proyectos objects

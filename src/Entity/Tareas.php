@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TareasRepository::class)]
 class Tareas
@@ -16,31 +17,65 @@ class Tareas
     #[ORM\Column]
     private ?int $id = null;
 
+    //restricciones nombre tarea
     #[ORM\Column(length: 30)]
+    #[Assert\NotBlank(message: "El nombre de la tarea no puede estar vacío.")]
+    #[Assert\Length(
+        min: 1,
+        max: 30,
+        maxMessage: "El nombre de la tarea debe ser entre 1 y 30 caracteres."
+    )]
     private ?string $nombre = null;
 
     #[ORM\Column]
     private ?bool $finalizada = null;
 
+    //validación fecha, no puede estar vacía
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "La fecha de creación no puede estar vacía.")]
     private ?\DateTimeInterface $creado_en = null;
 
+
+    //añado restricciones a la prioridad
     #[ORM\Column(length: 10)]
+    #[Assert\NotBlank(message: "La prioridad de la tarea es requerida.")]
+    #[Assert\Choice(
+        choices: ['ALTA', 'MEDIA', 'BAJA'],
+        message: "La prioridad debe ser alta, media o baja."
+    )]
     private ?string $prioridad = null;
 
+    //restricción de asociación tarea/proyecto
     #[ORM\ManyToOne(inversedBy: 'tareas')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "La tarea debe estar asociada a un proyecto.")]
     private ?Proyectos $proyecto = null;
 
     /**
      * @var Collection<int, Usuarios>
      */
     #[ORM\ManyToMany(targetEntity: Usuarios::class, inversedBy: 'tareas')]
-    private Collection $usuario;
+    private Collection $usuarios;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $eliminado = false;
+
+    #[ORM\ManyToOne(targetEntity: Usuarios::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $creado_por = null;
+
+    #[ORM\ManyToOne(targetEntity: Usuarios::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $actualizado_por = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $actualizado_en = null;
 
     public function __construct()
     {
-        $this->usuario = new ArrayCollection();
+        $this->usuarios = new ArrayCollection();
+        $this->creado_en = new \DateTime();
+        $this->actualizado_en = new \DateTime();
     }
 
     public function getId(): ?int
@@ -107,19 +142,61 @@ class Tareas
 
         return $this;
     }
+    public function isEliminado(): bool
+    {
+        return $this->eliminado;
+    }
 
+    public function setEliminado(bool $eliminado): self
+    {
+        $this->eliminado = $eliminado;
+        return $this;
+    }
+
+    public function getCreadoPor(): ?Usuarios
+    {
+        return $this->creado_por;
+    }
+
+    public function setCreadoPor(?Usuarios $creado_por): self
+    {
+        $this->creado_por = $creado_por;
+        return $this;
+    }
+
+    public function getActualizadoPor(): ?Usuarios
+    {
+        return $this->actualizado_por;
+    }
+
+    public function setActualizadoPor(?Usuarios $actualizado_por): self
+    {
+        $this->actualizado_por = $actualizado_por;
+        return $this;
+    }
+
+    public function getActualizadoEn(): ?\DateTimeInterface
+    {
+        return $this->actualizado_en;
+    }
+
+    public function setActualizadoEn(?\DateTimeInterface $actualizado_en): self
+    {
+        $this->actualizado_en = $actualizado_en;
+        return $this;
+    }
     /**
      * @return Collection<int, Usuarios>
      */
     public function getUsuario(): Collection
     {
-        return $this->usuario;
+        return $this->usuarios;
     }
 
     public function addUsuario(Usuarios $usuario): static
     {
-        if (!$this->usuario->contains($usuario)) {
-            $this->usuario->add($usuario);
+        if (!$this->usuarios->contains($usuario)) {
+            $this->usuarios->add($usuario);
         }
 
         return $this;
@@ -127,7 +204,7 @@ class Tareas
 
     public function removeUsuario(Usuarios $usuario): static
     {
-        $this->usuario->removeElement($usuario);
+        $this->usuarios->removeElement($usuario);
 
         return $this;
     }

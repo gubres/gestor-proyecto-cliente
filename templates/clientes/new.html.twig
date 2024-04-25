@@ -1,11 +1,84 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Clientes{% endblock %}
+{% block title %}Nuevo Cliente{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Estilos para el contenedor del formulario */
+        .formulario-container {
+            width: 100%;
+            max-width: 500px; /* Ancho máximo del contenedor */
+            margin: 80px auto; /* Centrar horizontalmente */
+            padding: 20px; /* Añadir espacio alrededor del contenedor */
+            border: 1px solid #ccc; /* Añadir borde al contenedor */
+            border-radius: 10px; /* Añadir bordes redondeados al contenedor */
+        }
+
+        /* Estilos para los campos del formulario */
+        .formulario-container input[type="text"],
+        .formulario-container input[type="checkbox"],
+        .formulario-container select {
+            width: calc(100% - 22px); /* Ocupa todo el ancho disponible menos el espacio del borde */
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px; /* Espacio entre los campos */
+        }
+    </style>
+{% endblock %}
+
 
 {% block body %}
-    <h1>Create new Clientes</h1>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="formulario-container"> <!-- Contenedor del formulario -->
+                    <h1 class="h3 mb-3 font-weight-normal text-center">Crear nuevo cliente</h1>
 
-    {{ include('clientes/_form.html.twig') }}
+                    {{ include('clientes/_form.html.twig', {'modal_button': false}) }}
 
-    <a href="{{ path('app_clientes_index') }}">back to list</a>
+                    <a href="{{ path('app_clientes_index') }}" class="btn btn-secondary">Volver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('form');
+    form.addEventListener('submit', function(event) {
+        const nombre = form.querySelector('[name="nombre"]');
+        const telefono = form.querySelector('[name="telefono"]');
+        const email = form.querySelector('[name="email"]');
+
+        // Validación de nombre: solo letras
+        if (!/^[a-zA-Z\s]+$/.test(nombre.value)) {
+            alert('El nombre debe contener solo letras.');
+            event.preventDefault();
+            return;
+        }
+
+        // Validación de teléfono: mínimo 9 dígitos
+        if (!/^\d{9,}$/.test(telefono.value)) {
+            alert('El número de teléfono debe tener al menos 9 dígitos.');
+            event.preventDefault();
+            return;
+        }
+
+        // Validación de email: formato de email
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value)) {
+            alert('Por favor ingrese un formato de correo electrónico válido.');
+            event.preventDefault();
+            return;
+        }
+    });
+});
+</script>
+
 {% endblock %}

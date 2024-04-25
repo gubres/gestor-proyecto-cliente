@@ -8,6 +8,9 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+
 
 /**
  * @extends ServiceEntityRepository<Usuarios>
@@ -17,12 +20,16 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
  * @method Usuarios[]    findAll()
  * @method Usuarios[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
+
+class UsuariosRepository extends ServiceEntityRepository
+
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Usuarios::class);
     }
+
+
 
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
@@ -36,6 +43,27 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
+    }
+
+    // Método para encontrar todos los correos electrónicos de los usuarios
+    public function findAllEmails(): array
+    {
+        dump("findAllEmails method called");
+
+        $qb = $this->createQueryBuilder('u')
+            ->select('u.email');
+        dump("findAllEmails method called");
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findOnlyActive(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.isActive = :val')
+            ->setParameter('val', true)
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**
@@ -62,4 +90,15 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function loadUserByIdentifier(string $identifier): UserInterface
+    {
+        $user = $this->findOneBy(['email' => $identifier]);
+
+        if (!$user) {
+            throw new UnsupportedUserException(sprintf('User with email "%s" not found.', $identifier));
+        }
+
+        return $user;
+    }
 }

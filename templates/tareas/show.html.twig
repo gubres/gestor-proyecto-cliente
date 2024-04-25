@@ -3,7 +3,7 @@
 {% block title %}Tareas{% endblock %}
 
 {% block body %}
-    <h1>Tareas</h1>
+    <h1>Detalles Tareas</h1>
 
     <table class="table">
         <tbody>
@@ -30,9 +30,10 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_tareas_index') }}">back to list</a>
+    <a href="javascript:history.go(-1);" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Volver </a>
 
-    <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}">edit</a>
+    <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning ">Editar</a>
 
     {{ include('tareas/_delete_form.html.twig') }}
 {% endblock %}

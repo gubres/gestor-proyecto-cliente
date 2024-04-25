@@ -20,6 +20,15 @@ class ClientesRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Clientes::class);
     }
+    public function findNotDeleted(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.eliminado = :val')
+            ->setParameter('val', false)
+            ->getQuery()
+            ->getResult();
+    }
+
 
     //    /**
     //     * @return Clientes[] Returns an array of Clientes objects
