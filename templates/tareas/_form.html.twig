@@ -10,7 +10,7 @@
     {# Desplegable de proyectos #}
     <div class="form-group">
         {{ form_label(form.proyecto) }}
-        {{ form_widget(form.proyecto, {'attr': {'class': 'form-control'}}) }}
+        {{ form_widget(form.proyecto, {'attr': {'class': 'form-control p-2',}}) }}
     </div>
 
     {# Botón para abrir el modal de crear nuevo proyecto #}
@@ -50,6 +50,11 @@
 
 <script>
     $(document).ready(function() {
+    //aqui la funcion para cerrar el modal al clicar en el boton
+    $(document).on('click', '.btn-secondary[data-dismiss="modal"]', function() {
+          $('#nuevoProyectoModal').modal('hide');
+     });
+
         // Evento de clic para abrir el modal de crear nuevo proyecto
         $('#abrirModalNuevoProyecto').click(function() {
             $('#nuevoProyectoModal').modal('show');
