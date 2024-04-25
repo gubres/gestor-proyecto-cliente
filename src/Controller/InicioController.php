@@ -23,21 +23,29 @@ class InicioController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function index(UsuariosRepository $usuariosRepository, Request $request): Response
     {
+        //uusario logueado
+        $usuario = $this->getUser();
 
-        //obtener todos los usuarios e inicializar los arrays para poder almaxcenar
-        $usuarios = $usuariosRepository->findAll();
+        $usuarios = $usuariosRepository->findProyectosCompartidos($usuario);
+
         $labels = [];
         $dataBaja = [];
         $dataMedia = [];
         $dataAlta = [];
 
-        //itera cada usuario y añadimos al array
-        foreach ($usuarios as $usuario) {
-            $labels[] = $usuario->getNombre();
-            $baja = $media = $alta = 0;
+        // Itera cada usuario y añade al array
+        foreach ($usuarios as $usuarioCompartido) {
+        $labels[] = $usuarioCompartido->getNombre();
+        $baja = $media = $alta = 0;
 
-            //contar número de tareas según prioridad y switch para clasificarlas
-            foreach ($usuario->getTareas() as $tarea) {
+        // Acceder a los proyectos a través de UsuariosProyectos
+        $proyectos = $usuarioCompartido->getUsuariosProyectos()->map(function($up) {
+        return $up->getProyecto();
+        })->toArray();
+
+        // Contar número de tareas según prioridad y verificar que pertenezcan a los proyectos compartidos
+        foreach ($usuarioCompartido->getTareas() as $tarea) {
+            if (in_array($tarea->getProyecto(), $proyectos)) {
                 switch ($tarea->getPrioridad()) {
                     case 'BAJA':
                         $baja++;
@@ -50,11 +58,12 @@ class InicioController extends AbstractController
                         break;
                 }
             }
-
-            $dataBaja[] = $baja;
-            $dataMedia[] = $media;
-            $dataAlta[] = $alta;
         }
+
+        $dataBaja[] = $baja;
+        $dataMedia[] = $media;
+        $dataAlta[] = $alta;
+            }
 
         // Obtener todos los clientes desde el repositorio
         $clientes = $this->clientesRepository->findAll();

@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Doctrine\ORM\Query\Expr\Join;
 
 
 /**
@@ -27,6 +28,20 @@ class UsuariosRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Usuarios::class);
+    }
+
+    public function findProyectosCompartidos(Usuarios $usuario)
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->innerJoin('u.usuariosProyectos', 'up')
+            ->innerJoin('up.proyecto', 'p')
+            ->innerJoin('p.usuariosProyectos', 'up2')
+            ->innerJoin('up2.usuario', 'u2')
+            ->where('u2.id = :usuarioId')
+            ->setParameter('usuarioId', $usuario->getId())
+            ->groupBy('u.id');
+
+        return $qb->getQuery()->getResult();
     }
 
     
@@ -83,6 +98,10 @@ class UsuariosRepository extends ServiceEntityRepository
     //        ;
     //    }
 
+
+       
+
+
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $user = $this->findOneBy(['email' => $identifier]);
@@ -93,6 +112,10 @@ class UsuariosRepository extends ServiceEntityRepository
 
         return $user;
     }
+
+
+  
+
 }
 
 
