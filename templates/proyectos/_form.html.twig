@@ -6,8 +6,8 @@
   
     {# Desplegable de clientes #}
     <div class="form-group">
-        {{ form_label(formProyecto.Cliente) }}
-      {{ form_widget(formProyecto.Cliente, {'attr': {'id': 'form_cliente', 'class': 'form-control selectpicker'}}) }}
+    {{ form_label(formProyecto.Cliente) }}
+      {{ form_widget(formProyecto.Cliente, {'attr': {'id': 'form_cliente', 'class': 'form-control selectpicker px-2 pt-0'}}) }}
 
 
     </div>
@@ -17,7 +17,7 @@
 
     {{ form_row(formProyecto.Estado) }}
 
-    {{ form_row(formProyecto.usuarios) }}
+    {{ form_row(formProyecto.usuarios, {'attr': {'id': 'form_usuarios', 'class': 'form-control', 'required': 'required'}}) }}
 
     {% if app.request.attributes.get('_route') == 'app_proyectos_edit' %}
         <button type="button" class="btn btn-success" id="guardarButton">{{ button_label|default('Guardar') }}</button>
@@ -93,7 +93,8 @@
 <script>
 
 $(document).ready(function() {
-    $('select').niceSelect();
+    $('.selectpicker').niceSelect();
+
 
     // Evento de clic para abrir el modal de crear nuevo cliente
     $('#abrirModalNuevoCliente').click(function() {
