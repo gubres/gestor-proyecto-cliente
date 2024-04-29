@@ -154,12 +154,18 @@
     </div>
     {% endfor %}
 
+                {# modal de mensajes #}
+        <div class="modal-body">
+            {% include '/proyectos/modalProyectos.html.twig' %}
+        </div>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
    
-     <!-- JavaScript de jQuery y jQuery UI -->
+   <!-- JavaScript de jQuery y jQuery UI -->
    
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Estilos y scripts para DataTables con botones y selección múltiple -->
@@ -172,41 +178,41 @@
    
     <script>
         $(document).ready(function() {
-            var table = $('#proyectosTabla').DataTable({  
-                dom: '<"toolbar">Bfrtip',
-                language: {
-                    "decimal": "",
-                    "emptyTable": "No hay información",
-                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                    "infoPostFix": "",
-                    "thousands": ",",
-                    "lengthMenu": "Mostrar _MENU_ Entradas",
-                    "loadingRecords": "Cargando...",
-                    "processing": "Procesando...",
-                    "search": "Buscar:",
-                    "zeroRecords": "Sin resultados encontrados",
-                }, 
-                buttons: [
+        // Inicialización de DataTable
+        var table = $('#proyectosTabla').DataTable({  
+        dom: '<"toolbar">Bfrtip',
+        language: {
+            "decimal": "",
+            "emptyTable": "No hay información",
+            "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+            "infoEmpty": "Mostrando 0 a 0 de 0 Entradas",
+            "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Mostrar _MENU_ Entradas",
+            "loadingRecords": "Cargando...",
+            "processing": "Procesando...",
+            "search": "Buscar:",
+            "zeroRecords": "Sin resultados encontrados",
+        },buttons: [
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
                         className: 'btn-excel',
-                         exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                        },
+                          exportOptions: {
+                    columns: [1, 2, 3, 4, 5]
+                },
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
                         className: 'btn-pdf',
-                        exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                        },
-                    customize: function(doc) {
+                          exportOptions: {
+                    columns: [1, 2, 3, 4, 5]
+                },customize: function(doc) {
+                    // Centrar la tabla en la página PDF
                     var docContent = doc.content[1];
                     docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
                     docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
@@ -244,9 +250,9 @@
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
                         className: 'btn-print',
-                         exportOptions: {
-                        columns: [1, 2, 3, 4]
-                        },
+                          exportOptions: {
+                    columns: [1, 2, 3, 4, 5]
+                },
                     }
                 ],
                 select: {
@@ -257,117 +263,173 @@
                 initComplete: function () {
                     $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
                 }
+    });
+
+ // Script para limpiar la selección de tareas
+            $('#limpiarSeleccionButton').on('click', function() {
+                $('.seleccionarTarea').prop('checked', false);
             });
 
-
-            // Agrega el botón de filtrar usando los botones de extensión
-            new $.fn.dataTable.Buttons(table, {
-                buttons: [
-                    {
-                        extend: 'colvis',
-                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
-                        className: 'btn-filter',
-                    }
-                ]
-            }).container().appendTo($('#toolbar'));
-
-            // Inicializar los botones de extensión
-            table.buttons().container().appendTo($('#toolbar'));
-
-            // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
-            $('#toolbar').on('click', '.btn-filter', function () {
+            // Agrega el evento de clic al botón de filtrar
+            $('#dropdownFilterButton').on('click', function () {
                 $(this).next().toggleClass('show');
             });
 
-            // Agregar evento para mostrar la marca de verificación al seleccionar una columna
-            $('#toolbar').on('change', 'input[type="checkbox"].dt-checkbox', function() {
-                var index = $(this).val();
-                var checked = $(this).prop('checked');
-                table.column(index).visible(checked);
-                updateCheckboxesVisibility(); // Llama a la función para actualizar la visibilidad de los checkboxes
-            });
+            // Agregar evento para mostrar el desplegable de filtrado al hacer clic en el botón de filtrar
+            $('#toolbar').on('click', '.btn-filter', function () {
+                var columnIndex = $(this).data('column-index'); // Obtener el índice de la columna
+                var filtro = $(this).text(); // Obtener el texto de la opción del filtro
 
-            // Función para actualizar la visibilidad de los checkboxes
-            function updateCheckboxesVisibility() {
-                $('#toolbar input[type="checkbox"].dt-checkbox').each(function() {
-                    var column = table.column($(this).val());
-                    $(this).prop('checked', column.visible()); // Marcar o desmarcar el checkbox según la visibilidad de la columna
-                });
-            }
+                console.log("Columna index:", columnIndex);
+                console.log("Filtro:", filtro);
 
-            // Cerrar el desplegable al hacer clic fuera de él
-            $(document).on('click', function (e) {
-                if (!$(e.target).closest('.btn-filter').length) {
-                    $('.show').removeClass('show');
+                // Aplicar el filtro a la columna correspondiente
+                if (table) {
+                    table.column(columnIndex).search(filtro).draw();
                 }
             });
 
+            // Inicializar el datepicker
+            $('#datepicker').datepicker({
+                dateFormat: 'yy-mm-dd', // Formato de la fecha
+                autoclose: true // Cerrar automáticamente después de seleccionar una fecha
+            });
 
-            // Agregar un contenedor para los botones en la parte superior izquierda
-            $("div.toolbar").html('<div class="btn-group" style="float:left;">' + 
-               
-                '<button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar Selección</button>' +
-                '</div>');
+            // Agregar evento clic al botón "Buscar"
+            $('#buscarFecha').on('click', function() {
+                var tipoFiltro = $('#filtroFecha').val(); // Obtener el tipo de filtro seleccionado
+                var fechaSeleccionada = $('#datepicker').val(); // Obtener la fecha seleccionada
+
+                if (tipoFiltro === 'desde') {
+                    // Obtener la fecha seleccionada del Datepicker
+                var fechaSeleccionada = $('#datepicker').datepicker('getDate');
+
+                // Formatear la fecha seleccionada al formato adecuado (YYYY-MM-DD)
+                var fechaFormateadaString = $.datepicker.formatDate('yy-mm-dd', fechaSeleccionada);
+
+                    // Imprimir la fecha formateada en la consola para verificar
+                    console.log("Fecha formateada:", fechaFormateadaString);
+
+                    // Filtrar las tareas a partir de la fecha seleccionada
+                    if (table) {
+                        table.column(4).search('>=' + fechaFormateadaString).draw(); // El número 4 representa el índice de la columna de "Fecha de creación" en la tabla
+                    }
+                } else if (tipoFiltro === 'exacto') {
+                    // Filtrar las tareas exactamente para el día seleccionado
+                    if (table) {
+                        table.column(4).search(fechaSeleccionada).draw(); // El número 4 representa el índice de la columna de "Fecha de creación" en la tabla
+                    }
+                }
+            });
+            // Agregar evento de cambio al desplegable de "Prioridad"
+            $('#filtroPrioridad').on('change', function() {
+                var prioridadSeleccionada = $(this).val(); // Obtener la prioridad seleccionada
+
+                // Aplicar el filtro de prioridad seleccionada
+                if (table) {
+                    table.column(5).search(prioridadSeleccionada).draw(); // El número 5 representa el índice de la columna de "Prioridad" en la tabla
+                }
+            });
+
+            // Agregar evento de cambio al desplegable de "Finalizada"
+            $('#filtroFinalizada').on('change', function() {
+                var finalizadaSeleccionada = $(this).val(); // Obtener la opción de "Finalizada" seleccionada
+
+                // Aplicar el filtro de "Finalizada" seleccionada
+                if (table) {
+                    table.column(3).search(finalizadaSeleccionada).draw(); // El número 3 representa el índice de la columna de "Finalizada" en la tabla
+                }
+            });
+            // Agregar evento clic al botón "Borrar filtros"
+            $('#limpiarFiltros').on('click', function() {
+                // Limpiar todos los filtros y mostrar todas las tareas
+                if (table) {
+                    table.search('').columns().search('').draw();
+                }
+            });
+            // Agregar evento clic a los elementos del menú desplegable de filtrado
+            $('.filter-option').on('click', function() {
+                var columnIndex = $(this).data('column-index'); // Obtener el índice de la columna
+                var filtro = $(this).data('filter-value'); // Obtener el valor del filtro
+
+                // Aplicar el filtro a la columna correspondiente
+                if (table) {
+                    table.column(columnIndex).search(filtro).draw();
+                }
+
+                // Cerrar el menú desplegable después de aplicar el filtro
+                $('.dropdown-menu').removeClass('show');
+            });
+
+            // Ocultar todas las ventanas modales al principio
+            $('.modal').modal('hide');
+
+            // Mostrar ventana modal al hacer clic en el botón de detalles
+            $('.abrirModal').on('click', function() {
+                var modalId = $(this).data('target');
+                $(modalId).modal('show');
+            });
             
-        // Función para actualizar la visibilidad del botón de eliminar selección
-            function updateDeleteButtonVisibility() {
-                var checkedCount = $('.seleccionarProyecto:checked').length;
-                if (checkedCount > 0) {
-                    $('#eliminarSeleccionButton').show();
-                } else {
-                    $('#eliminarSeleccionButton').hide();
-                }
-            }
+    // Evento para mostrar el modal de confirmación de eliminación
+    $('#eliminarSeleccionButton').on('click', function(e) {
+        e.preventDefault(); // Evita que el formulario se envíe automáticamente
+        var proyectosSeleccionados = $('.seleccionarProyecto:checked').map(function() {
+            return this.value; // Recoge los IDs seleccionados
+        }).get();
 
-            // Agregar evento al hacer clic en cada checkbox de proyecto
-            $('.seleccionarProyecto').on('change', function() {
-                updateDeleteButtonVisibility();
-            });
-
-            // Agregar evento al hacer clic en el checkbox "seleccionar todo"
-            $('#seleccionarTodo').on('change', function() {
-                $('.seleccionarProyecto').prop('checked', $(this).prop('checked')).trigger('change');
-            });
-
-
-         // Agregar evento clic al botón de eliminar selección de tareas
-             $('#eliminarSeleccionButton').on('click', function() {
-                
-            var proyectosSeleccionados = []; // Array para almacenar los IDs de las tareas seleccionadas
-
-            // Obtener los IDs de los proyectos seleccionados
-            $('.seleccionarProyecto:checked').each(function() {
-                proyectosSeleccionados.push($(this).val());
-                console.log(proyectosSeleccionados);
-            });
-
-            if (proyectosSeleccionados.length > 0) { // Verificar si se seleccionaron tareas
-                eliminarProyectos(proyectosSeleccionados); // Llamar a la función para eliminar las tareas seleccionadas
-            } else {
-                // Mostrar un mensaje de advertencia si no se seleccionaron tareas
-                alert('No se ha seleccionado ningun proyecto para eliminar.');
-            }
-        });
-            // Función para enviar IDs de proyectos seleccionados para eliminación lógica
-            function eliminarProyectos(proyectosSeleccionados) {
-            $.ajax({
-                type: 'POST',
-                url: '{{ path("eliminar_proyectos") }}',
-                data: JSON.stringify({ ids: proyectosSeleccionados }),
-                success: function(response) {
-                    console.log('Proyectos eliminados correctamente:', response);
-                    location.reload(); 
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error al eliminar los proyectos:', error);
-                }
-            });
+        if (proyectosSeleccionados.length > 0) {
+            $('#deleteModal').modal('show'); // Muestra el modal de confirmación
+        } else {
+            alert('No se ha seleccionado ningún proyecto para eliminar.');
         }
-
-
     });
 
+    // Evento para confirmar la eliminación desde el modal
+    $('#confirmDeleteButton').on('click', function() {
+        var proyectosSeleccionados = $('.seleccionarProyecto:checked').map(function() {
+            return this.value;
+        }).get();
 
+        $.ajax({
+            type: 'POST',
+            url: '{{ path("eliminar_proyectos") }}',
+            data: JSON.stringify({ ids: proyectosSeleccionados }),
+            contentType: "application/json; charset=utf-8",
+            success: function(response) {
+                $('#deleteModal').modal('hide'); // Oculta el modal de confirmación
+                $('#successModal').modal('show'); // Muestra el modal de éxito
+                setTimeout(function() {
+                    $('#successModal').modal('hide'); // Oculta el modal de éxito después de un breve momento
+                    location.reload(); // Recarga la página para actualizar los datos
+                }, 2000);
+            },
+            error: function(xhr, status, error) {
+                $('#deleteModal').modal('hide'); // Oculta el modal de confirmación
+                $('#errorModal').modal('show'); // Muestra el modal de error
+                $('#errorModalText').text('Error al eliminar los proyectos'); // Muestra mensaje de error
+            }
+        });
+    });
+
+    // Actualizar la visibilidad del botón de eliminar
+    function updateDeleteButtonVisibility() {
+        var checkedCount = $('.seleccionarProyecto:checked').length;
+        $('#eliminarSeleccionButton').toggle(checkedCount > 0);
+    }
+
+    // Evento al cambiar cualquier checkbox de proyecto
+    $('.seleccionarProyecto').on('change', function() {
+        updateDeleteButtonVisibility();
+    });
+
+    // Evento para el checkbox "seleccionar todo"
+    $('#seleccionarTodo').on('change', function() {
+        var checked = $(this).prop('checked');
+        $('.seleccionarProyecto').prop('checked', checked).trigger('change');
+    });
+
+    updateDeleteButtonVisibility(); // Llama inicialmente para establecer la visibilidad correcta
+});
 
 
     </script>

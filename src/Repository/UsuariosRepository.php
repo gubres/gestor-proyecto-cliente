@@ -44,7 +44,7 @@ class UsuariosRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    
+
 
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
@@ -58,20 +58,29 @@ class UsuariosRepository extends ServiceEntityRepository
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
-   
     }
 
-        // Método para encontrar todos los correos electrónicos de los usuarios
-        public function findAllEmails(): array
-        {dump("findAllEmails method called");
+    // Método para encontrar todos los correos electrónicos de los usuarios
+    public function findAllEmails(): array
+    {
+        dump("findAllEmails method called");
 
-            $qb = $this->createQueryBuilder('u')
-                ->select('u.email');
-                dump("findAllEmails method called");
-            
-            return $qb->getQuery()->getResult();
-        }
-    
+        $qb = $this->createQueryBuilder('u')
+            ->select('u.email');
+        dump("findAllEmails method called");
+
+        return $qb->getQuery()->getResult();
+    }
+
+    //funcion para encontrar solamente los usuarios que estén activos
+    public function findIsActive()
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.isActive = :val')
+            ->setParameter('val', true)
+            ->getQuery()
+            ->getResult();
+    }
 
     //    /**
     //     * @return Usuarios[] Returns an array of Usuarios objects
@@ -99,7 +108,7 @@ class UsuariosRepository extends ServiceEntityRepository
     //    }
 
 
-       
+
 
 
     public function loadUserByIdentifier(string $identifier): UserInterface
@@ -112,8 +121,4 @@ class UsuariosRepository extends ServiceEntityRepository
 
         return $user;
     }
-
-
-  
-
 }

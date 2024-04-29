@@ -165,7 +165,10 @@
                     <li class="nav-item"><a class="nav-link" href="{{ path('app_clientes_index') }}"><i id="icon" class="bi bi-briefcase"></i> Clientes</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ path('app_proyectos_index') }}"><i class="bi bi-stack"></i> Proyectos</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ path('app_tareas_index') }}"><i class="bi bi-calendar-range"></i> Tareas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_usuarios_index') }}"><i class="bi bi-people"></i> Usuarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_usuarios_index') }}"><i class="bi bi-person-vcard"></i> Perfil del Usuario</a></li>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <li class="nav-item"><a class="nav-link" href="{{ path('user') }}"><i class="bi bi-person-lock"></i> Role de usuarios</a></li>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right"></i> Cerrar sesión ({{ app.user.email }})</a></li>
                 </ul>
                 <form class="d-flex mt-3" role="search">

@@ -177,7 +177,14 @@
             </div>
         </div>
     {% endfor %}
+
+
+                {# modal de mensajes #}
+        <div class="modal-body">
+            {% include '/tareas/modalTareas.html.twig' %}
+        </div>
 {% endblock %}
+
 
 {% block javascripts %}
     {{ parent() }}
@@ -388,62 +395,61 @@
                 $(modalId).modal('show');
             });
 
-             // Función para actualizar la visibilidad del botón "Eliminar Selección"
-            function updateDeleteButtonVisibility() {
-                var deleteButton = $('#eliminarSeleccionButton');
-                var checkedCount = $('.seleccionarTarea:checked').length;
-                if (checkedCount > 0) {
-                    deleteButton.show(); // Mostrar el botón si hay alguna selección
-                } else {
-                    deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
-                }
+                // Evento para mostrar el modal de confirmación al intentar eliminar tareas
+        $('#eliminarSeleccionButton').on('click', function() {
+            var selectedTasks = $('.seleccionarTarea:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            if (selectedTasks.length > 0) {
+                $('#deleteModal').modal('show');
+            } else {
+                alert('No se ha seleccionado ninguna tarea para eliminar.');
             }
+        });
 
-            $('.seleccionarTarea').on('click', function() {
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
+        // Evento para confirmar la eliminación
+        $('#confirmDeleteButton').on('click', function() {
+            var selectedTasks = $('.seleccionarTarea:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            $.ajax({
+                type: 'POST',
+                url: '{{ path("eliminar_tareas") }}',
+                data: JSON.stringify({ ids: selectedTasks }),
+                contentType: "application/json; charset=utf-8",
+                success: function(response) {
+                    $('#deleteModal').modal('hide');
+                    $('#successModal').modal('show');
+                    setTimeout(function() {
+                        $('#successModal').modal('hide');
+                        location.reload();
+                    }, 2000);
+                },
+                error: function(xhr, status, error) {
+                    $('#deleteModal').modal('hide');
+                    $('#errorModal').modal('show');
+                    setTimeout(function() {
+                        $('#errorModal').modal('hide');
+                    }, 2000);
+                }
             });
-            // Agregar evento al hacer clic en el botón de seleccionar todo
-            $('#seleccionarTodo').on('click', function() {
-                var isChecked = $(this).prop('checked');
-                $('.seleccionarTarea').prop('checked', isChecked);
-                updateDeleteButtonVisibility(); // Actualizar visibilidad del botón "Eliminar Selección"
-            });
+        });
 
-          // Agregar evento clic al botón de eliminar selección de tareas
-$('#eliminarSeleccionButton').on('click', function() {
-    var tareasSeleccionadas = $('.seleccionarTarea:checked').map(function() {
-        return this.value;
-    }).get();
+        // Función para actualizar la visibilidad del botón de eliminar
+        function updateDeleteButtonVisibility() {
+            var checkedCount = $('.seleccionarTarea:checked').length;
+            $('#eliminarSeleccionButton').toggle(checkedCount > 0);
+        }
 
-    if (tareasSeleccionadas.length > 0) {
-        
-            eliminarTareas(tareasSeleccionadas);
-    } else {
-        console.log('No se ha seleccionado ninguna tarea para eliminar.');
-    }
-});
+        $('.seleccionarTarea').on('change', function() {
+            updateDeleteButtonVisibility();
+        });
 
-// Función para eliminar las tareas seleccionadas mediante fetch
-function eliminarTareas(tareasSeleccionadas) {
-    fetch('{{ path("eliminar_tareas") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ ids: tareasSeleccionadas })
-    })
-    .then(response => response.json()) // convertir la respuesta a JSON
-    .then(data => {
-        console.log('Tareas eliminadas correctamente:', data);
-       location.reload();
-    })
-    .catch(error => {
-        console.error('Error al eliminar las tareas:', error);
-        alert('Error al eliminar las tareas. Por favor, intente de nuevo.');
+        $('#seleccionarTodo').on('change', function() {
+            $('.seleccionarTarea').prop('checked', $(this).prop('checked')).trigger('change');
+        });
     });
-}
-
-});
     </script>
 {% endblock %}
