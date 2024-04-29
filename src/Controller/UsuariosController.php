@@ -4,25 +4,22 @@ namespace App\Controller;
 
 use App\Entity\Usuarios;
 use App\Form\UsuariosType;
-use App\Repository\UsuariosRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Form\UsuarioEditType;
 use App\Form\RegistrationFormType;
-use Symfony\Component\Form\FormError;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Mime\Address;
+use App\Repository\UsuariosRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 
-#[Route('/usuarios')]
+#[Route('/usuario')]
 class UsuariosController extends AbstractController
 {
 
@@ -37,9 +34,15 @@ class UsuariosController extends AbstractController
     #[Route('/', name: 'app_usuarios_index', methods: ['GET'])]
     public function index(UsuariosRepository $usuariosRepository): Response
     {
+        // Asegura que solo los usuarios con el rol de usuario puedan acceder
         $this->denyAccessUnlessGranted('ROLE_USER');
+
+        // Obtiene el usuario actualmente logueado
+        $user = $this->getUser();
+
+        // Devuelve la vista pasando únicamente el usuario actual
         return $this->render('usuarios/index.html.twig', [
-            'usuarios' => $usuariosRepository->findAll(),
+            'usuario' => $user,
         ]);
     }
 
@@ -127,7 +130,7 @@ class UsuariosController extends AbstractController
     }
 
 
-    #[Route('/usuarios/{id}/edit', name: 'app_usuarios_edit', methods: ['GET', 'POST'])]
+    #[Route('/usuario/{id}/edit', name: 'app_usuarios_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');

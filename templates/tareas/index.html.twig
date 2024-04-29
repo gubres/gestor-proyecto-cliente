@@ -180,7 +180,14 @@
             </div>
         </div>
     {% endfor %}
+
+
+                {# modal de mensajes #}
+        <div class="modal-body">
+            {% include '/tareas/modalTareas.html.twig' %}
+        </div>
 {% endblock %}
+
 
 {% block javascripts %}
     {{ parent() }}
@@ -336,15 +343,67 @@
                 }
             });
 
-            // Botón para seleccionar todas las tareas
-            $('#seleccionarTodo').on('change', function () {
-                $('.seleccionarTarea').prop('checked', $(this).prop('checked'));
-                if ($(this).prop('checked')) {
-                    $('#eliminarSeleccionButton').show();
-                } else {
-                    $('#eliminarSeleccionButton').hide();
+            // Mostrar ventana modal al hacer clic en el botón de detalles
+            $('.abrirModal').on('click', function() {
+                var modalId = $(this).data('target');
+                $(modalId).modal('show');
+            });
+
+                // Evento para mostrar el modal de confirmación al intentar eliminar tareas
+        $('#eliminarSeleccionButton').on('click', function() {
+            var selectedTasks = $('.seleccionarTarea:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            if (selectedTasks.length > 0) {
+                $('#deleteModal').modal('show');
+            } else {
+                alert('No se ha seleccionado ninguna tarea para eliminar.');
+            }
+        });
+
+        // Evento para confirmar la eliminación
+        $('#confirmDeleteButton').on('click', function() {
+            var selectedTasks = $('.seleccionarTarea:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            $.ajax({
+                type: 'POST',
+                url: '{{ path("eliminar_tareas") }}',
+                data: JSON.stringify({ ids: selectedTasks }),
+                contentType: "application/json; charset=utf-8",
+                success: function(response) {
+                    $('#deleteModal').modal('hide');
+                    $('#successModal').modal('show');
+                    setTimeout(function() {
+                        $('#successModal').modal('hide');
+                        location.reload();
+                    }, 2000);
+                },
+                error: function(xhr, status, error) {
+                    $('#deleteModal').modal('hide');
+                    $('#errorModal').modal('show');
+                    setTimeout(function() {
+                        $('#errorModal').modal('hide');
+                    }, 2000);
                 }
             });
         });
+
+        // Función para actualizar la visibilidad del botón de eliminar
+        function updateDeleteButtonVisibility() {
+            var checkedCount = $('.seleccionarTarea:checked').length;
+            $('#eliminarSeleccionButton').toggle(checkedCount > 0);
+        }
+
+        $('.seleccionarTarea').on('change', function() {
+            updateDeleteButtonVisibility();
+        });
+
+        $('#seleccionarTodo').on('change', function() {
+            $('.seleccionarTarea').prop('checked', $(this).prop('checked')).trigger('change');
+        });
+    });
     </script>
 {% endblock %}

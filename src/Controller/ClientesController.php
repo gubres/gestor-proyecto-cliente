@@ -12,8 +12,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/clientes')]
+#[IsGranted('ROLE_ADMIN')]
 class ClientesController extends AbstractController
 {
     private $clientesRepository;
