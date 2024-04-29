@@ -69,21 +69,13 @@
                         <li class="nav-item"><a class="nav-link" href="{{ path('app_proyectos_index') }}"><i class="bi bi-stack"></i> Proyectos</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ path('app_tareas_index') }}"><i class="bi bi-calendar-range"></i> Tareas</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ path('app_usuarios_index') }}"><i class="bi bi-people"></i> Usuarios</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right"></i> Cerrar sesión ({{ app.user.email }})</a></li>
                     </ul>
             
                 </div>
             </div>
         </div>
-    </nav>
-    <nav class="navbar bg-body-tertiary fixed-bottom">
-        <div class="container-fluid justify-content-end">
-                {% if app.user %}
-                    <class="nav-item">
-                        <a class="navbar-brand" href="{{ path('app_logout') }}">
-                            Cerrar sesión ({{ app.user.email }})
-                        </a>
-                {% endif %}
-        </div>
+
     </nav>
 {% endif %}
 {% block body %}
