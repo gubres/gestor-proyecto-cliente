@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Welcome!{% endblock %}</title>
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>:círculo_negro:️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
    
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -18,51 +17,13 @@
     <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.css" rel="stylesheet">
+     <!-- Enlace a la biblioteca de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-<!-- Hoja de estilos para el select -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css">
     {% block stylesheets %}
-         <style>
 
-/* Cambiar el estilo general del select */
-.nice-select {
-    font-family: Arial, sans-serif; /* Cambia la tipografía */
-    background-color: #fff; /* Color de fondo */
-    border-radius: 5px; /* Bordes redondeados */
-    border: 1px solid #ddd; /* Color del borde */
-    width: 95%; /* Ocupar el ancho disponible */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
-    margin-bottom: 15px;
-}
-
-/* Estilo del dropdown cuando está abierto */
-.nice-select.open .list {
-    max-height: 200px; /* Controlar la altura máxima del dropdown */
-    overflow-y: auto; /* Permitir scroll */
-    width: auto; /* Permitir scroll */
-}
-
-/* Estilo de las opciones dentro del dropdown */
-.nice-select .list .option {
-    cursor: pointer; /* Indicar que es seleccionable */
-}
-
-/* Estilo para cuando se pasa el mouse sobre las opciones */
-.nice-select .list .option:hover {
-    background-color: #f7f7f7; /* Color de fondo al hacer hover */
-}
-
-/* Estilo para la opción seleccionada */
-.nice-select .list .option.selected {
-    font-weight: bold; /* Hacer el texto en negrita */
-    background-color: #e1e1e1; /* Cambiar el fondo de la opción seleccionada */
-}
-
-/* Estilo para la opción con el foco mediante teclado o hover */
-.nice-select .list .option.focus {
-    background-color: #eaf3ff; /* Color de fondo para el foco */
-}
-
+    <style>   
         /* Estilos para la ventana modal */
         .modal-table {
             width: 100%;
@@ -121,32 +82,15 @@
     .btn-print {
         margin-right: 0 !important;
     }
-    .nav-item {
-    border-bottom: 1px solid #ccc; /* Línea divisoria entre los enlaces */
-    padding-bottom: 5px; /* Espaciado entre las líneas divisorias */
-    }
 
-    /* Estilo para el enlace de cerrar sesión */
-    .nav-item:last-child {
-        border-bottom: none; /* Elimina la línea divisoria del último enlace */
-    }
 
-    .nav-item a {
-        display: block; /* Hace que el enlace ocupe todo el ancho del contenedor */
-        padding: 10px 0; /* Espaciado interior del enlace */
-        color: #333; /* Color del texto */
-        text-decoration: none; /* Quita la subrayado predeterminado */
-    }
-
-    .nav-item a:hover {
-        background-color: #f0f0f0; /* Cambia el color de fondo al pasar el ratón */
-    }
     </style>
 
+      
     {% endblock %}
 </head>
 <body>
-{% if app.user %}
+{% if app.request.attributes.get('_route') != 'app_login' %}
 <nav class="navbar bg-body-tertiary fixed-top">
     <div class="container-fluid">
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" title="Menu" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
@@ -176,8 +120,8 @@
                 </form>
             </div>
         </div>
-    </div>
-</nav>
+
+    </nav>
 {% endif %}
 {% block body %}
 <div id="global-buttons">
@@ -185,22 +129,16 @@
 </div>
     <!-- Contenido específico de cada página -->
 {% endblock %}
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Incluye jQuery sin el atributo 'integrity' -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 <script src="https://cdn.datatables.net/v/dt/dt-2.0.2/datatables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <!-- para la selección múltiple y los botones pdf y excel -->
 <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
-
 <!-- para los gráficos de la pantalla de inicio -->
 <script src="https://code.highcharts.com/highcharts.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
 <script>
     // Obtiene la ruta actual de la página
     var currentPage = "{{ app.request.attributes.get('_route') }}";

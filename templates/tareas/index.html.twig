@@ -9,9 +9,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
     <!-- Biblioteca de Jquery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-
-    
 {% endblock %}
 
 {% block body %}
@@ -76,6 +73,7 @@
                 <th><input type="checkbox" id="seleccionarTodo"></th>
                 <th>Id</th>
                 <th>Nombre</th>
+                <th>Descripción</th>
                 <th>Finalizada</th>
                 <th>Fecha creación</th>
                 <th>Prioridad</th>
@@ -88,6 +86,7 @@
                     <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
                     <td>{{ tarea.id }}</td>
                     <td>{{ tarea.nombre }}</td>
+                    <td>{{ tarea.descripcion }}</td> {# Aquí agregamos la descripción #}
                     <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
                     <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
                     <td>
@@ -142,6 +141,10 @@
                                 <tr>
                                     <th>Nombre</th>
                                     <td>{{ tarea.nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Descripción</th>
+                                    <td>{{ tarea.descripcion }}</td>
                                 </tr>
                                 <tr>
                                     <th>Finalizada</th>
@@ -291,103 +294,54 @@
             });
 
             // Script para limpiar la selección de tareas
-            $('#limpiarSeleccionButton').on('click', function() {
-                $('.seleccionarTarea').prop('checked', false);
+            $('#limpiarFiltros').on('click', function () {
+                $('#filtroFinalizada').val('');
+                $('#filtroPrioridad').val('');
+                $('#filtroFecha').val('');
+                $('#tareasTabla').DataTable().search('').draw();
             });
 
-            // Agrega el evento de clic al botón de filtrar
-            $('#dropdownFilterButton').on('click', function () {
-                $(this).next().toggleClass('show');
-            });
-
-            // Agregar evento para mostrar el desplegable de filtrado al hacer clic en el botón de filtrar
-            $('#toolbar').on('click', '.btn-filter', function () {
-                var columnIndex = $(this).data('column-index'); // Obtener el índice de la columna
-                var filtro = $(this).text(); // Obtener el texto de la opción del filtro
-
-                console.log("Columna index:", columnIndex);
-                console.log("Filtro:", filtro);
-
-                // Aplicar el filtro a la columna correspondiente
-                if (table) {
-                    table.column(columnIndex).search(filtro).draw();
-                }
-            });
-
-            // Inicializar el datepicker
+            // Script para la fecha de creación
             $('#datepicker').datepicker({
-                dateFormat: 'yy-mm-dd', // Formato de la fecha
-                autoclose: true // Cerrar automáticamente después de seleccionar una fecha
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                endDate: '+0d'
             });
 
-            // Agregar evento clic al botón "Buscar"
-            $('#buscarFecha').on('click', function() {
-                var tipoFiltro = $('#filtroFecha').val(); // Obtener el tipo de filtro seleccionado
-                var fechaSeleccionada = $('#datepicker').val(); // Obtener la fecha seleccionada
+            // Botón de buscar por fecha de creación
+            $('#buscarFecha').on('click', function () {
+                var fecha = $('#datepicker').val();
+                $('#filtroFecha').val(fecha);
+                $('#tareasTabla').DataTable().search(fecha).draw();
+            });
 
-                if (tipoFiltro === 'desde') {
-                    // Obtener la fecha seleccionada del Datepicker
-                var fechaSeleccionada = $('#datepicker').datepicker('getDate');
+            // Script para filtrar por finalizada
+            $('#filtroFinalizada').on('change', function () {
+                var finalizada = $(this).val();
+                $('#tareasTabla').DataTable().column(4).search(finalizada).draw();
+            });
 
-                // Formatear la fecha seleccionada al formato adecuado (YYYY-MM-DD)
-                var fechaFormateadaString = $.datepicker.formatDate('yy-mm-dd', fechaSeleccionada);
+            // Script para filtrar por prioridad
+            $('#filtroPrioridad').on('change', function () {
+                var prioridad = $(this).val();
+                $('#tareasTabla').DataTable().column(6).search(prioridad).draw();
+            });
 
-                    // Imprimir la fecha formateada en la consola para verificar
-                    console.log("Fecha formateada:", fechaFormateadaString);
+            // Botón para eliminar las tareas seleccionadas
+            $('#eliminarSeleccionButton').on('click', function () {
+                var form = $('#formEliminarTareas');
+                form.submit();
+            });
 
-                    // Filtrar las tareas a partir de la fecha seleccionada
-                    if (table) {
-                        table.column(4).search('>=' + fechaFormateadaString).draw(); // El número 4 representa el índice de la columna de "Fecha de creación" en la tabla
-                    }
-                } else if (tipoFiltro === 'exacto') {
-                    // Filtrar las tareas exactamente para el día seleccionado
-                    if (table) {
-                        table.column(4).search(fechaSeleccionada).draw(); // El número 4 representa el índice de la columna de "Fecha de creación" en la tabla
-                    }
+            // Controla el estado del botón de eliminación de selección
+            $('.seleccionarTarea').on('change', function () {
+                var anySelected = $('.seleccionarTarea:checked').length > 0;
+                if (anySelected) {
+                    $('#eliminarSeleccionButton').show();
+                } else {
+                    $('#eliminarSeleccionButton').hide();
                 }
             });
-            // Agregar evento de cambio al desplegable de "Prioridad"
-            $('#filtroPrioridad').on('change', function() {
-                var prioridadSeleccionada = $(this).val(); // Obtener la prioridad seleccionada
-
-                // Aplicar el filtro de prioridad seleccionada
-                if (table) {
-                    table.column(5).search(prioridadSeleccionada).draw(); // El número 5 representa el índice de la columna de "Prioridad" en la tabla
-                }
-            });
-
-            // Agregar evento de cambio al desplegable de "Finalizada"
-            $('#filtroFinalizada').on('change', function() {
-                var finalizadaSeleccionada = $(this).val(); // Obtener la opción de "Finalizada" seleccionada
-
-                // Aplicar el filtro de "Finalizada" seleccionada
-                if (table) {
-                    table.column(3).search(finalizadaSeleccionada).draw(); // El número 3 representa el índice de la columna de "Finalizada" en la tabla
-                }
-            });
-            // Agregar evento clic al botón "Borrar filtros"
-            $('#limpiarFiltros').on('click', function() {
-                // Limpiar todos los filtros y mostrar todas las tareas
-                if (table) {
-                    table.search('').columns().search('').draw();
-                }
-            });
-            // Agregar evento clic a los elementos del menú desplegable de filtrado
-            $('.filter-option').on('click', function() {
-                var columnIndex = $(this).data('column-index'); // Obtener el índice de la columna
-                var filtro = $(this).data('filter-value'); // Obtener el valor del filtro
-
-                // Aplicar el filtro a la columna correspondiente
-                if (table) {
-                    table.column(columnIndex).search(filtro).draw();
-                }
-
-                // Cerrar el menú desplegable después de aplicar el filtro
-                $('.dropdown-menu').removeClass('show');
-            });
-
-            // Ocultar todas las ventanas modales al principio
-            $('.modal').modal('hide');
 
             // Mostrar ventana modal al hacer clic en el botón de detalles
             $('.abrirModal').on('click', function() {
