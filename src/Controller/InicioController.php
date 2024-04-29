@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Repository\ClientesRepository;
-use App\Repository\TareasRepository;
 use App\Repository\UsuariosRepository;
 
 class InicioController extends AbstractController
@@ -22,23 +21,31 @@ class InicioController extends AbstractController
 
     #[Route('/inicio', name: 'app_inicio')]
     #[IsGranted('ROLE_USER')]
-    public function index(UsuariosRepository $usuariosRepository, Request $request, TareasRepository $tareasRepository): Response
+    public function index(UsuariosRepository $usuariosRepository, Request $request): Response
     {
+        //uusario logueado
+        $usuario = $this->getUser();
 
-        //obtener todos los usuarios e inicializar los arrays para poder almaxcenar
-        $usuarios = $usuariosRepository->findOnlyActive();
+        $usuarios = $usuariosRepository->findProyectosCompartidos($usuario);
+
         $labels = [];
         $dataBaja = [];
         $dataMedia = [];
         $dataAlta = [];
 
-        //itera cada usuario y añadimos al array
-        foreach ($usuarios as $usuario) {
-            $labels[] = $usuario->getNombre();
-            $baja = $media = $alta = 0;
+        // Itera cada usuario y añade al array
+        foreach ($usuarios as $usuarioCompartido) {
+        $labels[] = $usuarioCompartido->getNombre();
+        $baja = $media = $alta = 0;
 
-            //contar número de tareas según prioridad y switch para clasificarlas
-            foreach ($usuario->getTareas() as $tarea) {
+        // Acceder a los proyectos a través de UsuariosProyectos
+        $proyectos = $usuarioCompartido->getUsuariosProyectos()->map(function($up) {
+        return $up->getProyecto();
+        })->toArray();
+
+        // Contar número de tareas según prioridad y verificar que pertenezcan a los proyectos compartidos
+        foreach ($usuarioCompartido->getTareas() as $tarea) {
+            if (in_array($tarea->getProyecto(), $proyectos)) {
                 switch ($tarea->getPrioridad()) {
                     case 'BAJA':
                         $baja++;
@@ -51,14 +58,15 @@ class InicioController extends AbstractController
                         break;
                 }
             }
-
-            $dataBaja[] = $baja;
-            $dataMedia[] = $media;
-            $dataAlta[] = $alta;
         }
 
+        $dataBaja[] = $baja;
+        $dataMedia[] = $media;
+        $dataAlta[] = $alta;
+            }
+
         // Obtener todos los clientes desde el repositorio
-        $clientes = $this->clientesRepository->findNotDeleted();
+        $clientes = $this->clientesRepository->findAll();
         // Obtener el total de clientes
         $totalClientes = $this->clientesRepository->count([]);
 
@@ -68,15 +76,11 @@ class InicioController extends AbstractController
             // Contar la cantidad de proyectos asociados a cada cliente
             $cantidadProyectos = count($cliente->getProyectos());
 
-            //he añadido una condicion donde solo se mostrará en el grafico los clientes
-            //que tengan al menos 1 proyecto
-            if ($cantidadProyectos > 0) {
-                // Agregar los datos al array
-                $datosClientes[] = [
-                    'nombre' => $cliente->getNombre(),
-                    'cantidad' => $cantidadProyectos,
-                ];
-            }
+            // Agregar los datos al array
+            $datosClientes[] = [
+                'nombre' => $cliente->getNombre(),
+                'cantidad' => $cantidadProyectos,
+            ];
         }
 
         return $this->render('inicio/index.html.twig', [

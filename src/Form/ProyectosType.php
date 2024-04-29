@@ -31,7 +31,7 @@ class ProyectosType extends AbstractType
             ->add('nombre', TextType::class) // Definir el campo 'nombre'
             ->add('Cliente', EntityType::class, [
                 'class' => Clientes::class,
-                'choice_label' => 'nombre', 
+                'choice_label' => 'nombre',
                 'placeholder' => '', // Opción predeterminada
             ])
             ->add('Estado', ChoiceType::class, [
@@ -47,9 +47,10 @@ class ProyectosType extends AbstractType
                 'multiple' => true,
                 'expanded' => false,
                 'mapped' => false,
-            ]);
+                'required' => true, // Hace que el campo sea obligatorio
+                'attr' => ['class' => 'form-control', 'size' => 5] // 'size' controla cuántos elementos se muestran
 
-            
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
