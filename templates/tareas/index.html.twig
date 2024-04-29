@@ -67,24 +67,24 @@
 
     <div id="toolbar"></div> <!-- Contenedor para los botones -->
 
-    <table class="table" id="tareasTabla">
+    <table class="table table-bordered" id="tareasTabla">
         <thead>
             <tr>
-                <th><input type="checkbox" id="seleccionarTodo"></th>
-                <th>Id</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Finalizada</th>
-                <th>Fecha creación</th>
-                <th>Prioridad</th>
-                <th>Acciones</th>
+                <th class="text-center"><input type="checkbox" id="seleccionarTodo"></th>
+                <th class="text-center">Id</th>
+                <th class="text-center">Nombre</th>
+                <th class="text-center">Descripción</th>
+                <th class="text-center">Finalizada</th>
+                <th class="text-center">Fecha creación</th>
+                <th class="text-center">Prioridad</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="text-center">
             {% for tarea in tareas %}
                 <tr>
                     <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
-                    <td>{{ tarea.id }}</td>
+                    <td class="text-center">{{ tarea.id }}</td>
                     <td>{{ tarea.nombre }}</td>
                     <td>{{ tarea.descripcion }}</td> {# Aquí agregamos la descripción #}
                     <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>

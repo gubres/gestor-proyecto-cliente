@@ -10,19 +10,21 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class SecurityController extends AbstractController
 {
-
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        // Redireccionar al usuario a la página de inicio si ya está autenticado
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_inicio');
+        }
 
-        // Obtener el error de login si lo hubiese
+        // obtener error de login si lo hubiese
         $error = $authenticationUtils->getLastAuthenticationError();
         $errorMessage = null;
         if ($error instanceof AuthenticationException) {
             $errorMessage = 'Credenciales inválidas. Por favor intenta de nuevo.';
         }
-
-        // Obtener el último nombre de usuario que intentó iniciar sesión
+        // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render('security/login.html.twig', [
@@ -30,7 +32,6 @@ class SecurityController extends AbstractController
             'error_message' => $errorMessage,
         ]);
     }
-
 
 
     #[Route('/logout', name: 'app_logout')]
