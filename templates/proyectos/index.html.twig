@@ -394,14 +394,14 @@
             type: 'POST',
             url: '{{ path("eliminar_proyectos") }}',
             data: JSON.stringify({ ids: proyectosSeleccionados }),
-            contentType: "application/json; charset=utf-8",
+            contentType: "application/json",
             success: function(response) {
                 $('#deleteModal').modal('hide'); // Oculta el modal de confirmación
                 $('#successModal').modal('show'); // Muestra el modal de éxito
                 setTimeout(function() {
                     $('#successModal').modal('hide'); // Oculta el modal de éxito después de un breve momento
                     location.reload(); // Recarga la página para actualizar los datos
-                }, 2000);
+                }, 1000);
             },
             error: function(xhr, status, error) {
                 $('#deleteModal').modal('hide'); // Oculta el modal de confirmación
