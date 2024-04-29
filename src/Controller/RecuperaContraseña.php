@@ -45,7 +45,6 @@ class RecuperaContraseña extends AbstractController
                 'userEmail' => $usuario->getEmail(),
                 'confirmationUrl' => $resetUrl,
             ]));
-            //dd($email);
         $mailer->send($email);
         $this->addFlash('success', 'Correo electrónico enviado. Revisa tu bandeja de entrada.');
 
