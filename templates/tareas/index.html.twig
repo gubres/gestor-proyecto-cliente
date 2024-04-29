@@ -349,61 +349,66 @@
                 $(modalId).modal('show');
             });
 
-                // Evento para mostrar el modal de confirmación al intentar eliminar tareas
-        $('#eliminarSeleccionButton').on('click', function() {
-            var selectedTasks = $('.seleccionarTarea:checked').map(function() {
-                return $(this).val();
-            }).get();
+         // Evento para abrir el modal de confirmación de eliminación
+    $('#eliminarSeleccionButton').on('click', function() {
+        
+        var selectedTasks = $('.seleccionarTarea:checked').map(function() {
+            return $(this).val();
+        }).get();
 
-            if (selectedTasks.length > 0) {
-                $('#deleteModal').modal('show');
-            } else {
-                alert('No se ha seleccionado ninguna tarea para eliminar.');
-            }
-        });
-
-        // Evento para confirmar la eliminación
-        $('#confirmDeleteButton').on('click', function() {
-            var selectedTasks = $('.seleccionarTarea:checked').map(function() {
-                return $(this).val();
-            }).get();
-
-            $.ajax({
-                type: 'POST',
-                url: '{{ path("eliminar_tareas") }}',
-                data: JSON.stringify({ ids: selectedTasks }),
-                contentType: "application/json; charset=utf-8",
-                success: function(response) {
-                    $('#deleteModal').modal('hide');
-                    $('#successModal').modal('show');
-                    setTimeout(function() {
-                        $('#successModal').modal('hide');
-                        location.reload();
-                    }, 2000);
-                },
-                error: function(xhr, status, error) {
-                    $('#deleteModal').modal('hide');
-                    $('#errorModal').modal('show');
-                    setTimeout(function() {
-                        $('#errorModal').modal('hide');
-                    }, 2000);
-                }
+        if (selectedTasks.length > 0) {
+            $('#deleteModal').modal('show');
+            $('#confirmDeleteButton').off('click').on('click', function() {
+                eliminarTareas(selectedTasks, table);
             });
-        });
-
-        // Función para actualizar la visibilidad del botón de eliminar
-        function updateDeleteButtonVisibility() {
-            var checkedCount = $('.seleccionarTarea:checked').length;
-            $('#eliminarSeleccionButton').toggle(checkedCount > 0);
+        } else {
+            alert('No se ha seleccionado ninguna tarea para eliminar.');
         }
-
-        $('.seleccionarTarea').on('change', function() {
-            updateDeleteButtonVisibility();
-        });
-
-        $('#seleccionarTodo').on('change', function() {
-            $('.seleccionarTarea').prop('checked', $(this).prop('checked')).trigger('change');
-        });
     });
+});
+
+function eliminarTareas(tareasSeleccionadas, table) {
+    fetch('{{ path("eliminar_tareas") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ ids: tareasSeleccionadas })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la solicitud');
+        }
+        return response.json();
+    })
+    .then(data => {
+        $('#deleteModal').modal('hide');
+        $('#successModal').modal('show');
+        setTimeout(() => {
+            $('#successModal').modal('hide');
+           location.reload(); // Recarga el DataTable sin resetear la paginación
+        }, 2000);
+    })
+    .catch(error => {
+        $('#deleteModal').modal('hide');
+        $('#errorModalText').text(error.message || 'Error al eliminar las tareas. Por favor, intente de nuevo.');
+        $('#errorModal').modal('show');
+    });
+}
+
+
+    // Actualización del estado de visibilidad del botón de eliminar
+    $('.seleccionarTarea').on('change', function() {
+        var selectedCount = $('.seleccionarTarea:checked').length;
+        $('#eliminarSeleccionButton').toggle(selectedCount > 0);
+    });
+
+    // Selección/deselección de todas las tareas
+    $('#seleccionarTodo').on('change', function() {
+        var isChecked = $(this).is(':checked');
+        $('.seleccionarTarea').prop('checked', isChecked).trigger('change');
+    });
+
     </script>
 {% endblock %}

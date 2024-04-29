@@ -6,16 +6,16 @@ use App\Entity\Clientes;
 use App\Form\ClientesType;
 use App\Repository\ClientesRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/clientes')]
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_USER')]
 class ClientesController extends AbstractController
 {
     private $clientesRepository;
@@ -114,7 +114,6 @@ class ClientesController extends AbstractController
 
             // Buscar el cliente en la base de datos por su ID
             $cliente = $this->entityManager->getRepository(Clientes::class)->find($nuevoDato['id']);
-
             // Si el cliente existe, actualizar sus datos
             if ($cliente) {
                 $cliente->setNombre($nuevoDato['nombre']);

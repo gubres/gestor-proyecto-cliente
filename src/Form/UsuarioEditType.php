@@ -26,17 +26,7 @@ class UsuarioEditType extends AbstractType
                 'required' => false, //  opcional 
                 'label' => 'Nueva contraseña (opcional)',
                 'attr' => ['autocomplete' => 'new-password'],
-            ])
-            ->add('isActive', ChoiceType::class, [
-                'label' => 'Estado',
-                'choices' => [
-                    'Activo' => true,
-                    'Desactivado' => false,
-                ],
-                'expanded' => true,
-                'multiple' => false,
-                'required' => true,
-            ]);;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -19,8 +19,66 @@
             <p><strong>Email:</strong> {{ usuario.email }}</p>
             <p><strong>Estado:</strong> {{ usuario.isActive ? 'Activo' : 'Inactivo' }}</p>
             <p><strong>Verificado:</strong> {{ usuario.isVerified ? 'Sí' : 'No' }}</p>
+            <p><strong>Autorizaciones:</strong>
+            {% set readableRoles = [] %}
+            {% for role in usuario.getRoles() %}
+                {% if role == 'ROLE_USER' %}
+                    {% set readableRoles = readableRoles | merge(['NIVEL USUARIO']) %}
+                {% elseif role == 'ROLE_ADMIN' %}
+                    {% set readableRoles = readableRoles | merge(['NIVEL ADMINISTRADOR']) %}
+                {% endif %}
+            {% endfor %}
+            {{ readableRoles | join(' Y ') }}
+        </p>
+
             <a href="{{ path('app_usuarios_edit', {'id': usuario.id}) }}" class="btn btn-warning">Editar Perfil</a>
+            <button type="button" class="btn btn-danger mx-3" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                Eliminar Usuario
+            </button>
+
+
         </div>
     </div>
 </div>
+
+            {# modal de mensajes #}
+        <div class="modal-body">
+            {% include '/usuarios/modalUsuarios.html.twig' %}
+        </div>
 {% endblock %}
+
+{% block javascripts %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteButton = document.getElementById('confirmDeleteButton');
+        deleteButton.addEventListener('click', function () {
+            fetch('{{ path('app_usuarios_delete', {'id': usuario.id}) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: '_token={{ csrf_token('delete' ~ usuario.id) }}'
+            })
+            .then(response => response.json())
+            .then(data => {
+                $('#deleteModal').modal('hide');
+                if (data.success) {
+                    $('#successModalText').text('El usuario ha sido eliminado.');
+                    $('#successModal').modal('show');
+                } else {
+                    $('#errorModalText').text('Error al eliminar el usuario.');
+                    $('#errorModal').modal('show');
+                }
+            })
+            .catch(error => {
+                $('#deleteModal').modal('hide');
+                $('#errorModalText').text('Error al eliminar el usuario.');
+                $('#errorModal').modal('show');
+            });
+        });
+    });
+</script>
+
+{% endblock %}
+

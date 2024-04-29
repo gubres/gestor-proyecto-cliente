@@ -94,9 +94,6 @@ class ProyectosController extends AbstractController
             return new JsonResponse(['urlNuevoCliente' => $urlNuevoCliente]);
         }
 
-        // En caso de error, devolver una respuesta de error
-        return new JsonResponse(['error' => 'Error al guardar el nuevo cliente'], Response::HTTP_BAD_REQUEST);
-
         return $this->render('proyectos/new.html.twig', [
             'pageName' => 'Nuevo Proyecto',
             'formProyecto' => $form->createView(),
@@ -225,7 +222,7 @@ class ProyectosController extends AbstractController
         // Guardar los cambios en la base de datos
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Tareas actualizadas como eliminadas correctamente.']);
+        return new JsonResponse(['message' => 'Proyectos actualizadas como eliminadas correctamente.']);
     }
 
 

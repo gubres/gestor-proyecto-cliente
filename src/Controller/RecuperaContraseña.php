@@ -2,22 +2,23 @@
 
 namespace App\Controller;
 
+
 use App\Entity\Usuarios;
 use App\Form\PasswordResetType;
+use Symfony\Component\Mime\Address;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\PasswordResetRequestFormType;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
 
-#[IsGranted('ROLE_USER')]
 class RecuperaContraseña extends AbstractController
 {
     #[Route('/recuperarcontraseña', name: 'recuperar_contraseña', methods: ['GET', 'POST'])]
@@ -37,21 +38,24 @@ class RecuperaContraseña extends AbstractController
 
                 $resetUrl = $this->generateUrl('resetear_contraseña', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
 
-                return $this->redirectToRoute('resetear_contraseña', ['token' => $token]);
+                $email = (new TemplatedEmail())
+                    ->to($usuario->getEmail())
+                    ->subject('Restablecer contraseña')
+                    ->html($this->renderView('security/restrablecer_contraseña.html.twig', [
+                        'userEmail' => $usuario->getEmail(),
+                        'confirmationUrl' => $resetUrl,
+                    ]));
+                $mailer->send($email);
+                $this->addFlash('success', 'Correo electrónico enviado. Revisa tu bandeja de entrada.');
+            } else {
+                $this->addFlash('error', 'No se ha encontrado ninguna cuenta para este correo electrónico.');
             }
-
-            $this->addFlash('error', 'No se ha encontrado ninguna cuenta para este correo electrónico.');
         }
 
         return $this->render('security/forgot_password.html.twig', [
             'requestForm' => $form->createView(),
         ]);
     }
-
-
-
-
-
 
 
     #[Route('/resetearcontraseña/{token}', name: 'resetear_contraseña', methods: ['GET', 'POST'])]
