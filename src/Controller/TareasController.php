@@ -20,7 +20,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 #[IsGranted('ROLE_USER')]
 class TareasController extends AbstractController
 {
-
     private $tareasRepository;
     private $entityManager;
 
@@ -29,8 +28,6 @@ class TareasController extends AbstractController
         $this->tareasRepository = $tareasRepository;
         $this->entityManager = $entityManager;
     }
-
-
 
     #[Route('/', name: 'app_tareas_index', methods: ['GET'])]
     public function index(TareasRepository $tareasRepository): Response
@@ -44,45 +41,37 @@ class TareasController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
         $tarea = new Tareas();
-        $proyecto = new Proyectos();
         $form = $this->createForm(TareasType::class, $tarea);
-        $proyectoForm = $this->createForm(ProyectosType::class, $proyecto);
-        $proyectoForm->handleRequest($request);
         $form->handleRequest($request);
-
+    
+        // Crear el formulario para nuevo proyecto
+        $proyecto = new Proyectos();
+        $proyectoForm = $this->createForm(ProyectosType::class, $proyecto);
+    
         if ($form->isSubmitted() && $form->isValid()) {
-            $tarea->setCreadoPor($security->getUser());
-            $tarea->setActualizadoPor($security->getUser());
-            $tarea->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
-            $tarea->setCreadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
-
+            // Asignar el usuario actual a la tarea
+            $usuarioActual = $this->getUser();
+            $tarea->setCreadoPor($usuarioActual);
+            $tarea->setActualizadoPor($usuarioActual);
+            
+            // Guardar la tarea en la base de datos
             $entityManager->persist($tarea);
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_tareas_index', [], Response::HTTP_SEE_OTHER);
+    
+            // Redirigir a la página de índice de tareas
+            return $this->redirectToRoute('app_tareas_index');
         }
-
+    
         return $this->render('tareas/new.html.twig', [
+            'form' => $form->createView(),
             'proyectoForm' => $proyectoForm->createView(),
-            'tarea' => $tarea,
-            'form' => $form,
         ]);
-
-        if ($proyectoForm->isSubmitted() && $proyectoForm->isValid()) {
-            // Persistir el nuevo proyecto
-            $entityManager->persist($proyecto);
-            $entityManager->flush();
-
-            // Obtener la URL de la página de crear nueva tarea
-            $urlNuevaTarea = $this->generateUrl('app_tareas_new');
-
-            // Devolver la URL de la página de crear nueva tarea en formato JSON
-            return new JsonResponse(['urlNuevaTarea' => $urlNuevaTarea]);
-        }
-
-        // En caso de error, devolver una respuesta de error
-        return new JsonResponse(['error' => 'Error al guardar el nuevo proyecto'], Response::HTTP_BAD_REQUEST);
     }
+    
+
+
+    
+
 
     #[Route('/{id}', name: 'app_tareas_show', methods: ['GET'])]
     public function show(Tareas $tarea): Response
@@ -97,72 +86,31 @@ class TareasController extends AbstractController
     {
         $form = $this->createForm(TareasType::class, $tarea);
         $form->handleRequest($request);
-        $proyectoForm = $this->createForm(ProyectosType::class);
-        $proyectoForm->handleRequest($request);
-        // Obtener el proyecto asociado a la tarea
-        $proyecto = $tarea->getProyecto();
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
-            // Asignar el proyecto seleccionado a la tarea
-            $proyectoSeleccionado = $form->get('proyecto')->getData();
-            $tarea->setProyecto($proyectoSeleccionado);
-
-            // Guardar la tarea
+            $tarea->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
+            $tarea->setDescripcion($form->get('descripcion')->getData());
+    
             $entityManager->flush();
-
+    
             return $this->redirectToRoute('app_tareas_index', [], Response::HTTP_SEE_OTHER);
         }
-
+    
+        // Crear el formulario para nuevo proyecto
+        $proyecto = new Proyectos();
+        $proyectoForm = $this->createForm(ProyectosType::class, $proyecto);
+    
         return $this->render('tareas/edit.html.twig', [
             'tarea' => $tarea,
             'form' => $form->createView(),
-            'proyectoForm' => $proyectoForm->createView(),
+            'proyectoForm' => $proyectoForm->createView(), // Asegúrate de pasar 'proyectoForm'
         ]);
     }
-
-
-    #[Route('/eliminar_tareas', name: 'eliminar_tareas', methods: ['POST'])]
-    public function eliminarTareas(Request $request, EntityManagerInterface $entityManager, Security $security)
-    {
-        // Decodificar el contenido JSON de la solicitud
-        $data = json_decode($request->getContent(), true);
-        $tareasIds = $data['ids'];
-
-        $usuarioActual = $security->getUser(); // Obtener el usuario actual con Symfony Security
-
-        foreach ($tareasIds as $tareaId) {
-            // Buscar la tarea por su ID
-            $tarea = $entityManager->getRepository(Tareas::class)->find($tareaId);
-
-            if (!$tarea) {
-                return new JsonResponse(['error' => 'Tarea no encontrada con el ID: ' . $tareaId], 404);
-            }
-
-            // Realizar borrado lógico
-            $tarea->setEliminado(true);
-            $tarea->setActualizadoPor($usuarioActual); // Asignar el usuario que hace la actualización
-            $tarea->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid'))); // Asignar la fecha actual
-
-            $entityManager->persist($tarea); // Esto puede no ser necesario dependiendo de la configuración de Doctrine
-        }
-
-        // Guardar los cambios en la base de datos
-        $entityManager->flush();
-
-        return new JsonResponse(['message' => 'Tareas actualizadas como eliminadas correctamente.']);
-    }
-
+    
 
     #[Route('/delete/{id}', name: 'app_tareas_delete', methods: ['POST'])]
     public function delete(Request $request, Tareas $tarea, EntityManagerInterface $entityManager): Response
     {
-        $id = $request->attributes->get('id');
-        $tarea = $this->tareasRepository->find($id);
-
-        if (!$tarea) {
-            throw $this->createNotFoundException('Tarea no encontrado');
-        }
-
         if ($this->isCsrfTokenValid('delete' . $tarea->getId(), $request->request->get('_token'))) {
             $entityManager->remove($tarea);
             $entityManager->flush();
