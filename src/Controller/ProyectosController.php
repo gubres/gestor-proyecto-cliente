@@ -82,13 +82,6 @@ class ProyectosController extends AbstractController
             return $this->redirectToRoute('app_proyectos_index');
         }
 
-        return $this->render('proyectos/new.html.twig', [
-            'pageName' => 'Nuevo Proyecto',
-            'formProyecto' => $form->createView(),
-            'clienteForm' => $clienteForm->createView(),
-            'proyecto' => $proyecto,
-        ]);
-
         if ($clienteForm->isSubmitted() && $clienteForm->isValid()) {
             // Persistir el nuevo cliente
             $entityManager->persist($cliente);
@@ -103,7 +96,15 @@ class ProyectosController extends AbstractController
 
         // En caso de error, devolver una respuesta de error
         return new JsonResponse(['error' => 'Error al guardar el nuevo cliente'], Response::HTTP_BAD_REQUEST);
+
+        return $this->render('proyectos/new.html.twig', [
+            'pageName' => 'Nuevo Proyecto',
+            'formProyecto' => $form->createView(),
+            'clienteForm' => $clienteForm->createView(),
+            'proyecto' => $proyecto,
+        ]);
     }
+
 
     #[Route('/{id}', name: 'app_proyectos_show', methods: ['GET'])]
     public function show(Proyectos $proyecto): Response
