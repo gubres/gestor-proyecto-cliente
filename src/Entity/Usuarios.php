@@ -97,11 +97,15 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     public function updateRolesBasedOnActivation(): void
     {
         if (!$this->isActive) {
-            $this->roles = []; // Si el usuario está desactivado, elimina todos los roles
+            // Posiblemente no hacer nada o solo marcar el usuario de alguna manera sin alterar roles
         } else {
-            $this->roles = ['ROLE_USER']; // Si el usuario está activado, asigna el rol 'ROLE_USER'
+            // Añade ROLE_USER si no está ya en la lista de roles
+            if (!in_array('ROLE_USER', $this->roles)) {
+                $this->roles[] = 'ROLE_USER';
+            }
         }
     }
+
 
     /**
      * @var Collection<int, UsuariosProyectos>
@@ -158,15 +162,11 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        if (!$this->isActive) {
-            return [];
+        // Asegura que cada usuario tenga al menos el rol ROLE_USER si no tiene otros roles asignados
+        if (empty($this->roles)) {
+            return ['ROLE_USER'];
         }
-
-        $roles = $this->roles;
-        // Garantiza que cada usuario tenga al menos el rol ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
+        return $this->roles;
     }
 
     /**
