@@ -58,9 +58,9 @@
               "data": "estado",
                 "render": function(data, type, row) {
                     if (data) {
-                        return '<i class="fas fa-check-circle text-success mx-5"></i>'; // Check verde
+                        return '<i class="fas fa-check-circle text-success pr-5"></i>'; // Check verde
                     } else {
-                        return '  <i class="fas fa-times-circle text-danger"></i>'; // X roja
+                        return '  <i class="fas fa-times-circle text-danger pr-5"></i>'; // X roja
                     }
                 }
             },
@@ -130,19 +130,26 @@
                     }
                 ],
         "language": {
-                    "decimal": "",
-                    "emptyTable": "No hay información",
-                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                    "infoPostFix": "",
-                    "thousands": ",",
-                    "lengthMenu": "Mostrar _MENU_ Entradas",
-                    "loadingRecords": "Cargando...",
-                    "processing": "Procesando...",
-                    "search": "Buscar:",
-                    "zeroRecords": "Sin resultados encontrados",
+                "decimal": "",
+                "emptyTable": "No hay información disponible",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+                "infoEmpty": "Mostrando 0 a 0 de 0 entradas",
+                "infoFiltered": "(filtrado de un total de _MAX_ entradas)",
+                "infoPostFix": "",
+                "thousands": ",",
+                "lengthMenu": "Mostrar _MENU_ entradas",
+                "loadingRecords": "Cargando...",
+                "processing": "Procesando...",
+                "search": "Buscar:",
+                "zeroRecords": "No se encontraron registros coincidentes",
+                "select": {
+                    "rows": {
+                        "_": "%d filas seleccionadas",
+                        "0": "Haz clic en una fila para seleccionarla",
+                        "1": "1 fila seleccionada"
+                    }
                 },
+            },
         "dom": '<"row"<"col-sm-3"l><"col-sm-5"B><"col-sm-3"f>>rt<"row"<"col-sm-7"p><"col-sm-5"i>>',
         
        

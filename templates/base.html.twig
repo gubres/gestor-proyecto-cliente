@@ -125,6 +125,7 @@
      </div>
     </nav>
 {% endif %}
+
 {% block body %}
 <div id="global-buttons">
     {% include 'botones_base.html.twig' %}
@@ -141,6 +142,9 @@
 <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
 <!-- para los gráficos de la pantalla de inicio -->
 <script src="https://code.highcharts.com/highcharts.js"></script>
+ 
+
+
 <script>
     // Obtiene la ruta actual de la página
     var currentPage = "{{ app.request.attributes.get('_route') }}";
