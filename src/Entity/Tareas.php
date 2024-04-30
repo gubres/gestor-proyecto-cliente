@@ -67,6 +67,7 @@ class Tareas
     private ?\DateTimeInterface $actualizado_en = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(allowNull: true, message: "La descripción no puede estar vacía.")]
     private ?string $descripcion = null;
 
     public function __construct()
