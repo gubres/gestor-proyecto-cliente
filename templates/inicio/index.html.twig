@@ -5,12 +5,15 @@
 {% block body %}
     
     <h1>Carga de Trabajo por Usuario</h1>
-    <form method="get" action="{{ path('app_inicio') }}">
+    
+    <div id="container" style="width: 600px; height: 400px; margin: 0 auto;"></div>
+
+   <!-- <form method="get" action="{{ path('app_inicio') }}">
         <input type="date" name="start" value="{{ startDateParam|default('') }}">
         <input type="date" name="end" value="{{ endDateParam|default('') }}">
         <button type="submit">Filtrar</button>
-    </form>
-    <div id="container" style="width: 600px; height: 400px; margin: 0 auto;"></div>
+    </form> --!>
+
     <!-- Selector de Rango de Fechas -->
     <div style="text-align: center; margin-bottom: 100px;"> <!-- para gregar margen inferior, espacio en blanco entre fecha y segundo gráfico -->
         <label for="fecha_inicio">Desde:</label>
