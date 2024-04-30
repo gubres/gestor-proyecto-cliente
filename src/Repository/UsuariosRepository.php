@@ -61,3 +61,4 @@ if ($endDate) {
     return $qb->getQuery()->getResult();
 }
 
+}
