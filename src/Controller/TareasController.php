@@ -77,13 +77,19 @@ class TareasController extends AbstractController
         // Decodificar el contenido JSON de la solicitud
         $data = json_decode($request->getContent(), true);
 
-
-        if (is_null($data) || !isset($data['ids'])) {
-            return new JsonResponse(['error' => 'Datos inválidos. JSON malformado.'], Response::HTTP_BAD_REQUEST);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return new JsonResponse(['message' => 'Error en el formato JSON: ' . json_last_error_msg()], 400);
         }
-        $tareasIds = $data['ids'];
-        $usuarioActual = $security->getUser(); // Obtener el usuario actual con Symfony Security
 
+        // Verificar si 'ids' está presente y es un array
+        if (empty($data['ids']) || !is_array($data['ids'])) {
+            return new JsonResponse(['message' => 'No se proporcionaron IDs válidos, no se realizó ninguna acción.'], 200);
+        }
+
+        $tareasIds = $data['ids'];
+
+        $usuarioActual = $security->getUser(); // Obtener el usuario actual con Symfony Security
+        $tareasProcesadas = 0;
         foreach ($tareasIds as $tareaId) {
             // Buscar la tarea por su ID
             $tarea = $entityManager->getRepository(Tareas::class)->find($tareaId);
@@ -97,14 +103,18 @@ class TareasController extends AbstractController
             $tarea->setActualizadoPor($usuarioActual); // Asignar el usuario que hace la actualización
             $tarea->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid'))); // Asignar la fecha actual
 
-            $entityManager->persist($tarea); // Esto puede no ser necesario dependiendo de la configuración de Doctrine
+            $entityManager->persist($tarea);
+            $tareasProcesadas++;
         }
 
         // Guardar los cambios en la base de datos
-        $entityManager->flush();
+        if ($tareasProcesadas > 0) {
+            $entityManager->flush();
+        }
 
         return new JsonResponse(['message' => 'Tareas actualizadas como eliminadas correctamente.']);
     }
+
 
 
     #[Route('/{id}', name: 'app_tareas_show', methods: ['GET'])]
