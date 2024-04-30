@@ -71,11 +71,17 @@ class Tareas
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $actualizado_en = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $finalizado_en = null;
+
+
     public function __construct()
     {
         $this->usuarios = new ArrayCollection();
         $this->creado_en = new \DateTime();
+        $this->finalizado_en = new \DateTime();  // Establece la fecha final por defecto a la fecha actual
         $this->actualizado_en = new \DateTime();
+        
     }
 
     public function getId(): ?int
@@ -106,6 +112,18 @@ class Tareas
 
         return $this;
     }
+
+    public function getFinalizadoEn(): ?\DateTimeInterface 
+    {
+        return $this->finalizado_en;
+    }
+
+public function setFinalizadoEn(\DateTimeInterface $finalizado_en): self
+    {
+        $this->finalizado_en = $finalizado_en;
+        return $this;
+    }
+
 
     public function getCreadoEn(): ?\DateTimeInterface
     {

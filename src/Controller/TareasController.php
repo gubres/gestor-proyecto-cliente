@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\SecurityBundle\Security;
+use DateTime;
 
 #[Route('/tareas')]
 #[IsGranted('ROLE_USER')]
@@ -33,8 +34,22 @@ class TareasController extends AbstractController
 
 
     #[Route('/', name: 'app_tareas_index', methods: ['GET'])]
-    public function index(TareasRepository $tareasRepository): Response
+    public function index(TareasRepository $tareasRepository, Request $request): Response
     {
+        $startDateParam = $request->query->get('start');
+        $endDateParam = $request->query->get('end');
+
+        $startDate = $startDateParam ? new DateTime($startDateParam) : null;
+        $endDate = $endDateParam ? new DateTime($endDateParam) : null;
+
+        if ($startDate && $endDate) {
+            // Utilizar el método nuevo para obtener tareas según el rango de fechas
+            $tareas = $this->tareasRepository->findByDateRangeAndStatus($startDate, $endDate, false);
+        } else {
+            // Obtener todas las tareas que no están eliminadas si no se especifica un rango de fechas
+            $tareas = $this->tareasRepository->findNotDeleted();
+        }
+
         return $this->render('tareas/index.html.twig', [
             'tareas' => $tareasRepository->findNotDeleted(),
         ]);

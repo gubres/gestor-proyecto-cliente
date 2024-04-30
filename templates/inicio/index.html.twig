@@ -3,7 +3,13 @@
 {% block title %}Inicio{% endblock %}
 
 {% block body %}
+    
     <h1>Carga de Trabajo por Usuario</h1>
+    <form method="get" action="{{ path('app_inicio') }}">
+        <input type="date" name="start" value="{{ startDateParam|default('') }}">
+        <input type="date" name="end" value="{{ endDateParam|default('') }}">
+        <button type="submit">Filtrar</button>
+    </form>
     <div id="container" style="width: 600px; height: 400px; margin: 0 auto;"></div>
     <div id="chartContainer" style="width: 100%; height: 400px;"></div>
     <div style="text-align: center;">
@@ -118,3 +124,6 @@
         });
     </script>
 {% endblock %}
+
+
+
