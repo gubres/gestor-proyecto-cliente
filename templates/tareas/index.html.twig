@@ -33,6 +33,7 @@
                 <th class="text-center"><input type="checkbox" id="seleccionarTodo"></th>
                 <th class="text-center">Id</th>
                 <th class="text-center">Nombre</th>
+                <th class="text-center">Usuarios</th>
                 <th class="text-center">Finalizada</th>
                 <th class="text-center">Fecha creación</th>
                 <th class="text-center">Prioridad</th>
@@ -45,6 +46,12 @@
                     <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
                     <td class="text-center">{{ tarea.id }}</td>
                     <td>{{ tarea.nombre }}</td>
+                    <td>
+                    {% for usuario in tarea.getUsuario() %}
+                            {{ usuario.nombre }}
+                            {% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
                     <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
                     <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
                     <td>

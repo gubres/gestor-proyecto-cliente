@@ -35,6 +35,8 @@ class TareasController extends AbstractController
         $fechaInicio = $request->query->get('fecha_inicio');
         $fechaFin = $request->query->get('fecha_fin');
 
+        
+        $tareas = $this->tareasRepository->findAll();
         // Inicializar variable para almacenar mensajes de error
         $error = null;
 
