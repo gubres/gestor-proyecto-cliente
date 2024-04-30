@@ -286,6 +286,25 @@
                 }
             });
 
+            // Agrega el botón de filtrar usando los botones de extensión
+            new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
+                        className: 'btn-filter',
+                    }
+                ]
+            }).container().appendTo($('#toolbar'));
+
+            // Inicializar los botones de extensión
+            table.buttons().container().appendTo($('#toolbar'));
+
+            // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
+            $('#toolbar').on('click', '.btn-filter', function () {
+                $(this).next().toggleClass('show');
+            });
+
             // Script para limpiar la selección de tareas
             $('#limpiarFiltros').on('click', function () {
                 $('#filtroFinalizada').val('');
