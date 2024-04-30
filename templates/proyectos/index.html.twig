@@ -165,6 +165,11 @@
    
     <script>
         $(document).ready(function() {
+            // Verificar si hay datos en la tabla
+            var tableData = {% if proyectos is defined %} {{ proyectos|length > 0 ? tareas|json_encode : 'null' }} {% else %} null {% endif %};
+            
+            // Si hay datos, inicializar la tabla DataTables
+            if (tableData !== null) {
         // Inicialización de DataTable
         var table = $('#proyectosTabla').DataTable({  
         dom: '<"toolbar">Bfrtip',
@@ -190,47 +195,60 @@
                           exportOptions: {
                     columns: [1, 2, 3, 4, 5]
                 },
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fas fa-file-pdf"></i>',
-                        titleAttr: 'Exportar a PDF',
-                        className: 'btn-pdf',
-                          exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                },customize: function(doc) {
-                    // Centrar la tabla en la página PDF
-                    var docContent = doc.content[1];
-                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
-                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
-                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
-                    docContent.layout = {
-                        hLineWidth: function(i, node) {
-                            return 0.5;
+                        {
+                            extend: 'pdf',
+                            text: '<i class="fas fa-file-pdf"></i>',
+                            titleAttr: 'Exportar a PDF',
+                            className: 'btn-pdf',
+                            exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                            },
+                        customize: function(doc) {
+                        var docContent = doc.content[1];
+                        docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                        docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                        // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                        docContent.layout = {
+                            hLineWidth: function(i, node) {
+                                return 0.5;
+                            },
+                            vLineWidth: function(i, node) {
+                                return 0.5;
+                            },
+                            hLineColor: function(i, node) {
+                                return '#aaa';
+                            },
+                            vLineColor: function(i, node) {
+                                return '#aaa';
+                            },
+                            paddingLeft: function(i, node) {
+                                return 4;
+                            },
+                            paddingRight: function(i, node) {
+                                return 4;
+                            },
+                            paddingTop: function(i, node) {
+                                return 2;
+                            },
+                            paddingBottom: function(i, node) {
+                                return 2;
+                            }
+                        };
+                    }
                         },
-                        vLineWidth: function(i, node) {
-                            return 0.5;
-                        },
-                        hLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        vLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        paddingLeft: function(i, node) {
-                            return 4;
-                        },
-                        paddingRight: function(i, node) {
-                            return 4;
-                        },
-                        paddingTop: function(i, node) {
-                            return 2;
-                        },
-                        paddingBottom: function(i, node) {
-                            return 2;
+                        {
+                            extend: 'print',
+                            text: '<i class="fas fa-print"></i>',
+                            titleAttr: 'Imprimir',
+                            className: 'btn-print',
+                            exportOptions: {
+                            columns: [1, 2, 3, 4]
+                            },
                         }
-                    };
-                }
+                    ],
+                    select: {
+                        style: 'multi',
+                        selector: 'td:first-child'
                     },
                     {
                         extend: 'print',
@@ -250,7 +268,12 @@
                 initComplete: function () {
                     $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
                 }
-    });
+             });
+                } else {
+                // Si no hay datos, mostrar un mensaje indicando que no hay información
+                $('#proyectosTabla').html('<tr><td colspan="6">No hay información disponible</td></tr>');
+            }
+
 
             // Agrega el botón de filtrar usando los botones de extensión
             new $.fn.dataTable.Buttons(table, {
