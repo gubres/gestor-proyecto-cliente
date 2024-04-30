@@ -14,15 +14,15 @@
                     </div>
                 {% endfor %}
 
-                   {% if errorMessage %}
+                   {% if error_message %}
                         <div class="alert alert-danger">
-                            {{ errorMessage }}
+                            {{ error_message }}
                         </div>
                     {% endif %}
 
                 {% if app.user %}
                     <div class="mb-3">
-                        You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+                        Estás conectado como {{ app.user.userIdentifier }} <a class="btn btn-warning mx-3" href="{{ path('app_logout') }}">Logout</a>
                     </div>
                 {% endif %}
 

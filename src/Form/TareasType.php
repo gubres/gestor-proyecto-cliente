@@ -10,6 +10,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType; // Importa el tipo de campo TextareaType para el campo de descripción
 
 class TareasType extends AbstractType
 {
@@ -38,20 +39,22 @@ class TareasType extends AbstractType
                     'MEDIA' => 'MEDIA',
                     'BAJA' => 'BAJA',
                 ],
-        ])
-
-        ->add('proyecto', EntityType::class, [
-            'class' => Proyectos::class,
-            'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Proyectos
-            'placeholder' => 'Selecciona un proyecto', // Opción predeterminada
-        ])
-        ->add('usuario', EntityType::class, [
-            'class' => Usuarios::class,
-            'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Usuarios
-            'multiple' => true,
-        ])
-    ;
-}
+            ])
+            // Agrega el campo de descripción
+            ->add('descripcion', TextareaType::class, [
+                'attr' => ['class' => 'form-control'], // Agrega la clase 'form-control' al campo descripción
+            ])
+            ->add('proyecto', EntityType::class, [
+                'class' => Proyectos::class,
+                'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Proyectos
+                'placeholder' => 'Selecciona un proyecto', // Opción predeterminada
+            ])
+            ->add('usuario', EntityType::class, [
+                'class' => Usuarios::class,
+                'choice_label' => 'nombre', // Suponiendo que tienes un atributo 'nombre' en tu entidad Usuarios
+                'multiple' => true,
+            ]);
+    }
 
     public function configureOptions(OptionsResolver $resolver): void
     {

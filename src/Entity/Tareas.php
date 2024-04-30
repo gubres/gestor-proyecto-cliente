@@ -17,7 +17,6 @@ class Tareas
     #[ORM\Column]
     private ?int $id = null;
 
-    //restricciones nombre tarea
     #[ORM\Column(length: 30)]
     #[Assert\NotBlank(message: "El nombre de la tarea no puede estar vacío.")]
     #[Assert\Length(
@@ -30,13 +29,10 @@ class Tareas
     #[ORM\Column]
     private ?bool $finalizada = null;
 
-    //validación fecha, no puede estar vacía
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotNull(message: "La fecha de creación no puede estar vacía.")]
     private ?\DateTimeInterface $creado_en = null;
 
-
-    //añado restricciones a la prioridad
     #[ORM\Column(length: 10)]
     #[Assert\NotBlank(message: "La prioridad de la tarea es requerida.")]
     #[Assert\Choice(
@@ -45,7 +41,6 @@ class Tareas
     )]
     private ?string $prioridad = null;
 
-    //restricción de asociación tarea/proyecto
     #[ORM\ManyToOne(inversedBy: 'tareas')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull(message: "La tarea debe estar asociada a un proyecto.")]
@@ -70,6 +65,9 @@ class Tareas
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $actualizado_en = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $descripcion = null;
 
     public function __construct()
     {
@@ -205,6 +203,18 @@ class Tareas
     public function removeUsuario(Usuarios $usuario): static
     {
         $this->usuarios->removeElement($usuario);
+
+        return $this;
+    }
+
+    public function getDescripcion(): ?string
+    {
+        return $this->descripcion;
+    }
+
+    public function setDescripcion(?string $descripcion): static
+    {
+        $this->descripcion = $descripcion;
 
         return $this;
     }

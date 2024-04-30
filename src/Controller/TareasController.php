@@ -20,7 +20,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 #[IsGranted('ROLE_USER')]
 class TareasController extends AbstractController
 {
-
     private $tareasRepository;
     private $entityManager;
 
@@ -30,13 +29,35 @@ class TareasController extends AbstractController
         $this->entityManager = $entityManager;
     }
 
-
-
     #[Route('/', name: 'app_tareas_index', methods: ['GET'])]
-    public function index(TareasRepository $tareasRepository): Response
+    public function index(Request $request, TareasRepository $tareasRepository): Response
     {
+        $fechaInicio = $request->query->get('fecha_inicio');
+        $fechaFin = $request->query->get('fecha_fin');
+
+        
+        $tareas = $this->tareasRepository->findAll();
+        // Inicializar variable para almacenar mensajes de error
+        $error = null;
+
+       // Verificar si se proporcionan fechas válidas
+        if ($fechaInicio && $fechaFin) {
+            // Filtrar tareas por rango de fechas si se proporcionan
+            $tareas = $tareasRepository->findByDateRange($fechaInicio, $fechaFin);
+
+            // Verificar si se encontraron tareas en el rango de fechas
+            if (empty($tareas)) {
+                $error = 'No se encontraron tareas en el rango de fechas proporcionado.';
+            }
+        } else {
+            // Si no se proporcionan fechas, obtener todas las tareas
+            $tareas = $tareasRepository->findNotDeleted();
+        }
+
+        // Devolver las tareas filtradas
         return $this->render('tareas/index.html.twig', [
-            'tareas' => $tareasRepository->findNotDeleted(),
+            'tareas' => $tareas,
+            'error' => $error,
         ]);
     }
 
@@ -44,77 +65,30 @@ class TareasController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
         $tarea = new Tareas();
-        $proyecto = new Proyectos();
         $form = $this->createForm(TareasType::class, $tarea);
-        $proyectoForm = $this->createForm(ProyectosType::class, $proyecto);
-        $proyectoForm->handleRequest($request);
         $form->handleRequest($request);
 
+        // Crear el formulario para nuevo proyecto
+        $proyecto = new Proyectos();
+        $proyectoForm = $this->createForm(ProyectosType::class, $proyecto);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $tarea->setCreadoPor($security->getUser());
-            $tarea->setActualizadoPor($security->getUser());
+            // Asignar el usuario actual a la tarea
+            $usuarioActual = $this->getUser();
+            $tarea->setCreadoPor($usuarioActual);
+            $tarea->setActualizadoPor($usuarioActual);
             $tarea->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
             $tarea->setCreadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
 
+            // Guardar la tarea en la base de datos
             $entityManager->persist($tarea);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_tareas_index', [], Response::HTTP_SEE_OTHER);
+            // Redirigir a la página de índice de tareas
+            return $this->redirectToRoute('app_tareas_index');
         }
 
         return $this->render('tareas/new.html.twig', [
-            'proyectoForm' => $proyectoForm->createView(),
-            'tarea' => $tarea,
-            'form' => $form,
-        ]);
-
-        if ($proyectoForm->isSubmitted() && $proyectoForm->isValid()) {
-            // Persistir el nuevo proyecto
-            $entityManager->persist($proyecto);
-            $entityManager->flush();
-
-            // Obtener la URL de la página de crear nueva tarea
-            $urlNuevaTarea = $this->generateUrl('app_tareas_new');
-
-            // Devolver la URL de la página de crear nueva tarea en formato JSON
-            return new JsonResponse(['urlNuevaTarea' => $urlNuevaTarea]);
-        }
-
-        // En caso de error, devolver una respuesta de error
-        return new JsonResponse(['error' => 'Error al guardar el nuevo proyecto'], Response::HTTP_BAD_REQUEST);
-    }
-
-    #[Route('/{id}', name: 'app_tareas_show', methods: ['GET'])]
-    public function show(Tareas $tarea): Response
-    {
-        return $this->render('tareas/show.html.twig', [
-            'tarea' => $tarea,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'app_tareas_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Tareas $tarea, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(TareasType::class, $tarea);
-        $form->handleRequest($request);
-        $proyectoForm = $this->createForm(ProyectosType::class);
-        $proyectoForm->handleRequest($request);
-        // Obtener el proyecto asociado a la tarea
-        $proyecto = $tarea->getProyecto();
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Asignar el proyecto seleccionado a la tarea
-            $proyectoSeleccionado = $form->get('proyecto')->getData();
-            $tarea->setProyecto($proyectoSeleccionado);
-
-            // Guardar la tarea
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_tareas_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('tareas/edit.html.twig', [
-            'tarea' => $tarea,
             'form' => $form->createView(),
             'proyectoForm' => $proyectoForm->createView(),
         ]);
@@ -126,8 +100,12 @@ class TareasController extends AbstractController
     {
         // Decodificar el contenido JSON de la solicitud
         $data = json_decode($request->getContent(), true);
-        $tareasIds = $data['ids'];
 
+
+        if (is_null($data) || !isset($data['ids'])) {
+            return new JsonResponse(['error' => 'Datos inválidos. JSON malformado.'], Response::HTTP_BAD_REQUEST);
+        }
+        $tareasIds = $data['ids'];
         $usuarioActual = $security->getUser(); // Obtener el usuario actual con Symfony Security
 
         foreach ($tareasIds as $tareaId) {
@@ -153,16 +131,44 @@ class TareasController extends AbstractController
     }
 
 
+    #[Route('/{id}', name: 'app_tareas_show', methods: ['GET'])]
+    public function show(Tareas $tarea): Response
+    {
+        return $this->render('tareas/show.html.twig', [
+            'tarea' => $tarea,
+        ]);
+    }
+
+    #[Route('/{id}/edit', name: 'app_tareas_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Tareas $tarea, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(TareasType::class, $tarea);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $tarea->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid')));
+            $tarea->setDescripcion($form->get('descripcion')->getData());
+
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_tareas_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        // Crear el formulario para nuevo proyecto
+        $proyecto = new Proyectos();
+        $proyectoForm = $this->createForm(ProyectosType::class, $proyecto);
+
+        return $this->render('tareas/edit.html.twig', [
+            'tarea' => $tarea,
+            'form' => $form->createView(),
+            'proyectoForm' => $proyectoForm->createView(), // Asegúrate de pasar 'proyectoForm'
+        ]);
+    }
+
+
     #[Route('/delete/{id}', name: 'app_tareas_delete', methods: ['POST'])]
     public function delete(Request $request, Tareas $tarea, EntityManagerInterface $entityManager): Response
     {
-        $id = $request->attributes->get('id');
-        $tarea = $this->tareasRepository->find($id);
-
-        if (!$tarea) {
-            throw $this->createNotFoundException('Tarea no encontrado');
-        }
-
         if ($this->isCsrfTokenValid('delete' . $tarea->getId(), $request->request->get('_token'))) {
             $entityManager->remove($tarea);
             $entityManager->flush();

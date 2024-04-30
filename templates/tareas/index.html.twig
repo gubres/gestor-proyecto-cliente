@@ -9,10 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
     <!-- Biblioteca de Jquery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    
 
-
-        
 {% endblock %}
 
 {% block body %}
@@ -25,101 +22,62 @@
                     <!-- Botón para eliminar selección -->
                     <button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
                 </form>
-                <!-- Desplegable de filtrado -->
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle btn-filter" type="button" id="dropdownFilterButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-filter"></i> Filtrar
-                        </button>
-
-                        <div class="dropdown-menu" aria-labelledby="dropdownFilterButton">
-                            <!-- Campo Finalizada con opciones Si y No -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Finalizada:
-                                <select class="form-control" id="filtroFinalizada">
-                                    <option value="">Todas</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </div>
-                            <!-- Campo Prioridad con opciones Alta, Baja y Media -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Prioridad:
-                                <select class="form-control" id="filtroPrioridad">
-                                    <option value="">Todas</option>
-                                    <option value="Alta">Alta</option>
-                                    <option value="Media">Media</option>
-                                    <option value="Baja">Baja</option>
-                                </select>
-                            </div>
-
-                            <!-- Campo Fecha de creación con selector de opción -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Fecha de creación:
-                                <select class="form-control" id="filtroFecha">
-                                    <option value="exacto">Exactamente el día</option>
-                                </select>
-                                <input type="text" class="form-control" id="datepicker" placeholder="Selecciona una fecha">
-                                <button id="buscarFecha" class="btn btn-primary">Buscar</button>
-                            </div>
-
-                            <div class="dropdown-item">
-                                <button class="btn btn-warning" id="limpiarFiltros">Borrar filtros</button>
-                            </div>
                 </div>
-            </div>
+
         </div>
 
     <div id="toolbar"></div> <!-- Contenedor para los botones -->
 
-    <table class="table" id="tareasTabla">
+    <table class="table table-bordered" id="tareasTabla">
         <thead>
             <tr>
-                <th><input type="checkbox" id="seleccionarTodo"></th>
-                <th>Id</th>
-                <th>Nombre</th>
-                <th>Finalizada</th>
-                <th>Fecha creación</th>
-                <th>Prioridad</th>
-                <th>Acciones</th>
+                <th class="text-center"><input type="checkbox" id="seleccionarTodo"></th>
+                <th class="text-center">Id</th>
+                <th class="text-center">Nombre</th>
+                <th class="text-center">Usuarios</th>
+                <th class="text-center">Finalizada</th>
+                <th class="text-center">Fecha creación</th>
+                <th class="text-center">Prioridad</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
-        <tbody>
-         {% if tareas is empty %}
-                    <tr>
-                        <td colspan="7">No hay datos disponibles.</td>
-                    </tr>
-                {% else %}
-                    {% for tarea in tareas %}
-                        <tr>
-                            <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
-                            <td>{{ tarea.id }}</td>
-                            <td>{{ tarea.nombre }}</td>
-                            <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
-                            <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
-                            <td>
-                                {% set priorityColor = '' %}
-                                {% if tarea.prioridad == 'ALTA' %}
-                                    {% set priorityColor = 'red' %}
-                                {% elseif tarea.prioridad == 'MEDIA' %}
-                                    {% set priorityColor = 'orange' %}
-                                {% elseif tarea.prioridad == 'BAJA' %}
-                                    {% set priorityColor = 'green' %}
-                                {% endif %}
-                                <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
-                            </td>
-                            <td>
-                                <!-- Botón para abrir la ventana modal con los detalles de la tarea -->
-                                <button type="button" class="btn btn-info abrirModal" data-toggle="modal" data-target="#detallesTarea{{ tarea.id }}">Detalles</button>
+        <tbody class="text-center">
+            {% for tarea in tareas %}
+                <tr>
+                    <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
+                    <td class="text-center">{{ tarea.id }}</td>
+                    <td>{{ tarea.nombre }}</td>
+                    <td>
+                    {% for usuario in tarea.getUsuario() %}
+                            {{ usuario.nombre }}
+                            {% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
+                    <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
+                    <td>
+                        {% set priorityColor = '' %}
+                        {% if tarea.prioridad == 'ALTA' %}
+                            {% set priorityColor = 'red' %}
+                        {% elseif tarea.prioridad == 'MEDIA' %}
+                            {% set priorityColor = 'orange' %}
+                        {% elseif tarea.prioridad == 'BAJA' %}
+                            {% set priorityColor = 'green' %}
+                        {% endif %}
+                        <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
+                    </td>
+                    <td>
+                        <!-- Botón para abrir la ventana modal con los detalles de la tarea -->
+                        <button type="button" class="btn btn-info abrirModal" data-toggle="modal" data-target="#detallesTarea{{ tarea.id }}">Detalles</button>
 
-                                <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning ">Editar</a>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="6">no records found</td>
-                        </tr>
-                    {% endfor %}
-            {% endif %}
+                        <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning ">Editar</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6">no records found</td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
 
@@ -149,6 +107,10 @@
                                 <tr>
                                     <th>Nombre</th>
                                     <td>{{ tarea.nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Descripción</th>
+                                    <td>{{ tarea.descripcion }}</td>
                                 </tr>
                                 <tr>
                                     <th>Finalizada</th>
@@ -184,7 +146,14 @@
             </div>
         </div>
     {% endfor %}
+
+
+                {# modal de mensajes #}
+        <div class="modal-body">
+            {% include '/tareas/modalTareas.html.twig' %}
+        </div>
 {% endblock %}
+
 
 {% block javascripts %}
     {{ parent() }}
@@ -299,104 +268,74 @@
             $('#tareasTabla').html('<tr><td colspan="6">No hay información disponible</td></tr>');
         }
 
-            // Script para limpiar la selección de tareas
-            $('#limpiarSeleccionButton').on('click', function() {
-                $('.seleccionarTarea').prop('checked', false);
-            });
+            // Agrega el botón de filtrar usando los botones de extensión
+            new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
+                        className: 'btn-filter',
+                    }
+                ]
+            }).container().appendTo($('#toolbar'));
 
-            // Agrega el evento de clic al botón de filtrar
-            $('#dropdownFilterButton').on('click', function () {
+            // Inicializar los botones de extensión
+            table.buttons().container().appendTo($('#toolbar'));
+
+            // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
+            $('#toolbar').on('click', '.btn-filter', function () {
                 $(this).next().toggleClass('show');
             });
 
-            // Agregar evento para mostrar el desplegable de filtrado al hacer clic en el botón de filtrar
-            $('#toolbar').on('click', '.btn-filter', function () {
-                var columnIndex = $(this).data('column-index'); // Obtener el índice de la columna
-                var filtro = $(this).text(); // Obtener el texto de la opción del filtro
-
-                console.log("Columna index:", columnIndex);
-                console.log("Filtro:", filtro);
-
-                // Aplicar el filtro a la columna correspondiente
-                if (table) {
-                    table.column(columnIndex).search(filtro).draw();
-                }
+            // Script para limpiar la selección de tareas
+            $('#limpiarFiltros').on('click', function () {
+                $('#filtroFinalizada').val('');
+                $('#filtroPrioridad').val('');
+                $('#filtroFecha').val('');
+                $('#tareasTabla').DataTable().search('').draw();
             });
 
-            // Inicializar el datepicker
+            // Script para la fecha de creación
             $('#datepicker').datepicker({
-                dateFormat: 'yy-mm-dd', // Formato de la fecha
-                autoclose: true // Cerrar automáticamente después de seleccionar una fecha
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                endDate: '+0d'
             });
 
-            // Agregar evento clic al botón "Buscar"
-            $('#buscarFecha').on('click', function() {
-                var tipoFiltro = $('#filtroFecha').val(); // Obtener el tipo de filtro seleccionado
-                var fechaSeleccionada = $('#datepicker').val(); // Obtener la fecha seleccionada
+            // Botón de buscar por fecha de creación
+            $('#buscarFecha').on('click', function () {
+                var fecha = $('#datepicker').val();
+                $('#filtroFecha').val(fecha);
+                $('#tareasTabla').DataTable().search(fecha).draw();
+            });
 
-                if (tipoFiltro === 'desde') {
-                    // Obtener la fecha seleccionada del Datepicker
-                var fechaSeleccionada = $('#datepicker').datepicker('getDate');
+            // Script para filtrar por finalizada
+            $('#filtroFinalizada').on('change', function () {
+                var finalizada = $(this).val();
+                $('#tareasTabla').DataTable().column(4).search(finalizada).draw();
+            });
 
-                // Formatear la fecha seleccionada al formato adecuado (YYYY-MM-DD)
-                var fechaFormateadaString = $.datepicker.formatDate('yy-mm-dd', fechaSeleccionada);
+            // Script para filtrar por prioridad
+            $('#filtroPrioridad').on('change', function () {
+                var prioridad = $(this).val();
+                $('#tareasTabla').DataTable().column(6).search(prioridad).draw();
+            });
 
-                    // Imprimir la fecha formateada en la consola para verificar
-                    console.log("Fecha formateada:", fechaFormateadaString);
+            // Botón para eliminar las tareas seleccionadas
+            $('#eliminarSeleccionButton').on('click', function () {
+                var form = $('#formEliminarTareas');
+                form.submit();
+            });
 
-                    // Filtrar las tareas a partir de la fecha seleccionada
-                    if (table) {
-                        table.column(4).search('>=' + fechaFormateadaString).draw(); // El número 4 representa el índice de la columna de "Fecha de creación" en la tabla
-                    }
-                } else if (tipoFiltro === 'exacto') {
-                    // Filtrar las tareas exactamente para el día seleccionado
-                    if (table) {
-                        table.column(4).search(fechaSeleccionada).draw(); // El número 4 representa el índice de la columna de "Fecha de creación" en la tabla
-                    }
+            // Controla el estado del botón de eliminación de selección
+            $('.seleccionarTarea').on('change', function () {
+                var anySelected = $('.seleccionarTarea:checked').length > 0;
+                if (anySelected) {
+                    $('#eliminarSeleccionButton').show();
+                } else {
+                    $('#eliminarSeleccionButton').hide();
                 }
             });
-            // Agregar evento de cambio al desplegable de "Prioridad"
-            $('#filtroPrioridad').on('change', function() {
-                var prioridadSeleccionada = $(this).val(); // Obtener la prioridad seleccionada
-
-                // Aplicar el filtro de prioridad seleccionada
-                if (table) {
-                    table.column(5).search(prioridadSeleccionada).draw(); // El número 5 representa el índice de la columna de "Prioridad" en la tabla
-                }
-            });
-
-            // Agregar evento de cambio al desplegable de "Finalizada"
-            $('#filtroFinalizada').on('change', function() {
-                var finalizadaSeleccionada = $(this).val(); // Obtener la opción de "Finalizada" seleccionada
-
-                // Aplicar el filtro de "Finalizada" seleccionada
-                if (table) {
-                    table.column(3).search(finalizadaSeleccionada).draw(); // El número 3 representa el índice de la columna de "Finalizada" en la tabla
-                }
-            });
-            // Agregar evento clic al botón "Borrar filtros"
-            $('#limpiarFiltros').on('click', function() {
-                // Limpiar todos los filtros y mostrar todas las tareas
-                if (table) {
-                    table.search('').columns().search('').draw();
-                }
-            });
-            // Agregar evento clic a los elementos del menú desplegable de filtrado
-            $('.filter-option').on('click', function() {
-                var columnIndex = $(this).data('column-index'); // Obtener el índice de la columna
-                var filtro = $(this).data('filter-value'); // Obtener el valor del filtro
-
-                // Aplicar el filtro a la columna correspondiente
-                if (table) {
-                    table.column(columnIndex).search(filtro).draw();
-                }
-
-                // Cerrar el menú desplegable después de aplicar el filtro
-                $('.dropdown-menu').removeClass('show');
-            });
-
-            // Ocultar todas las ventanas modales al principio
-            $('.modal').modal('hide');
 
             // Mostrar ventana modal al hacer clic en el botón de detalles
             $('.abrirModal').on('click', function() {
@@ -404,43 +343,25 @@
                 $(modalId).modal('show');
             });
 
-             // Función para actualizar la visibilidad del botón "Eliminar Selección"
-            function updateDeleteButtonVisibility() {
-                var deleteButton = $('#eliminarSeleccionButton');
-                var checkedCount = $('.seleccionarTarea:checked').length;
-                if (checkedCount > 0) {
-                    deleteButton.show(); // Mostrar el botón si hay alguna selección
-                } else {
-                    deleteButton.hide(); // Ocultar el botón si no hay ninguna selección
-                }
-            }
-
-            $('.seleccionarTarea').on('click', function() {
-                updateDeleteButtonVisibility(); // Llama a la función para actualizar la visibilidad del botón de eliminar selección
-            });
-            // Agregar evento al hacer clic en el botón de seleccionar todo
-            $('#seleccionarTodo').on('click', function() {
-                var isChecked = $(this).prop('checked');
-                $('.seleccionarTarea').prop('checked', isChecked);
-                updateDeleteButtonVisibility(); // Actualizar visibilidad del botón "Eliminar Selección"
-            });
-
-          // Agregar evento clic al botón de eliminar selección de tareas
-$('#eliminarSeleccionButton').on('click', function() {
-    var tareasSeleccionadas = $('.seleccionarTarea:checked').map(function() {
-        return this.value;
-    }).get();
-
-    if (tareasSeleccionadas.length > 0) {
+         // Evento para abrir el modal de confirmación de eliminación
+    $('#eliminarSeleccionButton').on('click', function() {
         
-            eliminarTareas(tareasSeleccionadas);
-    } else {
-        console.log('No se ha seleccionado ninguna tarea para eliminar.');
-    }
+        var selectedTasks = $('.seleccionarTarea:checked').map(function() {
+            return $(this).val();
+        }).get();
+
+        if (selectedTasks.length > 0) {
+            $('#deleteModal').modal('show');
+            $('#confirmDeleteButton').off('click').on('click', function() {
+                eliminarTareas(selectedTasks, table);
+            });
+        } else {
+            alert('No se ha seleccionado ninguna tarea para eliminar.');
+        }
+    });
 });
 
-// Función para eliminar las tareas seleccionadas mediante fetch
-function eliminarTareas(tareasSeleccionadas) {
+function eliminarTareas(tareasSeleccionadas, table) {
     fetch('{{ path("eliminar_tareas") }}', {
         method: 'POST',
         headers: {
@@ -449,17 +370,39 @@ function eliminarTareas(tareasSeleccionadas) {
         },
         body: JSON.stringify({ ids: tareasSeleccionadas })
     })
-    .then(response => response.json()) // convertir la respuesta a JSON
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la solicitud');
+        }
+        return response.json();
+    })
     .then(data => {
-        console.log('Tareas eliminadas correctamente:', data);
-       location.reload();
+        $('#deleteModal').modal('hide');
+        $('#successModal').modal('show');
+        setTimeout(() => {
+            $('#successModal').modal('hide');
+           location.reload(); // Recarga el DataTable sin resetear la paginación
+        }, 2000);
     })
     .catch(error => {
-        console.error('Error al eliminar las tareas:', error);
-        alert('Error al eliminar las tareas. Por favor, intente de nuevo.');
+        $('#deleteModal').modal('hide');
+        $('#errorModalText').text(error.message || 'Error al eliminar las tareas. Por favor, intente de nuevo.');
+        $('#errorModal').modal('show');
     });
 }
 
-});
+
+    // Actualización del estado de visibilidad del botón de eliminar
+    $('.seleccionarTarea').on('change', function() {
+        var selectedCount = $('.seleccionarTarea:checked').length;
+        $('#eliminarSeleccionButton').toggle(selectedCount > 0);
+    });
+
+    // Selección/deselección de todas las tareas
+    $('#seleccionarTodo').on('change', function() {
+        var isChecked = $(this).is(':checked');
+        $('.seleccionarTarea').prop('checked', isChecked).trigger('change');
+    });
+
     </script>
 {% endblock %}
