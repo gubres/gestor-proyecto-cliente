@@ -168,7 +168,6 @@
     
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
    
-
     <script>
     $(document).ready(function() {
         // Verificar si hay datos en la tabla
@@ -342,54 +341,53 @@
                 var modalId = $(this).data('target');
                 $(modalId).modal('show');
             });
+    });
 
-         // Evento para abrir el modal de confirmación de eliminación
-    $('#eliminarSeleccionButton').on('click', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+    const deleteButton = document.getElementById('eliminarSeleccionButton');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    const errorModalText = document.getElementById('errorModalText');
+
+    deleteButton.addEventListener('click', function() {
+        const selectedTasks = Array.from(document.querySelectorAll('.seleccionarTarea:checked')).map(el => parseInt(el.value, 10));
         
-        var selectedTasks = $('.seleccionarTarea:checked').map(function() {
-            return $(this).val();
-        }).get();
-
-        if (selectedTasks.length > 0) {
-            $('#deleteModal').modal('show');
-            $('#confirmDeleteButton').off('click').on('click', function() {
-                eliminarTareas(selectedTasks, table);
-            });
-        } else {
+        if (selectedTasks.length === 0) {
             alert('No se ha seleccionado ninguna tarea para eliminar.');
+            return;
         }
+
+        deleteModal.show();
+
+        confirmDeleteButton.onclick = async function() {
+            try {
+                const response = await fetch('{{ path("eliminar_tareas") }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ids: selectedTasks })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    deleteModal.hide();
+                    successModal.show();
+                    setTimeout(() => {
+                        successModal.hide();
+                        location.reload(); // Recarga el DataTable sin resetear la paginación
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'No se pudo completar la eliminación de tareas.');
+                }
+            } catch (error) {
+                deleteModal.hide();
+                errorModalText.textContent = error.message || 'Error al eliminar tareas. Por favor, intente de nuevo.';
+                errorModal.show();
+            }
+        };
     });
 });
-
-function eliminarTareas(tareasSeleccionadas, table) {
-    fetch('{{ path("eliminar_tareas") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ ids: tareasSeleccionadas })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error en la solicitud');
-        }
-        return response.json();
-    })
-    .then(data => {
-        $('#deleteModal').modal('hide');
-        $('#successModal').modal('show');
-        setTimeout(() => {
-            $('#successModal').modal('hide');
-           location.reload(); // Recarga el DataTable sin resetear la paginación
-        }, 2000);
-    })
-    .catch(error => {
-        $('#deleteModal').modal('hide');
-        $('#errorModalText').text(error.message || 'Error al eliminar las tareas. Por favor, intente de nuevo.');
-        $('#errorModal').modal('show');
-    });
-}
 
 
     // Actualización del estado de visibilidad del botón de eliminar
