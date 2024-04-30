@@ -26,9 +26,6 @@ class Tareas
     )]
     private ?string $nombre = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $finalizado_en = null;
-
     #[ORM\Column]
     private ?bool $finalizada = null;
 

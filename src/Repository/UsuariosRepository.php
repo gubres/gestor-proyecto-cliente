@@ -61,4 +61,3 @@ class UsuariosRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 }
-
