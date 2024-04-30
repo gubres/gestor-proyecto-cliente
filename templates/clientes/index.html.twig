@@ -138,7 +138,7 @@
     <script>
         $(document).ready(function() {
             // Verificar si hay datos en la tabla
-            var tableData = {% if clientes is defined %} {{ clientes|length > 0 ? tareas|json_encode : 'null' }} {% else %} null {% endif %};
+            var tableData = {% if clientes is defined %} {{ clientes|length > 0 ? clientes|json_encode : 'null' }} {% else %} null {% endif %};
             
             // Si hay datos, inicializar la tabla DataTables
             if (tableData !== null) {
