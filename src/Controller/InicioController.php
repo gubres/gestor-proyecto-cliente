@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Repository\ClientesRepository;
 use App\Repository\UsuariosRepository;
+use DateTime;
 
 class InicioController extends AbstractController
 {
@@ -23,10 +24,17 @@ class InicioController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function index(UsuariosRepository $usuariosRepository, Request $request): Response
     {
+        $startDateParam = $request->query->get('start');
+        $endDateParam = $request->query->get('end');
+
+        // Si no se proporciona fecha de inicio, establecer desde inicio de año
+        $startDate = $startDateParam ? new DateTime($startDateParam) : new DateTime("2024-01-01");
+        // Si no se proporciona fecha de fin, usar la fecha actual
+        $endDate = $endDateParam ? new DateTime($endDateParam) : new DateTime();
+
         //uusario logueado
         $usuario = $this->getUser();
-
-        $usuarios = $usuariosRepository->findProyectosCompartidos($usuario);
+        $usuarios = $usuariosRepository->findProyectosCompartidos($usuario, $startDate, $endDate);
 
         $labels = [];
         $dataBaja = [];
@@ -90,6 +98,8 @@ class InicioController extends AbstractController
             'dataAlta' => json_encode($dataAlta),
             'clientes' => $datosClientes,
             'totalClientes' => $totalClientes,
+            'startDateParam' => $startDateParam,  // Pasar los parámetros de fecha a la vista
+            'endDateParam' => $endDateParam
         ]);
     }
 }

@@ -3,22 +3,65 @@
 {% block title %}Inicio{% endblock %}
 
 {% block body %}
+    
     <h1>Carga de Trabajo por Usuario</h1>
+    <form method="get" action="{{ path('app_inicio') }}">
+        <input type="date" name="start" value="{{ startDateParam|default('') }}">
+        <input type="date" name="end" value="{{ endDateParam|default('') }}">
+        <button type="submit">Filtrar</button>
+    </form>
     <div id="container" style="width: 600px; height: 400px; margin: 0 auto;"></div>
+    <!-- Selector de Rango de Fechas -->
+    <div style="text-align: center; margin-bottom: 100px;"> <!-- para gregar margen inferior, espacio en blanco entre fecha y segundo gráfico -->
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" style="margin: 0 auto;">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" style="margin: 0 auto;">
+    </div>
     <div id="chartContainer" style="width: 100%; height: 400px;"></div>
     <div style="text-align: center;">
         <p><strong>Total de clientes:</strong> {{ totalClientes }}</p>
     </div>
 {% endblock %}
 
+
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="//code.highcharts.com/highcharts.js"></script>
+    <script src="//code.highcharts.com/modules/accessibility.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const chart = Highcharts.chart('container', {
+            // Función para actualizar el gráfico de tareas cuando cambia el rango de fechas
+                function actualizarGraficoTareas() {
+                    const fechaInicio = document.getElementById('fecha_inicio').value;
+                    const fechaFin = document.getElementById('fecha_fin').value;
+
+
+                // Hacer una solicitud AJAX al servidor para obtener los datos filtrados por el rango de fechas
+                const xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            const data = JSON.parse(xhr.responseText);
+                            actualizarGrafico(data);
+                        } else {
+                            console.error('Error al obtener datos del servidor');
+                        }
+                    }
+                };
+                xhr.open('GET', '{{ path('app_tareas_index') }}?fecha_inicio=' + fechaInicio + '&fecha_fin=' + fechaFin, true);
+                xhr.send();
+                }
+                 // Escuchar cambios en los campos de fecha y actualizar el gráfico de tareas
+                document.getElementById('fecha_inicio').addEventListener('change', actualizarGraficoTareas);
+                document.getElementById('fecha_fin').addEventListener('change', actualizarGraficoTareas);
+
+                // Llamar a la función para actualizar el gráfico inicialmente con las fechas actuales
+                actualizarGraficoTareas();
+
+            // Inicializar el gráfico de tareas
+            Highcharts.chart('container', {
                 chart: {
                     type: 'column'
                 },
@@ -118,3 +161,6 @@
         });
     </script>
 {% endblock %}
+
+
+

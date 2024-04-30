@@ -9,7 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
     <!-- Biblioteca de Jquery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-   
+
 {% endblock %}
 
 {% block body %}
@@ -22,48 +22,8 @@
                     <!-- Botón para eliminar selección -->
                     <button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
                 </form>
-                <!-- Desplegable de filtrado -->
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle btn-filter" type="button" id="dropdownFilterButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-filter"></i> Filtrar
-                        </button>
-
-                        <div class="dropdown-menu" aria-labelledby="dropdownFilterButton">
-                            <!-- Campo Finalizada con opciones Si y No -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Finalizada:
-                                <select class="form-control" id="filtroFinalizada">
-                                    <option value="">Todas</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </div>
-                            <!-- Campo Prioridad con opciones Alta, Baja y Media -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Prioridad:
-                                <select class="form-control" id="filtroPrioridad">
-                                    <option value="">Todas</option>
-                                    <option value="Alta">Alta</option>
-                                    <option value="Media">Media</option>
-                                    <option value="Baja">Baja</option>
-                                </select>
-                            </div>
-
-                            <!-- Campo Fecha de creación con selector de opción -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Fecha de creación:
-                                <select class="form-control" id="filtroFecha">
-                                    <option value="exacto">Exactamente el día</option>
-                                </select>
-                                <input type="text" class="form-control" id="datepicker" placeholder="Selecciona una fecha">
-                                <button id="buscarFecha" class="btn btn-primary">Buscar</button>
-                            </div>
-
-                            <div class="dropdown-item">
-                                <button class="btn btn-warning" id="limpiarFiltros">Borrar filtros</button>
-                            </div>
                 </div>
-            </div>
+
         </div>
 
     <div id="toolbar"></div> <!-- Contenedor para los botones -->
@@ -74,7 +34,7 @@
                 <th class="text-center"><input type="checkbox" id="seleccionarTodo"></th>
                 <th class="text-center">Id</th>
                 <th class="text-center">Nombre</th>
-                <th class="text-center">Descripción</th>
+                <th class="text-center">Usuarios</th>
                 <th class="text-center">Finalizada</th>
                 <th class="text-center">Fecha creación</th>
                 <th class="text-center">Prioridad</th>
@@ -87,7 +47,12 @@
                     <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
                     <td class="text-center">{{ tarea.id }}</td>
                     <td>{{ tarea.nombre }}</td>
-                    <td>{{ tarea.descripcion }}</td> {# Aquí agregamos la descripción #}
+                    <td>
+                    {% for usuario in tarea.getUsuario() %}
+                            {{ usuario.nombre }}
+                            {% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
                     <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
                     <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
                     <td>
@@ -115,7 +80,7 @@
             {% endfor %}
         </tbody>
     </table>
-    
+
     
      <!-- Divs para mostrar mensajes de éxito y error -->
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
@@ -197,7 +162,6 @@
    
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Estilos y scripts para DataTables con botones y selección múltiple -->
-    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <!-- Agrega el script de DataTables Buttons -->
@@ -205,89 +169,88 @@
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
    
     <script>
-        $(document).ready(function() {
+    $(document).ready(function() {
+        // Verificar si hay datos en la tabla
+        var tableData = {% if tareas is defined %} {{ tareas|length > 0 ? tareas|json_encode : 'null' }} {% else %} null {% endif %};
+        
+        // Si hay datos, inicializar la tabla DataTables
+        if (tableData !== null) {
             var table = $('#tareasTabla').DataTable({  
-                "dom": '<"row"<"col-sm-3"l><"col-sm-5"B><"col-sm-3"f>>rt<"row"<"col-sm-7"p><"col-sm-5"i>>',
-                "language": {
-                "decimal": "",
-                "emptyTable": "No hay información disponible",
-                "info": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
-                "infoEmpty": "Mostrando 0 a 0 de 0 entradas",
-                "infoFiltered": "(filtrado de un total de _MAX_ entradas)",
-                "infoPostFix": "",
-                "thousands": ",",
-                "lengthMenu": "Mostrar _MENU_ entradas",
-                "loadingRecords": "Cargando...",
-                "processing": "Procesando...",
-                "search": "Buscar:",
-                "zeroRecords": "No se encontraron registros coincidentes",
-                "select": {
-                    "rows": {
-                        "_": "%d filas seleccionadas",
-                        "0": "Haz clic en una fila para seleccionarla",
-                        "1": "1 fila seleccionada"
-                    }
-                },
-            }, 
+                dom: '<"toolbar">Bfrtip',
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                }, 
                 buttons: [
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
                         className: 'btn-excel',
-                          exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                },
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        },
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
                         className: 'btn-pdf',
-                          exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                },customize: function(doc) {
-                    // Centrar la tabla en la página PDF
-                    var docContent = doc.content[1];
-                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
-                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
-                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
-                    docContent.layout = {
-                        hLineWidth: function(i, node) {
-                            return 0.5;
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
                         },
-                        vLineWidth: function(i, node) {
-                            return 0.5;
-                        },
-                        hLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        vLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        paddingLeft: function(i, node) {
-                            return 4;
-                        },
-                        paddingRight: function(i, node) {
-                            return 4;
-                        },
-                        paddingTop: function(i, node) {
-                            return 2;
-                        },
-                        paddingBottom: function(i, node) {
-                            return 2;
+                        customize: function(doc) {
+                            // Centrar la tabla en la página PDF
+                            var docContent = doc.content[1];
+                            docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                            docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                            // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                            docContent.layout = {
+                                hLineWidth: function(i, node) {
+                                    return 0.5;
+                                },
+                                vLineWidth: function(i, node) {
+                                    return 0.5;
+                                },
+                                hLineColor: function(i, node) {
+                                    return '#aaa';
+                                },
+                                vLineColor: function(i, node) {
+                                    return '#aaa';
+                                },
+                                paddingLeft: function(i, node) {
+                                    return 4;
+                                },
+                                paddingRight: function(i, node) {
+                                    return 4;
+                                },
+                                paddingTop: function(i, node) {
+                                    return 2;
+                                },
+                                paddingBottom: function(i, node) {
+                                    return 2;
+                                }
+                            };
                         }
-                    };
-                }
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
                         className: 'btn-print',
-                          exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                },
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        },
                     }
                 ],
                 select: {
@@ -298,6 +261,29 @@
                 initComplete: function () {
                     $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
                 }
+            });
+        } else {
+            // Si no hay datos, mostrar un mensaje indicando que no hay información
+            $('#tareasTabla').html('<tr><td colspan="6">No hay información disponible</td></tr>');
+        }
+
+            // Agrega el botón de filtrar usando los botones de extensión
+            new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
+                        className: 'btn-filter',
+                    }
+                ]
+            }).container().appendTo($('#toolbar'));
+
+            // Inicializar los botones de extensión
+            table.buttons().container().appendTo($('#toolbar'));
+
+            // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
+            $('#toolbar').on('click', '.btn-filter', function () {
+                $(this).next().toggleClass('show');
             });
 
             // Script para limpiar la selección de tareas

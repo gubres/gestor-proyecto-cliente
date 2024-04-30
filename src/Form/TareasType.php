@@ -10,7 +10,11 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+
 use Symfony\Component\Form\Extension\Core\Type\TextareaType; // Importa el tipo de campo TextareaType para el campo de descripción
+
 
 class TareasType extends AbstractType
 {
@@ -29,9 +33,17 @@ class TareasType extends AbstractType
                 'multiple' => false,
                 'attr' => ['class' => 'form-control'],
             ])
-            ->add('creado_en', null, [
-                'widget' => 'single_text',
+            
+            ->add('creado_en', DateTimeType::class, [
+                'widget' => 'single_text', // campo input de fecha
+                'attr' => ['class' => 'form-control']
             ])
+            ->add('finalizado_en', DateTimeType::class, [
+                'widget' => 'single_text',
+                'required' => false, // No requerido, dependiendo de si la tarea ya ha sido finalizada o no
+                'attr' => ['class' => 'form-control']
+            ])
+
             ->add('prioridad', ChoiceType::class, [
                 'choices' => [
                     'Selecciona la prioridad' => null, // Opción predeterminada

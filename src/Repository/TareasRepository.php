@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\Tareas;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use DateTime;
+
 
 /**
  * @extends ServiceEntityRepository<Tareas>
@@ -28,6 +30,22 @@ class TareasRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+
+
+    public function findByDateRangeAndStatus(DateTime $startDate, DateTime $endDate, $finalizada = false)
+{
+    return $this->createQueryBuilder('t')
+        ->andWhere('t.creado_en BETWEEN :start AND :end')
+        ->andWhere('t.finalizada = :finalizada')
+        ->setParameter('start', $startDate->format('Y-m-d'))
+        ->setParameter('end', $endDate->format('Y-m-d 23:59:59'))
+        ->setParameter('finalizada', $finalizada)
+        ->getQuery()
+        ->getResult();
+}
+
+
     //    /**
     //     * @return Tareas[] Returns an array of Tareas objects
     //     */
