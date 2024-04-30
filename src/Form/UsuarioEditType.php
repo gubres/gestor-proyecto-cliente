@@ -18,24 +18,15 @@ class UsuarioEditType extends AbstractType
         $builder
             ->add('nombre', TextType::class, ['required' => false])
             ->add('apellidos', TextType::class, ['required' => false])
-            ->add('email', EmailType::class, ['required' => false])
+            ->add('email', EmailType::class, [
+                'disabled' => true // Hace que el campo de email sea no editable
+            ])
             ->add('newPassword', PasswordType::class, [
                 'mapped' => false,
                 'required' => false, //  opcional 
                 'label' => 'Nueva contraseña (opcional)',
                 'attr' => ['autocomplete' => 'new-password'],
-            ])
-            ->add('isActive', ChoiceType::class, [
-                'label' => 'Estado',
-                'choices' => [
-                    'Activo' => true,
-                    'Desactivado' => false,
-                ],
-                'expanded' => true,
-                'multiple' => false,
-                'required' => true,
             ]);
-            ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

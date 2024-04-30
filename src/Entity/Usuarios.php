@@ -57,10 +57,14 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isActive;
 
-
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-
     private $resetToken;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $creado_en = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $actualizado_en = null;
 
     public function getResetToken(): ?string
     {
@@ -116,6 +120,8 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
         $this->usuariosProyectos = new ArrayCollection();
         $this->tareas = new ArrayCollection();
         $this->isActive = true;
+        $this->creado_en = new \DateTime();
+        $this->actualizado_en = new \DateTime();
     }
 
     public function getId(): ?int
@@ -152,8 +158,12 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
+        if (!$this->isActive) {
+            return [];
+        }
+
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
+        // Garantiza que cada usuario tenga al menos el rol ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -301,5 +311,27 @@ class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString()
     {
         return $this->getEmail();
+    }
+
+    public function getCreadoEn(): ?\DateTimeInterface
+    {
+        return $this->creado_en;
+    }
+
+    public function setCreadoEn(\DateTimeInterface $creado_en): static
+    {
+        $this->creado_en = $creado_en;
+
+        return $this;
+    }
+    public function getActualizadoEn(): ?\DateTimeInterface
+    {
+        return $this->actualizado_en;
+    }
+
+    public function setActualizadoEn(?\DateTimeInterface $actualizado_en): self
+    {
+        $this->actualizado_en = $actualizado_en;
+        return $this;
     }
 }

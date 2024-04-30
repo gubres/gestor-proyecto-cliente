@@ -4,25 +4,23 @@ namespace App\Controller;
 
 use App\Entity\Usuarios;
 use App\Form\UsuariosType;
-use App\Repository\UsuariosRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Form\UsuarioEditType;
 use App\Form\RegistrationFormType;
-use Symfony\Component\Form\FormError;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Mime\Address;
+use App\Repository\UsuariosRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 
-#[Route('/usuarios')]
+#[Route('/usuario')]
 class UsuariosController extends AbstractController
 {
 
@@ -37,9 +35,15 @@ class UsuariosController extends AbstractController
     #[Route('/', name: 'app_usuarios_index', methods: ['GET'])]
     public function index(UsuariosRepository $usuariosRepository): Response
     {
+        // Asegura que solo los usuarios con el rol de usuario puedan acceder
         $this->denyAccessUnlessGranted('ROLE_USER');
+
+        // Obtiene el usuario actualmente logueado
+        $user = $this->getUser();
+
+        // Devuelve la vista pasando únicamente el usuario actual
         return $this->render('usuarios/index.html.twig', [
-            'usuarios' => $usuariosRepository->findAll(),
+            'usuario' => $user,
         ]);
     }
 
@@ -65,6 +69,9 @@ class UsuariosController extends AbstractController
 
             // Actualiza la propiedad isActive
             $user->setIsActive(true); // Por defecto, el usuario estará activo al registrarse
+            $user->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid'))); // Asignar la fecha actual
+            $user->setCreadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid'))); // Asignar la fecha actual
+
 
             // Persiste la entidad
             $entityManager->persist($user);
@@ -127,7 +134,7 @@ class UsuariosController extends AbstractController
     }
 
 
-    #[Route('/usuarios/{id}/edit', name: 'app_usuarios_edit', methods: ['GET', 'POST'])]
+    #[Route('/usuario/{id}/edit', name: 'app_usuarios_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
@@ -136,24 +143,12 @@ class UsuariosController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Comprueba si se modifica la contraseña y actualiza si es necesario
-
-            // Actualiza la propiedad isActive
-            $usuario->setIsActive($form->get('isActive')->getData());
-
-            // Actualiza los roles según el estado de isActive
-            if (!$usuario->getIsActive()) {
-                // Si el usuario está desactivado, elimina el role ROLE_USER
-                $roles = $usuario->getRoles();
-                $key = array_search('ROLE_USER', $roles);
-                if ($key !== false) {
-                    unset($roles[$key]);
-                }
-                $usuario->setRoles($roles);
+            if ($form->has('password') && $form->get('password')->getData() != '') {
+                $password = $passwordHasher->hashPassword($usuario, $form->get('password')->getData());
+                $usuario->setPassword($password);
             }
-            // Aquí llamamos al método para actualizar los roles basados en la activación
-            $usuario->updateRolesBasedOnActivation();
 
-            // Persiste la entidad actualizada
+            $usuario->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid'))); // Asignar la fecha actual
             $entityManager->persist($usuario);
             $entityManager->flush();
 
@@ -169,25 +164,33 @@ class UsuariosController extends AbstractController
         ]);
     }
 
+
     #[Route('/{id}/delete', name: 'app_usuarios_delete', methods: ['POST'])]
-    public function delete(Request $request, Usuarios $usuario, EntityManagerInterface $entityManager): Response
-
+    public function delete(Request $request, EntityManagerInterface $entityManager, UsuariosRepository $usuariosRepository): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-        $id = $request->attributes->get('id');
-        $usuario = $this->usuariosRepository->find($id);
+        $userId = $request->attributes->get('id');
+        $user = $usuariosRepository->find($userId);
 
-        if (!$usuario) {
-            throw $this->createNotFoundException('Usuario no encontrado');
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => 'Usuario no encontrado.'], 404);
         }
 
-        if ($this->isCsrfTokenValid('delete' . $usuario->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($usuario);
+        $entityManager->beginTransaction();
+        try {
+            $user->setIsActive(false);
+            $user->setActualizadoEn(new \DateTime("now", new \DateTimeZone('Europe/Madrid'))); // Asignar la fecha actual
+            $entityManager->persist($user);
             $entityManager->flush();
-        }
+            $entityManager->commit();
 
-        return $this->redirectToRoute('app_usuarios_index');
+            return new JsonResponse(['success' => true, 'message' => 'El usuario ha sido eliminado.']);
+        } catch (\Exception $e) {
+            $entityManager->rollback();
+            return new JsonResponse(['success' => false, 'message' => 'Error al eliminar el usuario: ' . $e->getMessage()], 500);
+        }
     }
+
+
 
 
     #[Route('/{id}', name: 'app_usuarios_show', methods: ['GET'])]

@@ -1,0 +1,229 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Roles{% endblock %}
+
+{% block body %}
+<div class="container mt-5 pt-2">
+    <h1 class="text-center mb-3 pb-2">LISTADO DE USUARIOS Y ROLES</h1>
+    <table id="userTabla" class="table table-bordered">
+        <thead>
+            <tr>
+                <th class="text-center">ID</th>
+                <th class="text-center">Nombre</th>
+                <th class="text-center">Email</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Roles</th>
+                <th class="text-center">Editar role</th>
+                <th class="text-center">Eliminar roles</th>
+            </tr>
+        </thead>
+        <tbody class="text-center">
+          
+        </tbody>
+    </table>
+
+            {# modal de mensajes #}
+        <div class="modal-body">
+            {% include '/roles/modalRoles.html.twig' %}
+        </div>
+{% endblock %}
+
+
+{% block javascripts %}
+
+    {{ parent() }}
+      <!-- Estilos y scripts para DataTables con botones y selección múltiple -->
+    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <!-- Agrega el script de DataTables Buttons -->
+  
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.colVis.min.js"></script>
+
+<script>
+
+  $(document).ready(function() {
+    var userTabla = $('#userTabla').DataTable({
+        "processing": true,
+        "serverSide": false,
+        "ajax": {
+            "url": "{{ path('user_data') }}",
+            "type": "GET"
+        },
+        "columns": [
+            { "data": "id" },
+            { "data": "nombre" },
+            { "data": "email" },
+            {
+              "data": "estado",
+                "render": function(data, type, row) {
+                    if (data) {
+                        return '<i class="fas fa-check-circle text-success mx-5"></i>'; // Check verde
+                    } else {
+                        return '  <i class="fas fa-times-circle text-danger"></i>'; // X roja
+                    }
+                }
+            },
+            { "data": "roles" },
+            { "data": "editar" },
+            { "data": "eliminar roles" }
+        ],
+        buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i>',
+                        titleAttr: 'Exportar a Excel',
+                        className: 'btn-excel',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i>',
+                        titleAttr: 'Exportar a PDF',
+                        className: 'btn-pdf',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },customize: function(doc) {
+                  
+                    var docContent = doc.content[1];
+                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                    docContent.layout = {
+                        hLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        vLineWidth: function(i, node) {
+                            return 0.5;
+                        },
+                        hLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        vLineColor: function(i, node) {
+                            return '#aaa';
+                        },
+                        paddingLeft: function(i, node) {
+                            return 4;
+                        },
+                        paddingRight: function(i, node) {
+                            return 4;
+                        },
+                        paddingTop: function(i, node) {
+                            return 2;
+                        },
+                        paddingBottom: function(i, node) {
+                            return 2;
+                        }
+                    };
+                },
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i>',
+                        titleAttr: 'Imprimir',
+                        className: 'btn-print',
+                        exportOptions: {
+                    columns: [1, 2, 3, 4]
+                },
+                    }
+                ],
+        "language": {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                },
+        "dom": '<"row"<"col-sm-3"l><"col-sm-5"B><"col-sm-3"f>>rt<"row"<"col-sm-7"p><"col-sm-5"i>>',
+        
+       
+    });
+
+    $('#userTabla tbody').on('click', 'button', function() {
+        var data = userTabla.row($(this).parents('tr')).data();
+        if($(this).hasClass('edit-button')) {
+            // llenar el formulario de edición con los datos
+            $('#editModal').modal('show');
+        } else if($(this).hasClass('delete-button')) {
+            // preparar y mostrar modal de confirmación de eliminación
+            $('#deleteModal').modal('show');
+        }
+    });
+
+        //manejo del modal editar
+        $('#editModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var email = button.data('email');
+        var roles = button.data('roles').split(',');
+
+        var modal = $(this);
+        modal.find('.modal-title').text('Editar Usuario: ' + email);
+        modal.find('.modal-body #userId').val(id);
+        modal.find('.modal-body #userEmail').val(email);
+
+        modal.find('.modal-body #userRoles').find('option').each(function() {
+            $(this).prop('selected', roles.includes($(this).val()));
+        });
+    });
+
+    $('#editUserForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+        $.ajax({
+            url: '{{ path("update_user") }}',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                $('#editModal').modal('hide');
+                mostrarSuccessModal('Role del usuario modificado correctamente');
+                userTabla.ajax.reload();
+            },
+            error: function() {
+                mostrarErrorModal('Error al actualizar el usuario.');
+            }
+        });
+    });
+
+    $('#deleteModal').on('show.bs.modal', function(e) {
+        var button = $(e.relatedTarget);
+        var id = button.data('id');
+        $('#confirmDeleteButton').off('click').on('click', function() {
+            $.ajax({
+                url: '{{ path("delete_user") }}',
+                type: 'POST',
+                data: { userId: id },
+                success: function(response) {
+                    $('#deleteModal').modal('hide');
+                    mostrarSuccessModal('Estado del usuario modificado correctamente');
+                    userTabla.ajax.reload();
+                },
+                error: function() {
+                    mostrarErrorModal('Error al eliminar el usuario.');
+                }
+            });
+        });
+    });
+
+    function mostrarSuccessModal(mensaje) {
+        $('#successModalText').text(mensaje);
+        $('#successModal').modal('show');
+    }
+
+    function mostrarErrorModal(mensaje) {
+        $('#errorModalText').text(mensaje); 
+        $('#errorModal').modal('show'); 
+    }
+});
+
+</script>
+{% endblock %}
