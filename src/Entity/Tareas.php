@@ -26,10 +26,6 @@ class Tareas
     )]
     private ?string $nombre = null;
 
-    
-
-
-    
 
     #[ORM\Column]
     private ?bool $finalizada = null;
