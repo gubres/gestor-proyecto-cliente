@@ -9,9 +9,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
     <!-- Biblioteca de Jquery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-
     
+
+
+        
 {% endblock %}
 
 {% block body %}
@@ -83,39 +84,45 @@
             </tr>
         </thead>
         <tbody>
-            {% for tarea in tareas %}
-                <tr>
-                    <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
-                    <td>{{ tarea.id }}</td>
-                    <td>{{ tarea.nombre }}</td>
-                    <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
-                    <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
-                    <td>
-                        {% set priorityColor = '' %}
-                        {% if tarea.prioridad == 'ALTA' %}
-                            {% set priorityColor = 'red' %}
-                        {% elseif tarea.prioridad == 'MEDIA' %}
-                            {% set priorityColor = 'orange' %}
-                        {% elseif tarea.prioridad == 'BAJA' %}
-                            {% set priorityColor = 'green' %}
-                        {% endif %}
-                        <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
-                    </td>
-                    <td>
-                        <!-- Botón para abrir la ventana modal con los detalles de la tarea -->
-                        <button type="button" class="btn btn-info abrirModal" data-toggle="modal" data-target="#detallesTarea{{ tarea.id }}">Detalles</button>
+         {% if tareas is empty %}
+                    <tr>
+                        <td colspan="7">No hay datos disponibles.</td>
+                    </tr>
+                {% else %}
+                    {% for tarea in tareas %}
+                        <tr>
+                            <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
+                            <td>{{ tarea.id }}</td>
+                            <td>{{ tarea.nombre }}</td>
+                            <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
+                            <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
+                            <td>
+                                {% set priorityColor = '' %}
+                                {% if tarea.prioridad == 'ALTA' %}
+                                    {% set priorityColor = 'red' %}
+                                {% elseif tarea.prioridad == 'MEDIA' %}
+                                    {% set priorityColor = 'orange' %}
+                                {% elseif tarea.prioridad == 'BAJA' %}
+                                    {% set priorityColor = 'green' %}
+                                {% endif %}
+                                <strong style="color: {{ priorityColor }}; font-weight: bold;">{{ tarea.prioridad }}</strong>
+                            </td>
+                            <td>
+                                <!-- Botón para abrir la ventana modal con los detalles de la tarea -->
+                                <button type="button" class="btn btn-info abrirModal" data-toggle="modal" data-target="#detallesTarea{{ tarea.id }}">Detalles</button>
 
-                        <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning ">Editar</a>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="6">no records found</td>
-                </tr>
-            {% endfor %}
+                                <a href="{{ path('app_tareas_edit', {'id': tarea.id}) }}" class="btn btn-warning ">Editar</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6">no records found</td>
+                        </tr>
+                    {% endfor %}
+            {% endif %}
         </tbody>
     </table>
-    
+
     
      <!-- Divs para mostrar mensajes de éxito y error -->
     <div id="successMessage" class="alert alert-success d-none" role="alert"></div>
@@ -186,7 +193,6 @@
    
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Estilos y scripts para DataTables con botones y selección múltiple -->
-    <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.0.3/b-3.0.1/b-html5-3.0.1/b-print-3.0.1/sl-2.0.0/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <!-- Agrega el script de DataTables Buttons -->
@@ -195,10 +201,15 @@
    
 
     <script>
-        $(document).ready(function() {
+    $(document).ready(function() {
+        // Verificar si hay datos en la tabla
+        var tableData = {% if tareas is defined %} {{ tareas|length > 0 ? tareas|json_encode : 'null' }} {% else %} null {% endif %};
+        
+        // Si hay datos, inicializar la tabla DataTables
+        if (tableData !== null) {
             var table = $('#tareasTabla').DataTable({  
                 dom: '<"toolbar">Bfrtip',
-                 language: {
+                language: {
                     "decimal": "",
                     "emptyTable": "No hay información",
                     "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
@@ -218,59 +229,60 @@
                         text: '<i class="fas fa-file-excel"></i>',
                         titleAttr: 'Exportar a Excel',
                         className: 'btn-excel',
-                          exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                },
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        },
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i>',
                         titleAttr: 'Exportar a PDF',
                         className: 'btn-pdf',
-                          exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                },customize: function(doc) {
-                    // Centrar la tabla en la página PDF
-                    var docContent = doc.content[1];
-                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
-                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
-                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
-                    docContent.layout = {
-                        hLineWidth: function(i, node) {
-                            return 0.5;
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
                         },
-                        vLineWidth: function(i, node) {
-                            return 0.5;
-                        },
-                        hLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        vLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        paddingLeft: function(i, node) {
-                            return 4;
-                        },
-                        paddingRight: function(i, node) {
-                            return 4;
-                        },
-                        paddingTop: function(i, node) {
-                            return 2;
-                        },
-                        paddingBottom: function(i, node) {
-                            return 2;
+                        customize: function(doc) {
+                            // Centrar la tabla en la página PDF
+                            var docContent = doc.content[1];
+                            docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                            docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                            // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                            docContent.layout = {
+                                hLineWidth: function(i, node) {
+                                    return 0.5;
+                                },
+                                vLineWidth: function(i, node) {
+                                    return 0.5;
+                                },
+                                hLineColor: function(i, node) {
+                                    return '#aaa';
+                                },
+                                vLineColor: function(i, node) {
+                                    return '#aaa';
+                                },
+                                paddingLeft: function(i, node) {
+                                    return 4;
+                                },
+                                paddingRight: function(i, node) {
+                                    return 4;
+                                },
+                                paddingTop: function(i, node) {
+                                    return 2;
+                                },
+                                paddingBottom: function(i, node) {
+                                    return 2;
+                                }
+                            };
                         }
-                    };
-                }
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i>',
                         titleAttr: 'Imprimir',
                         className: 'btn-print',
-                          exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                },
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        },
                     }
                 ],
                 select: {
@@ -282,6 +294,10 @@
                     $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
                 }
             });
+        } else {
+            // Si no hay datos, mostrar un mensaje indicando que no hay información
+            $('#tareasTabla').html('<tr><td colspan="6">No hay información disponible</td></tr>');
+        }
 
             // Script para limpiar la selección de tareas
             $('#limpiarSeleccionButton').on('click', function() {

@@ -171,134 +171,141 @@
 
     <script>
         $(document).ready(function() {
-            var table = $('#usuariosTabla').DataTable({  
-                dom: '<"toolbar">Bfrtip',
-                language: {
-                    "decimal": "",
-                    "emptyTable": "No hay información",
-                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                    "infoPostFix": "",
-                    "thousands": ",",
-                    "lengthMenu": "Mostrar _MENU_ Entradas",
-                    "loadingRecords": "Cargando...",
-                    "processing": "Procesando...",
-                    "search": "Buscar:",
-                    "zeroRecords": "Sin resultados encontrados",
-                },
-                buttons: [
-                    {
-                        extend: 'excel',
-                        text: '<i class="fas fa-file-excel"></i>',
-                        titleAttr: 'Exportar a Excel',
-                        className: 'btn-excel',
-                        exportOptions: {
-                    columns: [1, 2, 3, 4]
-                },
+            // Verificar si hay datos en la tabla
+            var tableData = {% if usuarios is defined %} {{ usuarios|length > 0 ? usuarios|json_encode : 'null' }} {% else %} null {% endif %};
+            // Si hay datos, inicializar la tabla DataTables
+            if (tableData !== null) {    
+                var table = $('#usuariosTabla').DataTable({  
+                    dom: '<"toolbar">Bfrtip',
+                    language: {
+                        "decimal": "",
+                        "emptyTable": "No hay información",
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                        "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                        "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "Mostrar _MENU_ Entradas",
+                        "loadingRecords": "Cargando...",
+                        "processing": "Procesando...",
+                        "search": "Buscar:",
+                        "zeroRecords": "Sin resultados encontrados",
                     },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fas fa-file-pdf"></i>',
-                        titleAttr: 'Exportar a PDF',
-                        className: 'btn-pdf',
-                        exportOptions: {
-                    columns: [1, 2, 3, 4]
-                },customize: function(doc) {
-                  
-                    var docContent = doc.content[1];
-                    docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
-                    docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
-                    // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
-                    docContent.layout = {
-                        hLineWidth: function(i, node) {
-                            return 0.5;
+                    buttons: [
+                        {
+                            extend: 'excel',
+                            text: '<i class="fas fa-file-excel"></i>',
+                            titleAttr: 'Exportar a Excel',
+                            className: 'btn-excel',
+                            exportOptions: {
+                        columns: [1, 2, 3, 4]
+                    },
                         },
-                        vLineWidth: function(i, node) {
-                            return 0.5;
+                        {
+                            extend: 'pdf',
+                            text: '<i class="fas fa-file-pdf"></i>',
+                            titleAttr: 'Exportar a PDF',
+                            className: 'btn-pdf',
+                            exportOptions: {
+                        columns: [1, 2, 3, 4]
+                    },customize: function(doc) {
+                    
+                        var docContent = doc.content[1];
+                        docContent.margin = [ 0, 0, 0, 0 ]; // [left, top, right, bottom]
+                        docContent.table.widths = Array(docContent.table.body[0].length + 1).join('*').split('');
+                        // En ese apartado se puede ajustar para cambiar la posición de la tabla horizontalmente
+                        docContent.layout = {
+                            hLineWidth: function(i, node) {
+                                return 0.5;
+                            },
+                            vLineWidth: function(i, node) {
+                                return 0.5;
+                            },
+                            hLineColor: function(i, node) {
+                                return '#aaa';
+                            },
+                            vLineColor: function(i, node) {
+                                return '#aaa';
+                            },
+                            paddingLeft: function(i, node) {
+                                return 4;
+                            },
+                            paddingRight: function(i, node) {
+                                return 4;
+                            },
+                            paddingTop: function(i, node) {
+                                return 2;
+                            },
+                            paddingBottom: function(i, node) {
+                                return 2;
+                            }
+                        };
+                    },
                         },
-                        hLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        vLineColor: function(i, node) {
-                            return '#aaa';
-                        },
-                        paddingLeft: function(i, node) {
-                            return 4;
-                        },
-                        paddingRight: function(i, node) {
-                            return 4;
-                        },
-                        paddingTop: function(i, node) {
-                            return 2;
-                        },
-                        paddingBottom: function(i, node) {
-                            return 2;
+                        {
+                            extend: 'print',
+                            text: '<i class="fas fa-print"></i>',
+                            titleAttr: 'Imprimir',
+                            className: 'btn-print',
+                            exportOptions: {
+                        columns: [1, 2, 3, 4]
+                    },
                         }
-                    };
-                },
+                    ],
+                    select: {
+                        style: 'multi',
+                        selector: 'td:first-child'
                     },
-                    {
-                        extend: 'print',
-                        text: '<i class="fas fa-print"></i>',
-                        titleAttr: 'Imprimir',
-                        className: 'btn-print',
-                        exportOptions: {
-                    columns: [1, 2, 3, 4]
-                },
+                    order: [[1, 'asc']], // Ordena la tabla por la segunda columna
+                    initComplete: function () {
+                        $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
                     }
-                ],
-                select: {
-                    style: 'multi',
-                    selector: 'td:first-child'
-                },
-                order: [[1, 'asc']], // Ordena la tabla por la segunda columna
-                initComplete: function () {
-                    $('.dt-buttons').wrapAll('<div class="d-flex justify-content-end"></div>');
+                });
+            }else{            
+                // Si no hay datos, mostrar un mensaje indicando que no hay información
+                $('#usuariosTabla').html('<tr><td colspan="6">No hay información disponible</td></tr>');}
+
+                // Agrega el botón de filtrar usando los botones de extensión
+                new $.fn.dataTable.Buttons(table, {
+                    buttons: [
+                        {
+                            extend: 'colvis',
+                            text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
+                            className: 'btn-filter',
+                        }
+                    ]
+                }).container().appendTo($('#toolbar'));
+
+                // Inicializar los botones de extensión
+                table.buttons().container().appendTo($('#toolbar'));
+
+                // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
+                $('#toolbar').on('click', '.btn-filter', function () {
+                    $(this).next().toggleClass('show');
+                });
+
+                // Agregar evento para mostrar la marca de verificación al seleccionar una columna
+                $('#toolbar').on('change', 'input[type="checkbox"].dt-checkbox', function() {
+                    var index = $(this).val();
+                    var checked = $(this).prop('checked');
+                    table.column(index).visible(checked);
+                    updateCheckboxesVisibility(); // Llama a la función para actualizar la visibilidad de los checkboxes
+                });
+
+                // Función para actualizar la visibilidad de los checkboxes
+                function updateCheckboxesVisibility() {
+                    $('#toolbar input[type="checkbox"].dt-checkbox').each(function() {
+                        var column = table.column($(this).val());
+                        $(this).prop('checked', column.visible()); // Marcar o desmarcar el checkbox según la visibilidad de la columna
+                    });
+                }
+
+                // Cerrar el desplegable al hacer clic fuera de él
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.btn-filter, .dt-dropdown').length) {
+                    $('.show').removeClass('show');
                 }
             });
-
-             // Agrega el botón de filtrar usando los botones de extensión
-            new $.fn.dataTable.Buttons(table, {
-                buttons: [
-                    {
-                        extend: 'colvis',
-                        text: '<i class="fas fa-filter"></i> Filtrar', // Texto del botón
-                        className: 'btn-filter',
-                    }
-                ]
-            }).container().appendTo($('#toolbar'));
-
-            // Inicializar los botones de extensión
-            table.buttons().container().appendTo($('#toolbar'));
-
-            // Agregar evento para mostrar el desplegable al hacer clic en el botón de filtrar
-            $('#toolbar').on('click', '.btn-filter', function () {
-                $(this).next().toggleClass('show');
-            });
-
-            // Agregar evento para mostrar la marca de verificación al seleccionar una columna
-            $('#toolbar').on('change', 'input[type="checkbox"].dt-checkbox', function() {
-                var index = $(this).val();
-                var checked = $(this).prop('checked');
-                table.column(index).visible(checked);
-                updateCheckboxesVisibility(); // Llama a la función para actualizar la visibilidad de los checkboxes
-            });
-
-            // Función para actualizar la visibilidad de los checkboxes
-            function updateCheckboxesVisibility() {
-                $('#toolbar input[type="checkbox"].dt-checkbox').each(function() {
-                    var column = table.column($(this).val());
-                    $(this).prop('checked', column.visible()); // Marcar o desmarcar el checkbox según la visibilidad de la columna
-                });
-            }
-
-            // Cerrar el desplegable al hacer clic fuera de él
-        $(document).on('click', function (e) {
-            if (!$(e.target).closest('.btn-filter, .dt-dropdown').length) {
-                $('.show').removeClass('show');
-            }
-        });
 
 
 
