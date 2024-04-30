@@ -28,6 +28,17 @@ class TareasRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findByDateRange(string $fechaInicio, string $fechaFin): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.creadoEn >= :fechaInicio')
+            ->andWhere('t.creadoEn <= :fechaFin')
+            ->setParameter('fechaInicio', $fechaInicio)
+            ->setParameter('fechaFin', $fechaFin)
+            ->getQuery()
+            ->getResult();
+    }
     //    /**
     //     * @return Tareas[] Returns an array of Tareas objects
     //     */

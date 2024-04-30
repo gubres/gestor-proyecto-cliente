@@ -21,48 +21,8 @@
                     <!-- Botón para eliminar selección -->
                     <button type="button" class="btn btn-danger" id="eliminarSeleccionButton" style="display: none;">Eliminar selección</button>
                 </form>
-                <!-- Desplegable de filtrado -->
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle btn-filter" type="button" id="dropdownFilterButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-filter"></i> Filtrar
-                        </button>
-
-                        <div class="dropdown-menu" aria-labelledby="dropdownFilterButton">
-                            <!-- Campo Finalizada con opciones Si y No -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Finalizada:
-                                <select class="form-control" id="filtroFinalizada">
-                                    <option value="">Todas</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </div>
-                            <!-- Campo Prioridad con opciones Alta, Baja y Media -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Prioridad:
-                                <select class="form-control" id="filtroPrioridad">
-                                    <option value="">Todas</option>
-                                    <option value="Alta">Alta</option>
-                                    <option value="Media">Media</option>
-                                    <option value="Baja">Baja</option>
-                                </select>
-                            </div>
-
-                            <!-- Campo Fecha de creación con selector de opción -->
-                            <div class="dropdown-item">
-                                <span class="filter-icon"></span> Fecha de creación:
-                                <select class="form-control" id="filtroFecha">
-                                    <option value="exacto">Exactamente el día</option>
-                                </select>
-                                <input type="text" class="form-control" id="datepicker" placeholder="Selecciona una fecha">
-                                <button id="buscarFecha" class="btn btn-primary">Buscar</button>
-                            </div>
-
-                            <div class="dropdown-item">
-                                <button class="btn btn-warning" id="limpiarFiltros">Borrar filtros</button>
-                            </div>
                 </div>
-            </div>
+
         </div>
 
     <div id="toolbar"></div> <!-- Contenedor para los botones -->
@@ -73,7 +33,6 @@
                 <th class="text-center"><input type="checkbox" id="seleccionarTodo"></th>
                 <th class="text-center">Id</th>
                 <th class="text-center">Nombre</th>
-                <th class="text-center">Descripción</th>
                 <th class="text-center">Finalizada</th>
                 <th class="text-center">Fecha creación</th>
                 <th class="text-center">Prioridad</th>
@@ -86,7 +45,6 @@
                     <td><input type="checkbox" class="seleccionarTarea" name="tareas_seleccionadas[]" value="{{ tarea.id }}"></td>
                     <td class="text-center">{{ tarea.id }}</td>
                     <td>{{ tarea.nombre }}</td>
-                    <td>{{ tarea.descripcion }}</td> {# Aquí agregamos la descripción #}
                     <td>{{ tarea.finalizada ? 'Yes' : 'No' }}</td>
                     <td>{{ tarea.creadoEn ? tarea.creadoEn|date('Y-m-d H:i:s') : '' }}</td>
                     <td>

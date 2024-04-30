@@ -30,10 +30,32 @@ class TareasController extends AbstractController
     }
 
     #[Route('/', name: 'app_tareas_index', methods: ['GET'])]
-    public function index(TareasRepository $tareasRepository): Response
+    public function index(Request $request, TareasRepository $tareasRepository): Response
     {
+        $fechaInicio = $request->query->get('fecha_inicio');
+        $fechaFin = $request->query->get('fecha_fin');
+
+        // Inicializar variable para almacenar mensajes de error
+        $error = null;
+
+       // Verificar si se proporcionan fechas válidas
+        if ($fechaInicio && $fechaFin) {
+            // Filtrar tareas por rango de fechas si se proporcionan
+            $tareas = $tareasRepository->findByDateRange($fechaInicio, $fechaFin);
+
+            // Verificar si se encontraron tareas en el rango de fechas
+            if (empty($tareas)) {
+                $error = 'No se encontraron tareas en el rango de fechas proporcionado.';
+            }
+        } else {
+            // Si no se proporcionan fechas, obtener todas las tareas
+            $tareas = $tareasRepository->findNotDeleted();
+        }
+
+        // Devolver las tareas filtradas
         return $this->render('tareas/index.html.twig', [
-            'tareas' => $tareasRepository->findNotDeleted(),
+            'tareas' => $tareas,
+            'error' => $error,
         ]);
     }
 
