@@ -15,7 +15,7 @@
 
 - **Framework**: Symfony
 - **Lenguaje**: PHP
-- **Base de Datos**: MySQL / PostgreSQL
+- **Base de Datos**: MySQL/MariaDB
 - **Frontend**: HTML, CSS, JavaScript
 - **Gestión de Dependencias**: Composer
 
